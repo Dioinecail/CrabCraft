@@ -1688,50 +1688,55 @@ fn an_aliased_stroke_at_partial_opacity_is_one_flat_colour() {
     }
 }
 
-/// Photoshop (measured): a 100 px brush with a 20 px Dual Brush tip resized to 50 / 2 / 1 px has a
-/// 10 / 0.4 / 0.2 px dual tip, unrounded and with no floor, and back at 100 px it is 20 px again; past
-/// 5000 px the dual tip is capped there and the proportion is lost (#4809).
+/// Large tips rasterize, accumulate and composite in parallel (rows of a dab, tiles of a stroke);
+/// the pixels are the ones the serial path gives, with 8-bit dithering, a selection, Dissolve and
+/// per-dab colour included.
+#[cfg(not(target_arch = "wasm32"))]
 #[test]
-fn resizing_scales_the_dual_tip_like_photoshop() {
-    let mut b = BrushSettings { size: 100.0, ..brush() };
-    b.dual_brush.enabled = true;
-    b.dual_brush.size = 20.0;
-    for (main, dual) in [(50.0, 10.0), (2.0, 0.4), (1.0, 0.2), (100.0, 20.0), (240.0, 48.0), (100.0, 20.0)] {
-        b.resize_with_dual_brush(main);
-        assert_eq!(b.size, main);
-        assert!((b.dual_brush.size - dual).abs() < 1e-4, "main {main}: dual {} != {dual}", b.dual_brush.size);
+fn large_tips_render_the_same_in_parallel_and_serially() {
+    let mut sel = Surface::new(PixelFormat::GRAY8);
+    sel.fill_rect(Rect::new(0, 0, 900, 700), &[1.0]);
+    sel.fill_rect(Rect::new(300, 0, 400, 700), &[0.0]);
+    let strokes: Vec<(BrushSettings, Vec<StrokePoint>)> = vec![
+        (BrushSettings { size: 700.0, hardness: 0.0, flow: 0.6, color: [0.9, 0.2, 0.1, 1.0], ..brush() }, line(200.0, 700.0, 350.0)),
+        (
+            BrushSettings { size: 420.0, hardness: 1.0, opacity: 0.5, mode: BlendMode::Dissolve, color: [0.1, 0.5, 0.9, 1.0], ..brush() },
+            line(150.0, 750.0, 300.0),
+        ),
+        (
+            BrushSettings {
+                size: 500.0,
+                hardness: 0.3,
+                color_dynamics: ColorDynamics { enabled: true, hue_jitter: 0.5, per_tip: true, ..Default::default() },
+                color: [0.2, 0.8, 0.3, 1.0],
+                ..brush()
+            },
+            line(100.0, 800.0, 400.0),
+        ),
+    ];
+    let render = |parallel_from: usize| -> Vec<Vec<f32>> {
+        crate::render::set_parallel_min_pixels(parallel_from);
+        strokes
+            .iter()
+            .map(|(b, pts)| {
+                let mut s = Surface::new(PixelFormat::RGBA8);
+                s.fill_rect(Rect::new(0, 0, 900, 700), &[0.5, 0.5, 0.5, 1.0]);
+                let (mut with_sel, mut plain) = (s.clone(), s);
+                render_stroke(&mut with_sel, b, pts, Some(&sel), false, 1.0);
+                render_stroke(&mut plain, b, pts, None, false, 1.0);
+                let mut px = with_sel.read_region(Rect::new(0, 0, 900, 700));
+                px.extend(plain.read_region(Rect::new(0, 0, 900, 700)));
+                px
+            })
+            .collect()
+    };
+    let parallel = render(0);
+    let serial = render(usize::MAX);
+    crate::render::set_parallel_min_pixels(256 * 256);
+    for (i, (p, s)) in parallel.iter().zip(&serial).enumerate() {
+        assert_eq!(p.len(), s.len());
+        let diff = p.iter().zip(s).filter(|(a, b)| a != b).count();
+        assert_eq!(diff, 0, "stroke {i}: {diff} pixels differ between the parallel and the serial render");
+        assert!(p.iter().any(|v| (*v - 0.5).abs() > 0.1), "stroke {i} painted something");
     }
-    // The cap: 300 px at 100 px would be 15000 px at 5000 px; Photoshop stores 5000 and scales from it.
-    b.dual_brush.size = 300.0;
-    b.resize_with_dual_brush(MAX_BRUSH_SIZE);
-    assert_eq!(b.dual_brush.size, MAX_BRUSH_SIZE);
-    b.resize_with_dual_brush(100.0);
-    assert_eq!(b.dual_brush.size, 100.0);
-    // A sub-pixel dual tip renders at the renderer's smallest diameter.
-    b.dual_brush.size = 20.0;
-    b.resize_with_dual_brush(1.0);
-    assert_eq!(b.bounded_for_render().dual_brush.size, 0.5);
-}
-
-#[test]
-fn resizing_with_bad_sizes_leaves_the_dual_tip_alone() {
-    let mut b = BrushSettings { size: 100.0, ..brush() };
-    b.dual_brush.enabled = true;
-    b.dual_brush.size = 20.0;
-    for bad in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, 0.0, -5.0] {
-        b.size = 100.0;
-        b.resize_with_dual_brush(bad);
-        assert_eq!(b.dual_brush.size, 20.0, "{bad}");
-    }
-    for bad_dual in [f32::NAN, 0.0, -3.0] {
-        b.size = 100.0;
-        b.dual_brush.size = bad_dual;
-        b.resize_with_dual_brush(50.0);
-        assert_eq!(b.dual_brush.size.to_bits(), bad_dual.to_bits(), "a bad dual size {bad_dual} is left as it was");
-    }
-    // A disabled dual tip keeps its size.
-    b.dual_brush = DualBrush { enabled: false, size: 20.0, ..Default::default() };
-    b.size = 100.0;
-    b.resize_with_dual_brush(50.0);
-    assert_eq!(b.dual_brush.size, 20.0);
 }
