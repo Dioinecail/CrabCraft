@@ -315,6 +315,7 @@ pub(crate) fn invoke_unguarded(app: &mut PhotocraftApp, ctx: &egui::Context, id:
         }
         "window.theme.pro"
         | "window.theme.proMedium"
+        | "window.theme.customCrabsTheme"
         | "window.theme.proLightGray"
         | "window.theme.proLight"
         | "window.theme.studio"
@@ -327,8 +328,8 @@ pub(crate) fn invoke_unguarded(app: &mut PhotocraftApp, ctx: &egui::Context, id:
         | "window.theme.breezeDark"
         | "window.theme.softLight"
         | "window.theme.softDark" => {
-            let k = crate::theme::ThemeKind::from_name(&id["window.theme.".len()..]).unwrap_or_default();
-            app.set_theme(ctx, k);
+            let selectedTheme = crate::theme::ThemeKind::from_name(&id["window.theme.".len()..]).unwrap_or_default();
+            app.set_theme(ctx, selectedTheme);
             Ok(Value::Null)
         }
         // The macOS app menu's Language (`native_menu::language_node`).
@@ -343,11 +344,19 @@ pub(crate) fn invoke_unguarded(app: &mut PhotocraftApp, ctx: &egui::Context, id:
             app.ui.palette_open = !app.ui.palette_open;
             Ok(Value::Null)
         }
-        "help.about" => Ok(json!({"dialog": app.ui.open_dialog(DialogKind::About, Default::default())})),
+        "help.about" => {
+            let fields = serde_json::Map::new();
+            let dialog = app.ui.open_dialog(DialogKind::About, fields);
+
+            Ok(json!({"dialog": dialog}))
+        },
         "help.systemInfo" => {
             let mut fields = serde_json::Map::new();
+
             fields.insert("systemInfo".into(), json!(true));
+
             let dialog = app.ui.open_dialog(DialogKind::About, fields);
+            
             Ok(json!({"dialog": dialog, "info": crate::gpu_status::system_info_json(app)}))
         }
         "file.export.exportAs" => Ok(json!({"dialog": crate::export_dialog::open(app)?})),

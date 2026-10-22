@@ -16,6 +16,13 @@ use crate::state::{Tool, View};
 /// view added at the screen's resolution when zoomed in (`detail_plan`).
 pub const MAX_TEXTURE: u32 = 4096;
 
+/// The Home screen's card is this wide when the canvas has room, and as wide as the canvas when it doesn't.
+const HOME_CARD_WIDTH: f32 = 460.0;
+/// Least width of each of the Home screen's New document and Open buttons.
+const HOME_BUTTON_WIDTH: f32 = 190.0;
+/// Space between the Home screen's two buttons.
+const HOME_BUTTON_GAP: f32 = 12.0;
+
 /// The largest texture side to upload on this device: [`MAX_TEXTURE`], or less where the GPU
 /// allows less (2048 on some older or low-end GPUs and WebGL contexts). Past the device's limit
 /// egui asserts and the backend fails to create the texture.
@@ -3166,13 +3173,6 @@ fn open_on_double_click(app: &mut PhotocraftApp, ui: &egui::Ui, area: Rect) {
     }
 }
 
-/// The Home screen's card is this wide when the canvas has room, and as wide as the canvas when it doesn't.
-const HOME_CARD_WIDTH: f32 = 460.0;
-/// Least width of each of the Home screen's New document and Open buttons.
-const HOME_BUTTON_WIDTH: f32 = 190.0;
-/// Space between the Home screen's two buttons.
-const HOME_BUTTON_GAP: f32 = 12.0;
-
 fn start_screen(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     let t = crate::theme::Tokens::get(ui.ctx());
     let area = ui.available_rect_before_wrap();
@@ -3193,22 +3193,32 @@ fn start_screen(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     // Stacked buttons take one more row.
     let stacked_h = if side_by_side { 0.0 } else { 44.0 };
     let card = Rect::from_center_size(area.center(), egui::vec2(card_width, 330.0 + recent_h + stacked_h));
+
     ui.scope_builder(egui::UiBuilder::new().max_rect(card), |ui| {
         ui.vertical_centered(|ui| {
             ui.horizontal(|ui| {
-                let title = ui.painter().layout_no_wrap(tl!("PhotoCraft").into(), crate::theme::semibold(38.0), t.text);
+                let title = ui.painter().layout_no_wrap(tl!("CrabCraft").into(), crate::theme::semibold(38.0), t.text);
                 let by = ui.painter().layout_no_wrap(tl!("open source").into(), egui::FontId::proportional(13.0), t.text_faint);
                 let total = title.size().x + by.size().x + 10.0;
+
                 ui.add_space(((card.width() - total) / 2.0).max(0.0));
+
                 let (r, _) = ui.allocate_exact_size(title.size(), Sense::hover());
+
+
                 ui.painter().galley(r.min, title, t.text);
+
                 let (r2, _) = ui.allocate_exact_size(egui::vec2(by.size().x + 10.0, r.height()), Sense::hover());
+
                 ui.painter().galley(egui::pos2(r2.left() + 10.0, r.bottom() - by.size().y - 8.0), by, t.text_faint);
             });
+
             ui.add_space(6.0);
             ui.label(egui::RichText::new(tl!("Create a new document or open an existing file.")).color(t.text_dim).size(14.0));
             ui.add_space(22.0);
+
             let (mut new_clicked, mut open_clicked) = (false, false);
+
             if side_by_side {
                 ui.horizontal(|ui| {
                     ui.add_space(((card.width() - 2.0 * button_width - HOME_BUTTON_GAP) / 2.0).max(0.0));
@@ -3221,13 +3231,16 @@ fn start_screen(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                 ui.add_space(HOME_BUTTON_GAP);
                 open_clicked = crate::widgets::secondary_button(ui, &open_label, button_width).clicked();
             }
+            
             if new_clicked {
                 let fields = app.new_document_fields();
                 app.ui.open_dialog(crate::state::DialogKind::NewDocument, fields);
             }
+
             if open_clicked {
                 let _ = app.open_dialog_file();
             }
+
             ui.add_space(22.0);
             ui.horizontal(|ui| {
                 let msg = start_screen_drop_hint(app);
@@ -3242,9 +3255,7 @@ fn start_screen(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                 home_recent(app, ui, &recent);
             }
             ui.add_space(26.0);
-            crate::links::discord_button(app, ui, 190.0);
-            ui.add_space(10.0);
-            crate::links::link_row(app, ui);
+            // crate::links::discord_button(app, ui, 190.0);
         });
     });
 }

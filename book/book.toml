@@ -1,9 +1,9 @@
 [book]
-authors = ["PhotoCraft contributors"]
+authors = ["CrabCraft contributors"]
 language = "en"
 multilingual = false
 src = "src"
-title = "PhotoCraft Documentation"
+title = "CrabCraft Documentation"
 
 [build]
 build-dir = "output"

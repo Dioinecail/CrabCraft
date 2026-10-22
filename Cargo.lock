@@ -1223,6 +1223,52 @@ dependencies = [
 ]
 
 [[package]]
+name = "crabcraft"
+version = "0.12.0"
+dependencies = [
+ "arboard",
+ "async-io",
+ "chrono",
+ "core-graphics2",
+ "dispatch2",
+ "eframe",
+ "egui",
+ "fmv-macos-events",
+ "futures-lite",
+ "log",
+ "muda",
+ "objc2 0.6.4",
+ "objc2-app-kit 0.3.2",
+ "objc2-foundation 0.3.2",
+ "open",
+ "photocraft-automation",
+ "photocraft-cms",
+ "photocraft-codecs",
+ "photocraft-color",
+ "photocraft-compose",
+ "photocraft-doc",
+ "photocraft-engine",
+ "photocraft-format",
+ "photocraft-geom",
+ "photocraft-io",
+ "photocraft-raster",
+ "photocraft-tablet",
+ "photocraft-ui-egui",
+ "resvg",
+ "rfd",
+ "ron",
+ "serde_json",
+ "tempfile",
+ "winit",
+ "winresource",
+ "winsafe",
+ "wl-clipboard-rs",
+ "x11rb",
+ "xcap",
+ "zbus",
+]
+
+[[package]]
 name = "craft-docpath"
 version = "0.1.0"
 source = "git+https://github.com/storytold/craft-libs?rev=82a24b006eefa036b43c09a67fb9a3fbd17ffe63#82a24b006eefa036b43c09a67fb9a3fbd17ffe63"
@@ -4634,52 +4680,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e57fef6bc5981e38c2ce2d63bfa546861309f875b8a75f092d1d54ae2d64f266"
 dependencies = [
  "siphasher",
-]
-
-[[package]]
-name = "photocraft"
-version = "0.12.0"
-dependencies = [
- "arboard",
- "async-io",
- "chrono",
- "core-graphics2",
- "dispatch2",
- "eframe",
- "egui",
- "fmv-macos-events",
- "futures-lite",
- "log",
- "muda",
- "objc2 0.6.4",
- "objc2-app-kit 0.3.2",
- "objc2-foundation 0.3.2",
- "open",
- "photocraft-automation",
- "photocraft-cms",
- "photocraft-codecs",
- "photocraft-color",
- "photocraft-compose",
- "photocraft-doc",
- "photocraft-engine",
- "photocraft-format",
- "photocraft-geom",
- "photocraft-io",
- "photocraft-raster",
- "photocraft-tablet",
- "photocraft-ui-egui",
- "resvg",
- "rfd",
- "ron",
- "serde_json",
- "tempfile",
- "winit",
- "winresource",
- "winsafe",
- "wl-clipboard-rs",
- "x11rb",
- "xcap",
- "zbus",
 ]
 
 [[package]]

@@ -20,17 +20,17 @@ fn main() {
         println!("cargo:rustc-link-arg-bins=delayimp.lib");
     }
     let mut res = winresource::WindowsResource::new();
-    res.set_icon("../../assets/app-icon/photocraft.ico")
-        .set("ProductName", "PhotoCraft")
-        .set("FileDescription", "PhotoCraft image editor")
-        .set("CompanyName", "Learning Machines LLC")
-        .set("LegalCopyright", "Copyright (c) the PhotoCraft authors. MIT OR Apache-2.0.")
-        .set("OriginalFilename", "photocraft.exe")
-        .set("InternalName", "photocraft");
+    res.set_icon("../../assets/app-icon/crabcraft_icon.ico")
+        .set("ProductName", "CrabCraft")
+        .set("FileDescription", "CrabCraft image editor")
+        .set("CompanyName", "Cpt Crab Inc")
+        .set("LegalCopyright", "No License you dingus")
+        .set("OriginalFilename", "crabcraft.exe")
+        .set("InternalName", "crabcraft");
     if let Err(e) = res.compile() {
         if std::env::var_os("PHOTOCRAFT_REQUIRE_WINRES").is_some() {
             panic!("embedding Windows resources failed: {e}");
         }
-        println!("cargo:warning=photocraft.exe built without icon/version resources: {e}");
+        println!("cargo:warning=crabcraft.exe built without icon/version resources: {e}");
     }
 }

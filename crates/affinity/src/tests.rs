@@ -540,7 +540,7 @@ mod pixels {
 }
 
 /// Spot colours that link to themselves or to each other. Each document is read on a 1 MiB
-/// stack, the smallest main-thread stack PhotoCraft runs on (Windows), first in a child process
+/// stack, the smallest main-thread stack CrabCraft runs on (Windows), first in a child process
 /// that must finish within 20 s. A stack overflow aborts the process it happens in, so unbounded
 /// recursion fails the one test that caused it instead of taking the other tests in the binary
 /// down with it.

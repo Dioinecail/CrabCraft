@@ -109,7 +109,7 @@ struct Found {
     icon_theme: Option<String>,
 }
 
-/// The icon theme the glyphs come from: `PHOTOCRAFT_CAPTION_ICONS` (`none` draws PhotoCraft's own),
+/// The icon theme the glyphs come from: `PHOTOCRAFT_CAPTION_ICONS` (`none` draws CrabCraft's own),
 /// the desktop's setting, or its default theme.
 #[cfg(target_os = "linux")]
 fn icon_theme_name(desktop: Desktop, found: &Found, var: &dyn Fn(&str) -> Option<String>) -> Option<String> {

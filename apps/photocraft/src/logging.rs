@@ -8,7 +8,7 @@
 //! instance is still running leaves that instance's log alone and writes `photocraft-<pid>.log`
 //! (see [`rotate`]).
 //!
-//! Levels: `info` for PhotoCraft's own crates, `warn` for everything else (wgpu and naga are
+//! Levels: `info` for CrabCraft's own crates, `warn` for everything else (wgpu and naga are
 //! chatty). `RUST_LOG` replaces that with env_logger-style directives: `debug`,
 //! `warn,photocraft_gpu=trace`, `wgpu_core=info`. A directive ending in `*` matches every target
 //! that starts with it (`photocraft*=debug`).

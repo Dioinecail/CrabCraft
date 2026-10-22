@@ -111,6 +111,7 @@ fn selected_theme(interface: &prefs::Interface, system: Option<egui::Theme>) -> 
             DarkTheme::AdwaitaDark => ThemeKind::AdwaitaDark,
             DarkTheme::BreezeDark => ThemeKind::BreezeDark,
             DarkTheme::SoftDark => ThemeKind::SoftDark,
+            DarkTheme::Crabs => ThemeKind::Crabs
         }
     }
 }
@@ -132,7 +133,7 @@ pub(crate) fn cycle_appearance(app: &mut PhotocraftApp, ctx: &egui::Context) {
 }
 
 /// Photoshop's four interface brightnesses, darkest first.
-const BRIGHTNESSES: [ThemeKind; 4] = [ThemeKind::Pro, ThemeKind::ProMedium, ThemeKind::ProLightGray, ThemeKind::ProLight];
+const BRIGHTNESSES: [ThemeKind; 5] = [ThemeKind::Pro, ThemeKind::ProMedium, ThemeKind::Crabs, ThemeKind::ProLightGray, ThemeKind::ProLight];
 
 /// Darken Interface (⇧⌘F1, `lighter` false) and Lighten Interface (⇧⌘F2): the next of
 /// Photoshop's four brightnesses from the theme on screen, stopping at either end, as in
@@ -163,6 +164,7 @@ const LIGHT_THEME_OPTIONS: &[(&str, ThemeKind)] = &[
 const DARK_THEME_OPTIONS: &[(&str, ThemeKind)] = &[
     ("proMedium", ThemeKind::ProMedium),
     ("pro", ThemeKind::Pro),
+    ("customCrabsTheme", ThemeKind::Crabs),
     ("studio", ThemeKind::Studio),
     ("solarizedDark", ThemeKind::SolarizedDark),
     ("adwaitaDark", ThemeKind::AdwaitaDark),
@@ -179,30 +181,31 @@ fn favorite_theme_groups(favorites: &[SavedTheme]) -> (Vec<ThemeKind>, Vec<Theme
 
 /// Right-click menu on the top-right appearance button. A plain click still cycles modes.
 pub(crate) fn appearance_context_menu(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
-    if ui.button(tl!("Appearance Settings…")).clicked() {
-        open_preferences(app, "interface");
-        ui.close();
-    }
-    let (light, dark) = favorite_theme_groups(&app.session.prefs().interface.favorite_themes);
-    let has_light = !light.is_empty();
-    if !light.is_empty() || !dark.is_empty() {
-        ui.separator();
-    }
-    for kind in light {
-        if ui.selectable_label(app.ui.theme == kind, tl!(kind.label())).clicked() {
-            app.set_theme(ui.ctx(), kind);
-            ui.close();
-        }
-    }
-    if has_light && !dark.is_empty() {
-        ui.separator();
-    }
-    for kind in dark {
-        if ui.selectable_label(app.ui.theme == kind, tl!(kind.label())).clicked() {
-            app.set_theme(ui.ctx(), kind);
-            ui.close();
-        }
-    }
+    // I DONT NEED THIS SHIT ARE YOU KIDDING ME NI-
+    // if ui.button(tl!("Appearance Settings…")).clicked() {
+    //     open_preferences(app, "interface");
+    //     ui.close();
+    // }
+    // let (light, dark) = favorite_theme_groups(&app.session.prefs().interface.favorite_themes);
+    // let has_light = !light.is_empty();
+    // if !light.is_empty() || !dark.is_empty() {
+    //     ui.separator();
+    // }
+    // for kind in light {
+    //     if ui.selectable_label(app.ui.theme == kind, tl!(kind.label())).clicked() {
+    //         app.set_theme(ui.ctx(), kind);
+    //         ui.close();
+    //     }
+    // }
+    // if has_light && !dark.is_empty() {
+    //     ui.separator();
+    // }
+    // for kind in dark {
+    //     if ui.selectable_label(app.ui.theme == kind, tl!(kind.label())).clicked() {
+    //         app.set_theme(ui.ctx(), kind);
+    //         ui.close();
+    //     }
+    // }
 }
 
 fn system_theme(app: &PhotocraftApp, ctx: &egui::Context) -> Option<egui::Theme> {

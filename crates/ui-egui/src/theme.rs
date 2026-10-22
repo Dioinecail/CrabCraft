@@ -52,10 +52,11 @@ pub enum ThemeKind {
     SoftDark,
     /// A low-contrast light theme: pale violet-grey surfaces, softened dark text and a periwinkle accent.
     SoftLight,
+    Crabs,
 }
 
 impl ThemeKind {
-    pub const ALL: [ThemeKind; 14] = [
+    pub const ALL: [ThemeKind; 15] = [
         ThemeKind::Pro,
         ThemeKind::ProMedium,
         ThemeKind::ProLightGray,
@@ -70,11 +71,13 @@ impl ThemeKind {
         ThemeKind::BreezeDark,
         ThemeKind::SoftDark,
         ThemeKind::SoftLight,
+        ThemeKind::Crabs,
     ];
     pub fn label(self) -> &'static str {
         match self {
             ThemeKind::Pro => "Pro (Dark)",
             ThemeKind::ProMedium => "Pro (Medium Gray)",
+            ThemeKind::Crabs => "Custom Crabs Theme",
             ThemeKind::ProLightGray => "Pro (Light Gray)",
             ThemeKind::ProLight => "Pro (Light)",
             ThemeKind::Studio => "Studio (Dark)",
@@ -95,6 +98,7 @@ impl ThemeKind {
         match self {
             ThemeKind::Pro => "pro",
             ThemeKind::ProMedium => "proMedium",
+            ThemeKind::Crabs => "customCrabsTheme",
             ThemeKind::ProLightGray => "proLightGray",
             ThemeKind::ProLight => "proLight",
             ThemeKind::Studio => "studio",
@@ -120,6 +124,7 @@ impl ThemeKind {
             ThemeKind::Studio
                 | ThemeKind::Pro
                 | ThemeKind::ProMedium
+                | ThemeKind::Crabs
                 | ThemeKind::SolarizedDark
                 | ThemeKind::AdwaitaDark
                 | ThemeKind::BreezeDark
@@ -150,6 +155,7 @@ impl ThemeKind {
             "breezedark" | "kdedark" | "plasmadark" => Some(ThemeKind::BreezeDark),
             "softdark" => Some(ThemeKind::SoftDark),
             "softlight" => Some(ThemeKind::SoftLight),
+            "customcrabstheme" | "crabs" => Some(ThemeKind::Crabs),
             _ => None,
         }
     }
@@ -242,6 +248,29 @@ impl Tokens {
                 row_selected: Color32::from_rgb(107, 107, 107),
                 ..Tokens::for_kind(ThemeKind::Pro)
             },
+            ThemeKind::Crabs => Tokens {
+                kind,
+                chrome: Color32::from_rgb(56, 56, 56),
+                dock: Color32::from_rgb(66, 66, 66),
+                card: Color32::from_rgb(56, 56, 56),
+                card_border: Color32::from_rgb(66, 66, 66),
+                field: Color32::from_rgb(69, 69, 69),
+                field_border: Color32::from_rgb(104, 104, 104),
+                hover: Color32::from_rgb(98, 98, 98),
+                pressed: Color32::from_rgb(112, 112, 112),
+                text: Color32::from_rgb(238, 238, 238),
+                text_dim: Color32::from_rgb(212, 212, 212),
+                text_faint: Color32::from_rgb(160, 160, 160),
+                icon: Color32::from_rgb(226, 226, 226),
+                accent_soft: Color32::from_rgb(110, 110, 110),
+                separator: Color32::from_rgb(62, 62, 62),
+                tab_strip: Color32::from_rgb(74, 74, 74),
+                row_selected: Color32::from_rgb(107, 107, 107),
+                radius_sm: 1.0,
+                radius: 2.0,
+                radius_lg: 3.0,
+                ..Tokens::for_kind(ThemeKind::Pro)
+            },
             // Photoshop's medium-light brightness: #B8B8B8 panels, dark text, a mid-grey canvas.
             ThemeKind::ProLightGray => Tokens {
                 kind,
@@ -314,7 +343,7 @@ impl Tokens {
                 accent_text: Color32::WHITE,
                 separator: Color32::from_rgb(30, 30, 30),
                 shadow: Color32::from_black_alpha(150),
-                primary_bg: Color32::from_rgb(55, 142, 240),
+                primary_bg: Color32::from_rgb(34, 92, 181),
                 primary_text: Color32::WHITE,
                 danger: Color32::from_rgb(236, 91, 98),
                 warning: Color32::from_rgb(232, 176, 70),
@@ -998,33 +1027,38 @@ pub fn apply(ctx: &egui::Context, kind: ThemeKind) {
     ctx.set_theme(egui::ThemePreference::System);
     let t = Tokens::for_kind(kind);
     ctx.data_mut(|d| d.insert_temp(egui::Id::new("photocraft-theme"), t));
-    let mut v = if t.dark() { Visuals::dark() } else { Visuals::light() };
-    v.panel_fill = t.chrome;
-    v.window_fill = t.card;
-    v.window_stroke = Stroke::new(1.0, t.card_border);
-    v.extreme_bg_color = t.field;
-    v.faint_bg_color = t.card;
-    v.code_bg_color = t.field;
-    v.override_text_color = Some(t.text);
-    v.hyperlink_color = t.accent;
-    v.warn_fg_color = t.warning;
-    v.error_fg_color = t.danger;
-    v.window_corner_radius = CornerRadius::same(t.radius_lg as u8);
-    v.menu_corner_radius = CornerRadius::same(t.radius as u8);
-    v.window_shadow = egui::Shadow { offset: [0, 10], blur: 32, spread: 0, color: t.shadow };
-    v.popup_shadow = egui::Shadow { offset: [0, 6], blur: 20, spread: 0, color: t.shadow };
-    v.selection.bg_fill = if t.bevel || t.pro { t.accent } else { t.accent_soft };
-    v.selection.stroke = Stroke::new(1.0, t.accent_text);
-    v.slider_trailing_fill = true;
-    v.handle_shape = egui::style::HandleShape::Circle;
-    v.striped = false;
+
+    let mut visuals = if t.dark() { Visuals::dark() } else { Visuals::light() };
+
+    visuals.panel_fill = t.chrome;
+    visuals.window_fill = t.card;
+    visuals.window_stroke = Stroke::new(1.0, t.card_border);
+    visuals.extreme_bg_color = t.field;
+    visuals.faint_bg_color = t.card;
+    visuals.code_bg_color = t.field;
+    visuals.override_text_color = Some(t.text);
+    visuals.hyperlink_color = t.accent;
+    visuals.warn_fg_color = t.warning;
+    visuals.error_fg_color = t.danger;
+    visuals.window_corner_radius = CornerRadius::same(t.radius_lg as u8);
+    visuals.menu_corner_radius = CornerRadius::same(t.radius as u8);
+    visuals.window_shadow = egui::Shadow { offset: [0, 10], blur: 32, spread: 0, color: t.shadow };
+    visuals.popup_shadow = egui::Shadow { offset: [0, 6], blur: 20, spread: 0, color: t.shadow };
+    visuals.selection.bg_fill = if t.bevel || t.pro { t.accent } else { t.accent_soft };
+    visuals.selection.stroke = Stroke::new(1.0, t.accent_text);
+    visuals.slider_trailing_fill = true;
+    visuals.handle_shape = egui::style::HandleShape::Circle;
+    visuals.striped = false;
+
     let r = CornerRadius::same(t.radius_sm as u8);
-    let w = &mut v.widgets;
+    let w = &mut visuals.widgets;
+
     w.noninteractive.bg_fill = t.card;
     w.noninteractive.weak_bg_fill = t.card;
     w.noninteractive.bg_stroke = Stroke::new(1.0, t.separator);
     w.noninteractive.fg_stroke = Stroke::new(1.0, t.text_dim);
     w.noninteractive.corner_radius = r;
+
     for (wv, bg, stroke) in [
         (&mut w.inactive, t.field, t.field_border),
         (&mut w.hovered, t.hover, t.field_border),
@@ -1038,7 +1072,7 @@ pub fn apply(ctx: &egui::Context, kind: ThemeKind) {
         wv.corner_radius = r;
         wv.expansion = 0.0;
     }
-    ctx.set_visuals(v);
+    ctx.set_visuals(visuals);
     ctx.global_style_mut(|s| {
         s.text_styles = [
             (TextStyle::Small, FontId::proportional(10.5)),

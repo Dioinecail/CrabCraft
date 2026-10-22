@@ -27,7 +27,7 @@ pub fn window_icon() -> egui::IconData {
 }
 
 /// Whether the window gets [`window_icon`] at runtime: everywhere except inside a macOS app
-/// bundle. There the Dock shows the bundle's `PhotoCraft.icns` (`CFBundleIconFile`), which macOS
+/// bundle. There the Dock shows the bundle's `CrabCraft.icns` (`CFBundleIconFile`), which macOS
 /// renders in its own style (Liquid Glass and its tinted and dark variants); a runtime PNG
 /// replaced it with a flat picture (#5849). `exe` is the running executable.
 pub fn sets_runtime_icon(exe: Option<&std::path::Path>) -> bool {
@@ -61,7 +61,7 @@ const PNG: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps
 mod tests {
     use super::*;
 
-    const ICO: &[u8] = include_bytes!("../../../assets/app-icon/photocraft.ico");
+    const ICO: &[u8] = include_bytes!("../../../assets/app-icon/crabcraft_icon.ico");
     const WXS: &str = include_str!("../../../packaging/windows/photocraft.wxs");
 
     fn u16_at(b: &[u8], i: usize) -> usize {
@@ -76,22 +76,22 @@ mod tests {
     #[test]
     fn only_a_macos_app_bundle_skips_the_runtime_icon() {
         use std::path::Path;
-        assert!(in_app_bundle(Path::new("/Applications/PhotoCraft.app/Contents/MacOS/photocraft")));
-        assert!(in_app_bundle(Path::new("/Users/a/Downloads/PhotoCraft Beta.APP/Contents/MacOS/photocraft")));
+        assert!(in_app_bundle(Path::new("/Applications/CrabCraft.app/Contents/MacOS/photocraft")));
+        assert!(in_app_bundle(Path::new("/Users/a/Downloads/CrabCraft Beta.APP/Contents/MacOS/photocraft")));
         assert!(!in_app_bundle(Path::new("/Users/a/src/photocraft/target/release/photocraft")));
         assert!(!in_app_bundle(Path::new("/opt/Contents/MacOS/photocraft")), "not inside a .app");
         assert!(!in_app_bundle(Path::new("/.app/Contents/MacOS/photocraft")), "a bare `.app` is no bundle name");
         assert!(!in_app_bundle(Path::new("photocraft")));
         assert!(sets_runtime_icon(None));
         assert!(sets_runtime_icon(Some(Path::new("/usr/bin/photocraft"))));
-        assert_eq!(sets_runtime_icon(Some(Path::new("/Applications/PhotoCraft.app/Contents/MacOS/photocraft"))), !cfg!(target_os = "macos"));
+        assert_eq!(sets_runtime_icon(Some(Path::new("/Applications/CrabCraft.app/Contents/MacOS/photocraft"))), !cfg!(target_os = "macos"));
     }
 
     /// #7253: omitting `with_icon` made eframe paint its default glyph on the Dock once the window loaded.
     #[test]
     fn viewport_icon_blocks_eframe_default_when_runtime_icon_is_skipped() {
         use std::path::Path;
-        let bundled = Some(Path::new("/Applications/PhotoCraft.app/Contents/MacOS/photocraft"));
+        let bundled = Some(Path::new("/Applications/CrabCraft.app/Contents/MacOS/photocraft"));
         if sets_runtime_icon(bundled) {
             let icon = viewport_icon(bundled);
             assert!(icon.width >= 256 && icon.width == icon.height);

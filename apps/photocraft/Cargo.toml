@@ -1,10 +1,10 @@
 [package]
-name = "photocraft"
+name = "crabcraft"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-default-run = "photocraft"
-description = "PhotoCraft: an open-source, native image editor"
+default-run = "crabcraft"
+description = "CrabCraft: an open-source, native image editor"
 build = "build.rs"
 
 [features]

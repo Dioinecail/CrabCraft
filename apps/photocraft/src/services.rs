@@ -14,7 +14,7 @@ use std::sync::Arc;
 #[cfg(test)]
 mod recovery_tests;
 
-/// Everything File › Open reads: PhotoCraft, Photoshop, OpenRaster, Krita and Affinity documents, flat images, and
+/// Everything File › Open reads: CrabCraft, Photoshop, OpenRaster, Krita and Affinity documents, flat images, and
 /// Photoshop brushes (.abr), gradients (.grd), swatches (.aco, .act, .ase) and keyboard shortcut sets
 /// (.kys), which go to the preset libraries and Edit › Keyboard Shortcuts.
 const OPEN_EXTS: &[&str] = &[
@@ -94,7 +94,7 @@ const SAVE_FILTERS: &[(&str, &[&str])] = &[
     ("WebP", &["webp"]),
     ("TIFF", &["tif"]),
     ("Targa", &["tga"]),
-    // Also in Photoshop's Save As list; ICO is PhotoCraft's own (#4357): up to 256×256, with alpha.
+    // Also in Photoshop's Save As list; ICO is CrabCraft's own (#4357): up to 256×256, with alpha.
     ("BMP", &["bmp"]),
     ("GIF", &["gif"]),
     ("ICO", &["ico"]),
@@ -135,9 +135,9 @@ fn save_filters(suggested: &str) -> Vec<(String, Vec<String>)> {
 /// dialog left the name alone (#6121): the format follows the extension, and the GTK file chooser
 /// keeps the typed name when another type is picked. Only a name that still has the extension the
 /// dialog opened with (`opened_with`, `Untitled-1.psd` with PNG picked) or none gets the type's
-/// extension, as PolyMeilex/rfd#341 does. An extension the user typed that PhotoCraft saves
+/// extension, as PolyMeilex/rfd#341 does. An extension the user typed that CrabCraft saves
 /// (`art.png` with the PSD type untouched, the way to save a PNG before this) is theirs and stays,
-/// and so does one of the type's own (`.psb` for PSD). One PhotoCraft doesn't save (`scan.2024`)
+/// and so does one of the type's own (`.psb` for PSD). One CrabCraft doesn't save (`scan.2024`)
 /// is part of the name, and the type's extension is added after it.
 #[cfg(any(target_os = "linux", test))]
 pub(crate) fn with_chosen_type(path: &Path, opened_with: Option<&str>, chosen: &[String]) -> PathBuf {
@@ -161,7 +161,7 @@ pub(crate) fn with_chosen_type(path: &Path, opened_with: Option<&str>, chosen: &
 /// (`adds_extension`), the dialog gets the stem and the suggested type (listed first by
 /// [`save_filters`]) supplies `.psd`:
 /// - On Windows a visible extension stays put when the user picks another type (with File name
-///   extensions shown, `image.psd` saved as PhotoCraft stayed `image.psd`, #4394).
+///   extensions shown, `image.psd` saved as CrabCraft stayed `image.psd`, #4394).
 /// - On Linux the portal's dialog keeps the name as typed, and before returning asks whether to
 ///   replace a file of that name, so `test.psd` with PNG picked asked to replace test.psd, which
 ///   the save leaves alone (#6121). From the stem [`with_chosen_type`] gives the picked type's
@@ -310,7 +310,7 @@ pub(crate) fn block_on<T>(future: impl Future<Output = T>) -> T {
     }
 }
 
-/// Per-user settings directory: `PHOTOCRAFT_CONFIG_DIR`, else `<exe dir>/PhotoCraftData` in
+/// Per-user settings directory: `PHOTOCRAFT_CONFIG_DIR`, else `<exe dir>/CrabCraftData` in
 /// portable mode, else the platform convention. Everything the app persists lives under it
 /// except, on Windows and Linux, crash-recovery autosaves; see [`crate::app_dirs`].
 pub fn config_dir() -> Option<PathBuf> {
@@ -760,10 +760,10 @@ mod tests {
             ("/pics/Untitled-1.psd", opened, &png, "/pics/Untitled-1.png"),
             ("/pics/art.psd", opened, &png, "/pics/art.png"),
             ("/pics/ART.PSD", opened, &png, "/pics/ART.png"),
-            // No extension: the type's. One PhotoCraft doesn't save is part of the name.
+            // No extension: the type's. One CrabCraft doesn't save is part of the name.
             ("/pics/art", opened, &png, "/pics/art.png"),
             ("/pics/scan.2024", opened, &png, "/pics/scan.2024.png"),
-            // Typed, an extension PhotoCraft saves is the user's: kept, whatever the type says
+            // Typed, an extension CrabCraft saves is the user's: kept, whatever the type says
             // (the PSD type untouched, or PNG picked and .jpg typed).
             ("/pics/art.png", opened, &psd, "/pics/art.png"),
             ("/pics/art.jpg", opened, &png, "/pics/art.jpg"),
@@ -999,7 +999,7 @@ mod tests {
         assert_eq!(save_filters("Untitled")[0].0, "PSD Document", "no extension keeps the default");
     }
 
-    /// Every flat format Save As offers is one PhotoCraft writes, and ICO is among them (#4357).
+    /// Every flat format Save As offers is one CrabCraft writes, and ICO is among them (#4357).
     #[test]
     fn save_as_offers_only_writable_formats_including_ico() {
         // Layered formats, and PDF, are written by `photocraft-io`, not a codec.
@@ -1028,7 +1028,7 @@ mod tests {
     }
 
     /// #4394: with File name extensions shown, Windows kept `image.psd` when the type was changed to
-    /// PhotoCraft. Given the bare `image`, it adds the extension of whichever type is picked
+    /// CrabCraft. Given the bare `image`, it adds the extension of whichever type is picked
     /// (checked by hand with rfd 0.17.2 on Windows 11), defaulting to the first type's.
     #[test]
     fn the_windows_save_dialog_gets_a_bare_name_so_the_type_picks_the_extension() {

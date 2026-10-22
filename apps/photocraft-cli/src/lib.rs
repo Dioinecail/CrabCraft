@@ -1,4 +1,4 @@
-//! Headless PhotoCraft command line. `run` is the whole program, so it can be
+//! Headless CrabCraft command line. `run` is the whole program, so it can be
 //! tested in-process as well as through the binary.
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
@@ -12,7 +12,7 @@ use photocraft_io::ExportOptions;
 use serde_json::{Value, json};
 
 pub const USAGE: &str = "\
-photocraft-cli: headless PhotoCraft
+photocraft-cli: headless CrabCraft
 
 USAGE:
   photocraft-cli convert <in> <out> [--format <ext>] [--quality <1-100>] [--in-place] [--tiff-layers] [--tiff-compression <none|lzw|zip>] [--tga-bits <24|32>] [--dpx-bits <8|10|12|16>] [--dds-compression <none|bc1|bc2|bc3>] [--dds-mipmaps] [--jpeg-format <baseline|optimized|progressive>]
@@ -469,7 +469,7 @@ pub fn load_actions(text: &str, name: Option<&str>) -> Result<(Steps, Vec<Action
 }
 
 /// [`load_actions`] for a file on disk: a Photoshop Actions file (`.atn`, by extension or by
-/// its version word) is converted first; the played action's steps with no PhotoCraft
+/// its version word) is converted first; the played action's steps with no CrabCraft
 /// equivalent come back as warnings (they fail at playback, as in Photoshop when a step can't run).
 pub fn load_actions_file(path: &str, name: Option<&str>) -> Result<(Steps, Vec<Action>, Vec<String>), String> {
     let bytes = std::fs::read(path).map_err(|e| format!("{path}: {e}"))?;
@@ -493,7 +493,7 @@ pub fn load_actions_file(path: &str, name: Option<&str>) -> Result<(Steps, Vec<A
         .unsupported
         .iter()
         .filter(|u| u.action == action.name)
-        .map(|u| format!("`{}` step {}: Photoshop's \"{}\" ({}) has no PhotoCraft equivalent yet", u.action, u.step + 1, u.name, u.event))
+        .map(|u| format!("`{}` step {}: Photoshop's \"{}\" ({}) has no CrabCraft equivalent yet", u.action, u.step + 1, u.name, u.event))
         .chain(imp.warnings.iter().cloned())
         .collect();
     let play = vec![("actions.play".to_string(), json!({"action": action.name}))];
@@ -697,7 +697,7 @@ mod missing_font_warning_tests {
 
     #[test]
     fn missing_typeface_is_reported_by_run_info_and_convert() {
-        let family = "DefinitelyMissingPhotoCraftTypeface1251";
+        let family = "DefinitelyMissingCrabCraftTypeface1251";
         let folder = std::env::temp_dir().join(format!("photocraft-cli-font-warnings-{}", std::process::id()));
         std::fs::create_dir_all(&folder).unwrap();
         let native = folder.join("missing.pcraft");

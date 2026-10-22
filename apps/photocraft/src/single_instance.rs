@@ -1,4 +1,4 @@
-//! One PhotoCraft per user on Windows and Linux (#3708): a file opened from Explorer or a file
+//! One CrabCraft per user on Windows and Linux (#3708): a file opened from Explorer or a file
 //! manager lands as a new tab in the running window, like Photoshop, instead of starting a second
 //! copy of the program.
 //!
@@ -14,7 +14,7 @@
 //! (the primary is still starting, hung, or quitting) keeps retrying the lock, so it becomes the
 //! primary itself as soon as the old one lets go, and when its time runs out it starts a separate
 //! instance: a file is never acknowledged and then dropped. [`Primary::shutdown`] runs when the
-//! event loop ends (and before the CPU-compatibility relaunch), so a closing PhotoCraft refuses new
+//! event loop ends (and before the CPU-compatibility relaunch), so a closing CrabCraft refuses new
 //! files and frees the lock.
 //!
 //! Only for the per-user settings folder ([`skip_reason`]): a portable copy's folder beside the
@@ -364,7 +364,7 @@ pub fn claim_in(dir: &Path, paths: &[String], timing: Timing, transport: &Transp
             }
         }
         if Instant::now() >= deadline {
-            return Launch::Standalone(format!("the running PhotoCraft didn't take the files ({last})"));
+            return Launch::Standalone(format!("the running CrabCraft didn't take the files ({last})"));
         }
         std::thread::sleep(Duration::from_millis(100));
     }

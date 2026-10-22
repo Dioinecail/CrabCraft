@@ -1,6 +1,6 @@
 # Building
 
-PhotoCraft uses the Rust workspace at the repository root. Install the stable Rust toolchain, clone the repository, and run commands from that root.
+CrabCraft uses the Rust workspace at the repository root. Install the stable Rust toolchain, clone the repository, and run commands from that root.
 
 On Linux, install the windowing, GL and GTK development packages first. The development guide's
 [Prerequisites](https://github.com/storytold/photocraft/blob/main/docs/development.md#prerequisites)

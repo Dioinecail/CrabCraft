@@ -2657,6 +2657,7 @@ impl PhotocraftApp {
         if let Err(e) = self.run("prefs.set", serde_json::json!({"path": "interface.theme", "value": kind.id()})) {
             self.ui.status = e;
         } else {
+            self.ui.status = kind.label().into();
             self.apply_theme(ctx, kind);
         }
     }
