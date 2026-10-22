@@ -17,7 +17,7 @@
 //! Each quad is one plane of `layer.smartObjects.perspectiveWarp`: `src` = the quad's
 //! `vertices`, `dst` = its `warpedVertices`, in the stored corner order. Quads that share a vertex
 //! share the corner, which the engine links. The item is kept as a template ([`TEMPLATE_KEY`]) so
-//! the keys PhotoCraft does not model go back unchanged, with only the vertices and quads
+//! the keys CrabCraft does not model go back unchanged, with only the vertices and quads
 //! rewritten from the edited planes. Anything inconsistent (an index out of range, mismatched
 //! vertex counts, a non-finite or degenerate quad) stays an opaque [`super::UNSUPPORTED_FILTER`].
 

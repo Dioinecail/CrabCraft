@@ -1,6 +1,6 @@
 # OpenRaster documents
 
-PhotoCraft opens and saves OpenRaster (`.ora`), the layered format Krita, MyPaint, GIMP, Pinta
+CrabCraft opens and saves OpenRaster (`.ora`), the layered format Krita, MyPaint, GIMP, Pinta
 and others share. File › Open, recent files, drops, Save and Save As, the CLI (`convert`, `info`,
 `batch`) and automation (`doc.open`, `doc.save`, MCP) all use the same reader and writer in
 `photocraft-io`. The browser build accepts `.ora` too. A file is recognised by its `mimetype`
@@ -23,7 +23,7 @@ entry, so an OpenRaster file with another extension still opens as one.
 Files declaring OpenRaster 0.0.6 or newer default to isolated groups; an explicit
 `isolation="auto"` passes through regardless of the group's own composite operation. Older
 files and files without a recognized version keep the legacy inference from the group's
-blend mode. Pass-through group opacity still uses PhotoCraft's interpolation against the
+blend mode. Pass-through group opacity still uses CrabCraft's interpolation against the
 backdrop, which can differ from 0.0.6's per-child opacity multiplication for overlapping children.
 
 Saving reports what OpenRaster can't hold, layer by layer: pixel masks are applied to the
@@ -77,7 +77,7 @@ KRITA_TEST_DIR=/path/to/photocraft-corpus/krita cargo test -p photocraft-io --te
 2026-10-09, Krita 5.2.9: 32 of 35 `.ora` files render within 3/255 of Krita's merged image; the
 other three differ for known reasons listed in `crates/io/tests/it/krita_corpus.rs` (Krita's
 tie-break in Darker and Lighter Color, and Hard Mix at a channel sum of exactly 1). In the other
-direction, Krita opened every PhotoCraft re-export of the first 34 of those files and rendered 33
+direction, Krita opened every CrabCraft re-export of the first 34 of those files and rendered 33
 of them identically to its original; the exception is Photoshop's Soft Light, which is written
 as `svg:soft-light`. MyPaint and GIMP files have not been checked yet.
 

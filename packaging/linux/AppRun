@@ -1,5 +1,5 @@
 #!/bin/sh
-# PhotoCraft AppImage entry point (packaging/linux/AppRun; installed by package.sh).
+# CrabCraft AppImage entry point (packaging/linux/AppRun; installed by package.sh).
 #
 # On Wayland the compositor resolves a window's dock icon by taking the window's
 # app_id (ai.storyteller.photocraft) and looking up an installed .desktop file.
@@ -38,7 +38,7 @@ integrate() {
   # If another integrator already registered a .desktop whose Exec points at this
   # AppImage, do not write a second launcher (#3623); remove our own if one is left
   # over, and still install the hicolor icons below. $DESKTOPINTEGRATION is not that
-  # signal: PhotoCraft sets X-AppImage-Integrate=false, so AppImageLauncher skips the
+  # signal: CrabCraft sets X-AppImage-Integrate=false, so AppImageLauncher skips the
   # AppImage and still exports the variable on its binfmt bypass. Treating it as
   # "already integrated" left the menu with no entry (#5534).
   apps="$data/applications"

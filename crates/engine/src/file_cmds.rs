@@ -1334,7 +1334,7 @@ pub(crate) fn process_tree(
 }
 
 /// The extension a batch output takes with Format "Same": the input's own, except for formats
-/// PhotoCraft opens but can't write, camera raws above all (#5799: a folder of ARWs failed on
+/// CrabCraft opens but can't write, camera raws above all (#5799: a folder of ARWs failed on
 /// every file). Those are saved as PSD, the format Photoshop's Save As offers for a raw. An input
 /// whose file name has no extension (a dot in a folder name doesn't count) is saved as PNG.
 fn same_format(path: &str) -> String {
@@ -1776,7 +1776,7 @@ fn bake_cube_layers(size: usize, title: &str, layers: &[&Layer]) -> String {
         lattice.layers.push(a);
     }
     let out = photocraft_compose::flatten(&lattice);
-    let mut s = format!("TITLE \"{}\"\n# Created by PhotoCraft\nLUT_3D_SIZE {n}\nDOMAIN_MIN 0.0 0.0 0.0\nDOMAIN_MAX 1.0 1.0 1.0\n", title.replace('"', "'"));
+    let mut s = format!("TITLE \"{}\"\n# Created by CrabCraft\nLUT_3D_SIZE {n}\nDOMAIN_MIN 0.0 0.0 0.0\nDOMAIN_MAX 1.0 1.0 1.0\n", title.replace('"', "'"));
     // .cube order: red changes fastest, then green, then blue.
     for b in 0..n {
         for g in 0..n {

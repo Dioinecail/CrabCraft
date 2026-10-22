@@ -7,7 +7,7 @@ already translate: filter and adjustment parameter names, Camera Raw panels, lig
 History, Layers, path and channel menu labels, metadata fields, status messages, System Info and
 dialog text. In Italian those showed in English.
 They are now translated, and a review pass fixed mistranslations and inconsistent terms in the
-existing entries. Translations are written from the meaning of PhotoCraft's English labels; no
+existing entries. Translations are written from the meaning of CrabCraft's English labels; no
 proprietary translation resources, fonts, screenshots or user documents are included.
 
 ## Register and style

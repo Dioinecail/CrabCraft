@@ -47,7 +47,7 @@ not put the CLI on `PATH`.
 
 ## Start a session
 
-PhotoCraft follows the same conventions as FilmCraft #28. Start a headless session:
+CrabCraft follows the same conventions as FilmCraft #28. Start a headless session:
 
 ```sh
 photocraft-cli mcp --automation-read-root /work/project --automation-write-root /work/project

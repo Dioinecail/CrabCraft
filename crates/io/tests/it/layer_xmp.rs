@@ -63,7 +63,7 @@ fn layer_xmp_round_trips_through_every_layered_format_and_depth() {
 fn photoshop_shmd_keeps_its_other_data() {
     let without = unhex(PS_WITHOUT_XMP);
     let with = put_layer_xmp(Some(&without), A).unwrap();
-    // A layer as an older PhotoCraft kept it: Photoshop's block verbatim, no field.
+    // A layer as an older CrabCraft kept it: Photoshop's block verbatim, no field.
     let mut doc = Document::new("PS", Size::new(2, 2), ColorMode::Rgb, SampleType::U8);
     let mut l = Layer::raster("L", doc.pixel_format());
     l.psd_blocks.push((*b"shmd", Arc::new(with.clone())));

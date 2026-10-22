@@ -27,7 +27,7 @@ for one agent working sequentially (calibration in
 
 The core workflows a typical Photoshop professional runs every day, checked end to end on the main
 platform (macOS, 0.6.0), including saving and reopening the work. Any **no**, or a **partial**
-that blocks the workflow, would make PhotoCraft pre-alpha.
+that blocks the workflow, would make CrabCraft pre-alpha.
 
 | Core workflow | Works end to end? | Evidence | Hours to pass |
 |---|---|---|---:|
@@ -39,7 +39,7 @@ that blocks the workflow, would make PhotoCraft pre-alpha.
 | Exchange PSDs with Photoshop users: open a client PSD, edit, send a PSD back | partial (not blocking for alpha; blocking for beta) | Photoshop-authored oracle 133/256 render as Photoshop does; most exports open in Photoshop (smart objects verified), but some don't (#1281, #2469) | 0 for alpha; 150–250 h for beta (G1) |
 
 **Result: passes.** Every core workflow completes end to end and the work saves and reopens in
-PhotoCraft; the partial rows are depth and fidelity gaps with workarounds, not blockers. Ready for
+CrabCraft; the partial rows are depth and fidelity gaps with workarounds, not blockers. Ready for
 real work is ~45%, inside the alpha band (~40–75%), but close to its floor.
 
 ## Milestones

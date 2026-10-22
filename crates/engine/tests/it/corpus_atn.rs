@@ -1,6 +1,6 @@
 //! Corpus test (feature `corpus`; run with `cargo xtask test-corpus`): every `.atn` set under
 //! `corpus/atn/` loads through `actions.load`, exports through `actions.save`, and the export
-//! loads back to the same actions. Steps without a PhotoCraft equivalent are counted against a
+//! loads back to the same actions. Steps without a CrabCraft equivalent are counted against a
 //! ceiling, so a mapping regression (or a new unmapped event in the corpus) shows up here.
 #![cfg(feature = "corpus")]
 
@@ -127,6 +127,6 @@ fn atn_corpus_loads_saves_and_reloads() {
     }
     println!("{} files, {steps} steps, {unsupported} kept Photoshop steps", files.len());
     assert!(files.len() >= FLOOR_FILES, "only {} .atn files; the corpus floor is {FLOOR_FILES}", files.len());
-    assert!(unsupported <= CEILING_UNSUPPORTED, "{unsupported} steps have no PhotoCraft equivalent; the ceiling is {CEILING_UNSUPPORTED}");
+    assert!(unsupported <= CEILING_UNSUPPORTED, "{unsupported} steps have no CrabCraft equivalent; the ceiling is {CEILING_UNSUPPORTED}");
     assert!(failures.is_empty(), "{} failures:\n{}", failures.len(), failures.join("\n"));
 }

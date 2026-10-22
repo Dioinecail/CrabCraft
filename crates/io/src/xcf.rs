@@ -10,7 +10,7 @@
 //! profile), the embedded ICC profile, resolution, guides, the comment, extra channels and the
 //! saved selection; indexed images open as RGB. Text, vector and link layers open as their pixels;
 //! non-destructive layer effects, paths and floating selections are reported, not applied.
-//! Write: not supported (GIMP's own format; `.pcraft` keeps everything PhotoCraft holds).
+//! Write: not supported (GIMP's own format; `.pcraft` keeps everything CrabCraft holds).
 //!
 //! The reader is written from the specification and from files GIMP 3.2 writes; no GIMP code.
 
@@ -801,19 +801,19 @@ pub(crate) fn import(name: &str, bytes: &[u8], ctl: &Interrupt<'_>) -> Result<Im
         image.warnings.note(&format!("{path_count} path(s) were not imported"));
     }
     // GIMP clips a layer in any mode but Normal to the layers beneath it, so it shows nothing where
-    // they are transparent; PhotoCraft (like Photoshop) shows it there. Only tell when there is
+    // they are transparent; CrabCraft (like Photoshop) shows it there. Only tell when there is
     // transparency to show through: a bottom layer that is not opaque.
     if image.clipped_to_backdrop > 0 && document.layers.first().is_some_and(|l| !l.locks.transparency || l.is_group()) {
         image.warnings.note(&format!(
-            "{} layer(s) use a mode GIMP clips to the layers beneath; where those are transparent GIMP shows nothing and PhotoCraft shows the layer",
+            "{} layer(s) use a mode GIMP clips to the layers beneath; where those are transparent GIMP shows nothing and CrabCraft shows the layer",
             image.clipped_to_backdrop
         ));
     }
-    // GIMP blends and composites in linear light by default (since 2.10); PhotoCraft, like
+    // GIMP blends and composites in linear light by default (since 2.10); CrabCraft, like
     // Photoshop, in the document's own encoding, so semi-transparent edges and most blend modes
     // render a little differently. Layers set to a perceptual space in GIMP match.
     if !precision.linear && linear_compositing {
-        image.warnings.note("GIMP composites this image in linear light; PhotoCraft composites in gamma-encoded RGB, so blends and soft edges differ slightly");
+        image.warnings.note("GIMP composites this image in linear light; CrabCraft composites in gamma-encoded RGB, so blends and soft edges differ slightly");
     }
     if document.layers.is_empty() {
         image.warnings.note("the XCF file has no layers");

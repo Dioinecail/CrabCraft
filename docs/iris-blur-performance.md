@@ -92,7 +92,7 @@ cargo test --release -p photocraft-algo iris_profile_baseline_stages -- --ignore
 ```
 
 The 2000×1334 run is a preview-sized stress workload at fixed blur parameters.
-PhotoCraft actually reduces 24 MP by factor four to 1500×1000 (its factor is the
+CrabCraft actually reduces 24 MP by factor four to 1500×1000 (its factor is the
 ceiling of sqrt(pixels/2,500,000)). The separate 1500×1000 run models that existing
 filtered-proxy workload directly: top-level document blur 15/80/300 becomes
 3.75/20/75; the nested multiple-pin JSON amounts retain their existing values.

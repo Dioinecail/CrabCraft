@@ -2,7 +2,7 @@
 
 > **Last reviewed:** 2026-10-12 · **Last updated:** 2026-10-22 · **Change:** minor (JPEG Options on File › Save, Save As and Save a Copy, FILE-215-19 partial (no Matte, progressive Scans or size preview); 32-bit Hue/Saturation unclipped and Colorize as Photoshop does them, Photoshop-oracle floor 190/258, #5781; JPEG Options on Save As and Save a Copy, FILE-215-19; TIFF compression for scripted saves, `tiffCompression`, #5301; the Nikon D4 white level follows the sample depth (12 and 14 bit), #5978; Apply Layer Comp action mapping, #7101; Cineon write: 10-bit gray/RGB; animated WebP frames load into video layers, #1198; Photoshop mixed-order TIFF type geometry, #4758; DDS textures save: uncompressed or BC1–BC3, optional mip chain, DDS Options in Save As (#1327); PSD smart filters: 45 filters (31 more: Blur, Surface Blur, Smart Sharpen, Diffuse, Wind, Offset, Mezzotint, Clouds, Difference Clouds, Fibers, Lens Flare and others) plus Hue/Saturation and Perspective Warp mapped both ways, #6296, #6298, #6300, #6302, #6304, #6314, #6316, #6267, #6268, FILE-215-2; large-file fixtures: a 20 MP layered PSD, a 150-layer layout, a 2 GB PSD and a 4.4 GB PSB generated at test time and round-tripped, FILE-216-2 done, #5107; earlier: PNG `sTER` stereo pairing kept on save, #6063; PDF write one flattened page via Save As / Save a Copy / CLI, #3401; CMYK Invert, Posterize and Threshold on the inks; smart filter masks on PSD open and save; Photoshop-oracle floor 188/258; lossy DNG, compression 34892, decodes with its levels and LinearizationTable applied to the stored 8-bit samples, FILE-215-11; CMYK Hue/Saturation and Color Balance keep the black ink; CMYK Posterize on the stored values, psd-tools oracle floor 242/309; CMYK adjustment layers composite on the document's inks; Photoshop-oracle floor 165/258; CMYK Brightness/Contrast on the inks, CMYK Threshold's luma; modern Brightness/Contrast's brightness curve; Photoshop-oracle floor 151/258; Lab documents composite on their stored L, a, b; Photoshop-oracle floor 152/258; Levels on whole levels at every step with Photoshop's shadow toe; Photoshop-oracle floor 146/258, psd-tools 238/309; 32-bit adjustments unclipped; Photoshop-oracle floor 149/258; mask feathers blur with their exact variance; Threshold splits on Photoshop's luminosity; a pass-through clipping base with an adjustment renders isolated; psd-tools oracle floor 240/309; 16-bit Posterize as Photoshop bins it; psd-tools oracle floor 241/309; Gradient Map luminosity; Photoshop-oracle floor 147/258; PSD: `Mt16`/`Mt32` merged transparency read; palette PNGs open in Indexed Color mode, #4804; 16-bit Lab Invert; Photoshop-oracle floor 145/258; `.atn` import maps 112 events; DDS textures open, #1327; DPX read and write, #1049; #2465 fixed: CS2 placed layers with only a `PlLd` block open their contents; Photoshop Actions `.atn` read and write; `.shc` contour files read and write; earlier the same day: indexed BMP palette mode; Save keeps a JPEG's quality and a WebP's encoding) · **Target:** Adobe Photoshop 2026
 
-Every format Photoshop 2026 (27.11.0) reads or writes, with PhotoCraft's support, fidelity and
+Every format Photoshop 2026 (27.11.0) reads or writes, with CrabCraft's support, fidelity and
 tests. Photoshop's list comes from its `Info.plist` `CFBundleDocumentTypes`, the PiPL read/write
 flags of `Contents/PlugIns/Required/File Formats`, and format names in the main binary (Open/Save
 As behaviour from Adobe's documentation where the bundle doesn't say). Ours comes from
@@ -19,7 +19,7 @@ XL are missing (gap G10). Remaining: 300–500 h including PSD fidelity.
 
 ## Photoshop's formats
 
-| Format | Photoshop | PhotoCraft read | PhotoCraft write | Fidelity and tests |
+| Format | Photoshop | CrabCraft read | CrabCraft write | Fidelity and tests |
 |---|---|---|---|---|
 | PSD | R/W | yes | yes | 1/8/16/32-bit; Bitmap, Gray, Indexed, RGB, CMYK, Multichannel, Lab, Duotone; layers, groups, masks, vector masks, adjustment and fill layers, effects, text, shapes, smart objects (SoLd/lnk2; CS2 PlLd/lnkD read with their warp, kept as is or re-saved as SoLd once edited), smart filters (45 mapped, among them Clouds, Difference Clouds, Fibers and Lens Flare, plus Hue/Saturation, Perspective Warp, Filter Gallery with Chrome and a Camera Raw subset, rest verbatim), slices, comps, Advanced Blending, each layer's XMP packet (`layer.xmpMetadata`). Oracle floors: Photoshop-authored 190/258, io 148/170, psd-tools 249/309; round trip ≥ 169/170, 308/309, 258/256. Known failures: #1281, #2469 (#2374, text layers, closed 2026-10-10; #2465, CS2 `PlLd`-only smart objects, fixed 2026-10-12) |
 | PSB | R/W | yes | yes | Auto-switches above 2 GB (REL-212-2); generated 20 MP, 150-layer, 2 GB PSD and 4.4 GB PSB fixtures opened, saved and re-opened by io tests/it/large_files.rs (FILE-216-2, 2026-10-13; the 4.4 GB PSB opens on Windows); > 4 GB from the app's File › Open on Windows: #375 |
@@ -61,7 +61,7 @@ Photoshop opens raws through Camera Raw 18.7 (the bundle registers cr2, crw, dcr
 fff, 3fr, mef, mfw, iiq, nrw, rwl, srw, mrw, nef, orf, pef, raf, srf, x3f; Camera Raw itself
 supports many more, including CR3).
 
-| Camera format | PhotoCraft | Evidence |
+| Camera format | CrabCraft | Evidence |
 |---|---|---|
 | DNG (incl. LJPEG, lossy JPEG and JPEG XL tiles) | yes | 2026-10-13: lossy DNG (DNG 1.4 compression 34892: 8-bit baseline JPEG tiles or strips, CFA and LinearRaw, partial edge tiles) decodes to the stored samples, which go through LinearizationTable / BlackLevel / WhiteLevel (default 255) like every other depth; `crates/raw/tests/it/dng.rs` `lossy_jpeg_*` (FILE-215-11, lossy DNG part; no lossy file in the raw corpus yet) |
 | Canon CR2 | yes | |
@@ -122,7 +122,7 @@ remaining gaps in #1606 stay tracked with per-sample corpus ceilings.
 
 ## Presets and data files
 
-| Format | Photoshop | PhotoCraft | Notes |
+| Format | Photoshop | CrabCraft | Notes |
 |---|---|---|---|
 | Brushes `.abr` | R/W | R/W | `psd/src/abr.rs` (v6/v12) |
 | Gradients `.grd` | R/W | R/W | |
@@ -159,7 +159,7 @@ remaining gaps in #1606 stay tracked with per-sample corpus ceilings.
 | 2026-10-15 | minor | PSD smart filters: Diffuse (`Dfs `, `DfsM` mode), Trace Contour (`TrcC`, level and `CntE` edge), Crystallize (`Crst`) and Pointillize (`Pntl`, background from `BckC`) open as editable smart filters and save in the shape measured in Photoshop (#6302, FILE-215-2) |
 | 2026-10-15 | minor | PSD smart filters: Wind (`Wnd `, `WndM` method, `Drct` direction), Extrude (`Extr`, `ExtT` type, size, depth, `ExtR` depth mode, solid front faces, mask incomplete blocks) and Tiles (`Tls `, count, offset, `FlCl` fill with the entry's `FrgC`/`BckC`) open as editable smart filters and save in the shape measured in Photoshop (#6314, FILE-215-2) |
 | 2026-10-15 | minor | PSD smart filters: Offset (`Ofst`: `Hrzn`/`Vrtc` long, `Fl  ` `FlMd` Wrap/Background/Repeat) and Custom (`Cstm`: `Scl `, `Ofst` long, 25-long `Mtrx`) map both ways in `filterFX`, matching descriptors measured in Photoshop (FILE-215-2, #6304) |
-| 2026-10-15 | minor | PSD smart filters: Mezzotint (`Mztn`, `MztT` enum, all 10 types) and Color Halftone (`ClrH`, `Rds `/`Ang1`–`Ang4` longs) open as editable filters and save in Photoshop's shape, measured in Photoshop (FILE-215-2); Mezzotint's PhotoCraft-only seed is not saved |
+| 2026-10-15 | minor | PSD smart filters: Mezzotint (`Mztn`, `MztT` enum, all 10 types) and Color Halftone (`ClrH`, `Rds `/`Ang1`–`Ang4` longs) open as editable filters and save in Photoshop's shape, measured in Photoshop (FILE-215-2); Mezzotint's CrabCraft-only seed is not saved |
 | 2026-10-15 | minor | PNG: a stereo PNG's `sTER` pairing (PNG Extensions 1.4.0 §3.6) is read on open and written back on save, so the file still says it is a stereo pair (#6063) |
 | 2026-10-15 | minor | Indexed Color documents save as 8-bit palette BMPs with their colour table instead of 24-bit RGB; a palette BMP opens with its declared number of colours, not 256 |
 | 2026-10-15 | minor | PSD guides: image resource 1092 (guides v2) gives guides their own colours on import; 1092 and 1097 (guide GUIDs) are written back only while they still describe the document's guides, so an edit no longer leaves Photoshop a stale second guide list (#5966) |

@@ -1,4 +1,4 @@
-//! #6541: the Layers panel marks an adjustment layer PhotoCraft keeps as imported but cannot
+//! #6541: the Layers panel marks an adjustment layer CrabCraft keeps as imported but cannot
 //! render, so a picture that differs from Photoshop's has a visible reason.
 
 use egui::vec2;

@@ -902,7 +902,7 @@ mod tests {
         }
     }
 
-    /// #4266: a group clipped by one path (the PhotoCraft icon's rounded square) stays editable
+    /// #4266: a group clipped by one path (the CrabCraft icon's rounded square) stays editable
     /// shapes with the clip as its vector mask, and looks as resvg draws the drawing; a clip of
     /// two shapes is still rasterised, with the warning.
     #[test]
@@ -938,7 +938,7 @@ mod tests {
             .collect();
         let off = ours.chunks(4).zip(theirs.chunks(4)).filter(|(a, b)| a.iter().zip(*b).any(|(x, y)| x.abs_diff(*y) > 48)).count();
         assert!(off < 64, "{off} pixels differ");
-        // The report's file: PhotoCraft's own icon opens without the clip-path warning.
+        // The report's file: CrabCraft's own icon opens without the clip-path warning.
         let icon = import_svg("photocraft.svg", include_bytes!("../../../assets/app-icon/photocraft.svg")).unwrap();
         assert!(icon.warnings.iter().all(|w| !w.contains("clip-path")), "{:?}", icon.warnings);
         assert!(icon.document.layers.iter().any(|l| l.vector_mask.is_some()), "its rounded square is a vector mask");

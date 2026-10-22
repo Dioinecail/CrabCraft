@@ -14,7 +14,7 @@
 //! ```
 //!
 //! The list is in application order (first = bottom, applied first), like
-//! [`SmartObject::smart_filters`](photocraft_doc::SmartObject). Filters PhotoCraft implements map
+//! [`SmartObject::smart_filters`](photocraft_doc::SmartObject). Filters CrabCraft implements map
 //! to their command id and dialog parameters; any other filter becomes a
 //! [`UNSUPPORTED_FILTER`] entry that keeps its descriptor verbatim (hex in `params.psd`), so it is
 //! listed, can be hidden, reordered or deleted, and is written back unchanged.
@@ -48,7 +48,7 @@ mod perspective_warp;
 
 pub use displace::{embed_map as displace_embed_map, embedded_map as displace_embedded_map, without_map as displace_without_map};
 
-/// Command id of a Photoshop smart filter PhotoCraft does not implement. Its params hold the
+/// Command id of a Photoshop smart filter CrabCraft does not implement. Its params hold the
 /// filter's name, Photoshop filter id and descriptor (`psd`, hex); it renders as a pass-through.
 pub const UNSUPPORTED_FILTER: &str = "psd.unsupportedFilter";
 
@@ -137,7 +137,7 @@ pub fn filter_stack(fx: &Descriptor) -> FilterStack {
 
 // ---------- the filters we model ----------
 
-/// Photoshop filter → PhotoCraft command, keyed by the `Fltr` class (and `filterID`).
+/// Photoshop filter → CrabCraft command, keyed by the `Fltr` class (and `filterID`).
 struct Known {
     class: &'static str,
     filter_id: i32,
@@ -224,7 +224,7 @@ const NO_OPTIONS: [&str; 11] = ["Blr ", "BlrM", "Avrg", "Dspc", "FndE", "Fct ", 
 // Dust & Scratches (filterID DstS): DstS { Rds  long, Thsh long }
 // ```
 //
-// PhotoCraft's Smart Sharpen removes a Gaussian blur, non-legacy: Lens Blur, Motion Blur, legacy
+// CrabCraft's Smart Sharpen removes a Gaussian blur, non-legacy: Lens Blur, Motion Blur, legacy
 // mode, Shadow/Highlight settings or any other key keep the whole entry verbatim. `presetKind`
 // only names the dialog's preset: it is accepted on open but not kept (the engine takes no such
 // parameter) and not written (Photoshop leaves it out of entries with explicit values).
@@ -240,7 +240,7 @@ fn unit_in(d: &Descriptor, key: &str, u: &[u8; 4], lo: f64, hi: f64) -> Option<f
     }
 }
 
-/// `filter.sharpen.smartSharpen` params; `None` for a setting PhotoCraft doesn't render.
+/// `filter.sharpen.smartSharpen` params; `None` for a setting CrabCraft doesn't render.
 fn smart_sharpen_params(f: &Descriptor) -> Option<J> {
     if f.items.iter().any(|(k, _)| !SMART_SHARPEN_KEYS.iter().any(|x| k.is(x))) {
         return None;
@@ -1855,7 +1855,7 @@ mod tests {
         Descriptor::new("DstS").with("Rds ", Value::Integer(radius)).with("Thsh", Value::Integer(threshold))
     }
 
-    /// The `Fltr` descriptor PhotoCraft writes for `f`, after a byte round trip.
+    /// The `Fltr` descriptor CrabCraft writes for `f`, after a byte round trip.
     fn written_fltr(f: &SmartFilter) -> Descriptor {
         let d = Descriptor::from_bytes(&item_for_filter(f).unwrap().to_bytes()).unwrap();
         get_desc(&d, "Fltr").unwrap().clone()
@@ -1894,12 +1894,12 @@ mod tests {
             assert_eq!(written_fltr(&f), smart_sharpen(200.0, 1.0, 10.0, "GsnB"));
         }
 
-        // Without options PhotoCraft writes the engine's defaults, Gaussian Blur.
+        // Without options CrabCraft writes the engine's defaults, Gaussian Blur.
         assert_eq!(written_fltr(&sf("filter.sharpen.smartSharpen", json!({}))), smart_sharpen(100.0, 1.0, 10.0, "GsnB"));
     }
 
     /// Lens Blur (Photoshop's default), Motion Blur and legacy mode render differently from
-    /// PhotoCraft's Smart Sharpen, so those entries stay verbatim.
+    /// CrabCraft's Smart Sharpen, so those entries stay verbatim.
     #[test]
     fn smart_sharpen_settings_we_dont_render_stay_verbatim() {
         let mut default_entry = Descriptor::new("smartSharpen").with("presetKind", enumv("presetKindType", "presetKindDefault"));
@@ -2491,7 +2491,7 @@ mod tests {
             assert_eq!((f.command.as_str(), &f.params), ("filter.pixelate.mezzotint", &json!({"type": ty})));
         }
         // No type or an unknown type is Fine Dots, like the engine; the seed
-        // (PhotoCraft only) is not saved.
+        // (CrabCraft only) is not saved.
         for p in [json!({}), json!({"type": "sparkles"}), json!({"type": "fineDots", "seed": 77})] {
             let d = item_for_filter(&sf("filter.pixelate.mezzotint", p)).unwrap();
             let fltr = get_desc(&d, "Fltr").unwrap();

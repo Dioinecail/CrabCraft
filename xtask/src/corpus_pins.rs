@@ -65,7 +65,7 @@ pub const PHOTOSHOP: PinnedCorpus = PinnedCorpus {
     sources_md: |c| {
         format!(
             "# Photoshop oracle corpus\n\n`photoshop/` of https://github.com/storytold/photocraft-corpus at commit {PHOTOCRAFT_CORPUS_COMMIT} \
-             (see `README.md`). MIT OR Apache-2.0, authored by the PhotoCraft contributors. Fetched and sha256-verified by \
+             (see `README.md`). MIT OR Apache-2.0, authored by the CrabCraft contributors. Fetched and sha256-verified by \
              `cargo xtask corpus --photoshop` against `{}`. Gitignored; never commit these files.\n",
             c.manifest
         )
@@ -90,7 +90,7 @@ pub const GIMP: PinnedCorpus = PinnedCorpus {
     sources_md: |c| {
         format!(
             "# GIMP XCF oracle corpus\n\n`gimp/` of https://github.com/storytold/photocraft-corpus at commit {PHOTOCRAFT_CORPUS_GIMP_COMMIT} \
-             (see `README.md`). MIT OR Apache-2.0, authored by the PhotoCraft contributors with GIMP 3.2.6. Fetched and sha256-verified by \
+             (see `README.md`). MIT OR Apache-2.0, authored by the CrabCraft contributors with GIMP 3.2.6. Fetched and sha256-verified by \
              `cargo xtask corpus --gimp` against `{}`. Gitignored; never commit these files.\n",
             c.manifest
         )

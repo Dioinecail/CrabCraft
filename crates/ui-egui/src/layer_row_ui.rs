@@ -30,7 +30,7 @@ pub const MIN_NAME_W: f32 = 64.0;
 /// A right-hand row indicator.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Indicator {
-    /// An adjustment PhotoCraft keeps as imported but cannot render (#6541).
+    /// An adjustment CrabCraft keeps as imported but cannot render (#6541).
     Unsupported,
     Lock,
     FxTriangle,
@@ -73,7 +73,7 @@ pub fn layout(row: Rect, name_left: f32, items: &[(Indicator, f32)]) -> (Vec<(In
     (out, name_right)
 }
 
-/// The PSD key of the adjustment `l` holds when PhotoCraft keeps it as imported but cannot
+/// The PSD key of the adjustment `l` holds when CrabCraft keeps it as imported but cannot
 /// render it.
 pub fn unsupported_key(l: &Layer) -> Option<&str> {
     match &l.content {
@@ -294,7 +294,7 @@ pub fn panel_menu(app: &mut crate::PhotocraftApp, ui: &mut egui::Ui) {
             ui.close();
         }
     });
-    // Animation Options control Photoshop's frame-unification buttons. PhotoCraft's Layers
+    // Animation Options control Photoshop's frame-unification buttons. CrabCraft's Layers
     // panel does not expose those buttons; do not offer nonfunctional toggles.
     ui.add_enabled_ui(false, |ui| {
         ui.menu_button(tl!("Animation Options"), |_ui| {});
@@ -306,7 +306,7 @@ pub fn panel_menu(app: &mut crate::PhotocraftApp, ui: &mut egui::Ui) {
         ui.close();
     }
     ui.separator();
-    // Preserve PhotoCraft's existing group disclosure action when expanding the flyout.
+    // Preserve CrabCraft's existing group disclosure action when expanding the flyout.
     let can_collapse = app.session.is_enabled("layer.setExpanded");
     if ui.add_enabled(can_collapse, egui::Button::new(tl!("Collapse All Groups"))).clicked() {
         if let Err(e) = app.run("layer.setExpanded", json!({"all": true, "expanded": false})) {

@@ -619,7 +619,7 @@ pub fn show(app: &mut PhotocraftApp, ctx: &egui::Context) {
 
 /// One About tab's contents: the credits lists, or the product blurb and links.
 fn about_tab_body(_app: &mut PhotocraftApp, ui: &mut egui::Ui) {
-    ui.label(tl!("CrabCraft — an open-source, native image editor written in Rust (Based on PhotoCraft)."));
+    ui.label(tl!("CrabCraft — an open-source, native image editor written in Rust (Based on CrabCraft)."));
     ui.label(crate::i18n::fmt(tl!("Version {version}"), &[("version", &photocraft_engine::build_info::long_version())]));
     ui.add_space(12.0);
 }

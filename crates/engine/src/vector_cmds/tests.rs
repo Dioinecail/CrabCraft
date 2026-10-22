@@ -942,7 +942,7 @@ fn shape_info_bounds_of_curved_shapes_are_exact() {
 }
 
 /// A shape layer as a PSD import leaves it: Photoshop's rendering as the cache (deliberately not
-/// what PhotoCraft would draw, a block of another colour, so a re-render shows).
+/// what CrabCraft would draw, a block of another colour, so a re-render shows).
 fn add_imported_shape(s: &mut Session, r: Rect) -> LayerId {
     s.edit("shape", |doc, active| {
         let fmt = doc.pixel_format();

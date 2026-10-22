@@ -1,4 +1,4 @@
-//! An adjustment layer whose key PhotoCraft doesn't know (an older or newer adjustment type)
+//! An adjustment layer whose key CrabCraft doesn't know (an older or newer adjustment type)
 //! opens as an unsupported adjustment with a warning and saves its block back unchanged, instead
 //! of opening silently as an empty pixel layer (#6575). Pixel layers that merely carry an unknown
 //! block stay pixel layers.
@@ -40,7 +40,7 @@ fn record<'a>(f: &'a PsdFile, name: &str) -> &'a LayerRecord {
 #[test]
 fn unknown_adjustment_key_opens_as_unsupported_and_saves_verbatim() {
     // `hue ` is the Photoshop 4 Hue/Saturation block (in the spec, never mapped); `zNew` stands
-    // for an adjustment type newer than PhotoCraft.
+    // for an adjustment type newer than CrabCraft.
     for key in [*b"hue ", *b"zNew"] {
         let data = vec![0, 2, 1, 2, 3, 4, 5, 6];
         let mut f = testgen::small(Version::Psd, Compression::Raw);

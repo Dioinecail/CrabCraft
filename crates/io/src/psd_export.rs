@@ -607,11 +607,11 @@ impl Ex {
                 };
                 let cged = raw.iter().find(|(k, _)| k == b"CgEd").map(|(_, d)| d.clone());
                 let keep = raw.iter().any(|(k, d)| {
-                    // A previously saved PhotoCraft v2 Photo Filter block may be 18 bytes.
+                    // A previously saved CrabCraft v2 Photo Filter block may be 18 bytes.
                     // It parses here, but Photoshop requires four-byte alignment, so repair
                     // that legacy record on re-save rather than preserving the broken bytes.
                     let legacy_phfl = k == b"phfl" && d.starts_with(&[0, 2]) && d.len() % 4 != 0;
-                    // Older PhotoCraft builds wrote `grdm` 2 bytes short of four-byte alignment,
+                    // Older CrabCraft builds wrote `grdm` 2 bytes short of four-byte alignment,
                     // which makes Photoshop refuse the file (#8070): regenerate it too.
                     let legacy_grdm = k == b"grdm" && adjust_map::is_unpadded_photocraft_gradient_map(d);
                     !legacy_phfl && !legacy_grdm && adjust_map::ADJUSTMENT_KEYS.contains(&k) && adjust_map::parse(k, d, cged.as_deref(), channels) == *a
@@ -1954,7 +1954,7 @@ mod tests {
     }
 
     /// A flat 1-bit Bitmap file (no layers) opens in Photoshop as its Background; so does it in
-    /// PhotoCraft, and it is written back as one (no transparency channel).
+    /// CrabCraft, and it is written back as one (no transparency channel).
     #[test]
     fn a_flat_bitmap_file_opens_and_saves_as_a_background() {
         let file = photocraft_psd::testgen::merged_only(Version::Psd, PsdMode::Bitmap, 1, Compression::Raw, 8, 4);

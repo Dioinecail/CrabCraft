@@ -217,7 +217,7 @@ mod tests {
         assert!(!adj.to_string().contains('_'), "{adj}");
     }
 
-    /// #6541: an adjustment PhotoCraft keeps but cannot render is reported as such, not as an Invert.
+    /// #6541: an adjustment CrabCraft keeps but cannot render is reported as such, not as an Invert.
     #[test]
     fn an_unsupported_adjustment_layer_is_reported_as_kept_not_rendered() {
         let mut s = Session::new();

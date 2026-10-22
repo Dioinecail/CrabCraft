@@ -2,7 +2,7 @@
 
 > **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-21 · **Change:** minor (Hand tool ⌘ / ⌥ are Zoom In / Zoom Out while held, #6434; the wheel steps value fields, #5473; a dragged guide shows its X or Y beside the pointer, #7680; Type options bar "T" icon scrubs the font size, #6437; Move tool: dragged selected pixels take their own outline as the selection, #7538; artboard backgrounds remain below child Free Transform previews; ⌫/Delete removes the selected smart filter, #4751; Object Finder foreground/background discrimination (#6548); rounded triangle, polygon and star corners; shape Fill/Stroke popovers accept hex RGB values, #6176; a guide let go over either ruler is removed, #6286; Crop rows corrected: saved crop presets and Delete Cropped Pixels off are done, #6562; marching ants in device pixels, #7489; Animated Zoom: holding the Zoom tool zooms continuously, #6210; shape Density and Feather, TOOL-214-12, #5846; Pen Auto Add/Delete on the path being drawn, #6140; Show Transform Controls frames every selected layer; guide keys and clicks; menu bar from the keyboard, #4988; Crop tool Content-Aware Fill; on-canvas corner radius widgets, TOOL-214-12; Curvature Pen edits the active path; Clip Thumbnails to Layer Bounds; Pen ⇧ 45°; last selected tool restored at launch; Layers panel filter-type dropdown with Kind, Name and Mode, #5048; Free Transform box and marching ants follow the selection, #5297; History: the trash deletes the selected snapshot, rows drag onto the trash, #5324; smart filter reordering by drag; smart object perspective row corrected to done, #426; Free Transform H/V skew fields; toolbar tool shortcuts can be reassigned; ⇧-dragged guides land on ruler ticks; layer and selection keys; tool keys; spring-loaded tool letters; type formatting keys; Pen Auto Add/Delete, #4144; smart filter rows; stale missing-tool rows corrected: Color Replacement, Red Eye and the Add/Delete Anchor Point pair are live toolbar tools, Frame landed; no percentage changed; selection-modifier and ⌥-wheel rows match their tests) · **Target:** Adobe Photoshop 2026
 
-How PhotoCraft's direct manipulation compares with Photoshop 2026 (27.11.0): the toolbox, the
+How CrabCraft's direct manipulation compares with Photoshop 2026 (27.11.0): the toolbox, the
 handles and modifier keys of each gesture, nudging, snapping, numeric precision, navigation,
 shortcuts and panels. Painting feel has its own checklist in [`brush-parity.md`](brush-parity.md)
 and right-click menus in [`context-menu-parity.md`](context-menu-parity.md). The design system
@@ -195,7 +195,7 @@ Triangle and Curvature Pen (minus legacy Rounded Rectangle and Targeted Adjustme
 | Measure | Value | Kind |
 |---|---|---|
 | Photoshop default shortcuts (`.kys`) | 58 tool keys, 107 menu commands with 115 shortcuts, 25 tool-area commands | measured |
-| PhotoCraft | ~199 shortcut assignments, 113 distinct modifier/F-key combos, 20 tool letters, 3 temporary-tool bindings | measured (source) |
+| CrabCraft | ~199 shortcut assignments, 113 distinct modifier/F-key combos, 20 tool letters, 3 temporary-tool bindings | measured (source) |
 | Shortcut audit | 214 → 0 failures (2026-10-07) | measured then; not re-run here |
 | `.kys` import | done (`engine/src/kys.rs`) | |
 | Shortcut sets: Set menu, New Set…, Save, Delete, `.kys` Export…, Summarize… | done (`engine/src/shortcut_sets.rs`, `prefs_ui::set_row`); sets live in the preferences. Photoshop reading our exported `.kys` is unverified | `shortcut_sets` tests, `shortcut_set_tests.rs` |

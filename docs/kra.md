@@ -1,6 +1,6 @@
 # Krita documents
 
-PhotoCraft opens Krita's native documents (`.kra`, and the `.krz` archive variant) with their
+CrabCraft opens Krita's native documents (`.kra`, and the `.krz` archive variant) with their
 layers. File › Open, recent files, drops, the CLI (`convert`, `info`, `batch`) and automation
 (`doc.open`, MCP) all use the reader in `photocraft-io`; the browser build accepts them too. A
 file is recognised by its `mimetype` entry (`application/x-krita`). Krita files are import-only:
@@ -9,7 +9,7 @@ everything.
 
 ## What is read
 
-| Krita | PhotoCraft |
+| Krita | CrabCraft |
 |---|---|
 | Paint layers, 8 and 16-bit RGBA, 8 and 16-bit gray | pixel layers, at the document's depth (a gray layer in an RGB document is converted) |
 | Layer position (`x`, `y`), tiles anywhere, also off-canvas | kept |

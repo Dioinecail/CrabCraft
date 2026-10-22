@@ -1,6 +1,6 @@
 # Paint.NET documents
 
-PhotoCraft opens PDN3 `.pdn` files natively, without Paint.NET, Python, .NET or an external
+CrabCraft opens PDN3 `.pdn` files natively, without Paint.NET, Python, .NET or an external
 converter. File › Open, recent files, drops, the CLI and automation use the shared importer.
 The browser file picker also accepts `.pdn`.
 
@@ -41,7 +41,7 @@ test checks pixels against that export and verifies layer preservation through `
 Keep real-file corpora outside the application repository.
 
 The local Paint.NET 4.0.10 corpus (14 small texture documents, 1–8 layers) also matches its
-embedded full-size previews within 2.142/255. Older Paint.NET rounded between layers; PhotoCraft
+embedded full-size previews within 2.142/255. Older Paint.NET rounded between layers; CrabCraft
 keeps floating-point precision, so layered composites are not necessarily byte-identical.
 A supplied 5.x document (1280×720, 11 layers, header version `5.3.8488.42200`) passes editing,
 painting, undo/redo and native-save checks. Its embedded 256×144 preview matches a Catmull–Rom

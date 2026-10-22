@@ -295,7 +295,7 @@ fn broken_files_are_errors_not_crashes() {
 }
 
 /// Our composite against GIMP's merged rendering. The `-perceptual` files have every layer set
-/// to blend and composite in gamma-encoded RGB, which is how PhotoCraft composes, so they must
+/// to blend and composite in gamma-encoded RGB, which is how CrabCraft composes, so they must
 /// match tightly. GIMP's defaults compose in linear light, so those files measure the known gap
 /// (the tolerance and the allowed share of pixels over it are the numbers seen, not goals).
 /// Per file: tolerance (premultiplied, 0..1), the share of pixels allowed over it, and why.

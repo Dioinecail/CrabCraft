@@ -423,7 +423,7 @@ fn indexed_save_warns_whenever_flattening_loses_a_layer() {
 
 #[test]
 fn indexed_and_bitmap_documents_with_channels_keep_them() {
-    // PhotoCraft does not read extra channels of a palette-mode PSD back, so these documents keep
+    // CrabCraft does not read extra channels of a palette-mode PSD back, so these documents keep
     // the RGB / Grayscale file that holds their alpha channels and Quick Mask.
     for mode in [photocraft_color::ColorMode::Indexed, photocraft_color::ColorMode::Bitmap] {
         let mut d = indexed_doc(photocraft_color::Color::rgba(1.0, 1.0, 1.0, 1.0), vec![[255, 255, 255]], None);
@@ -600,7 +600,7 @@ fn locks_and_labels_from_psd() {
 #[test]
 fn artboard_lock_round_trips_byte_for_byte() {
     // Reference files write a Background layer's locks as lspf = 0x0D (transparency + position +
-    // the bit-3 lock). PhotoCraft read the artboard lock at bit 4, so 0x0D came back as 0x05
+    // the bit-3 lock). CrabCraft read the artboard lock at bit 4, so 0x0D came back as 0x05
     // and the lock bytes drifted on every re-save.
     use photocraft_psd::TaggedBlock;
     let mut f = testgen::small(Version::Psd, Compression::Raw);
