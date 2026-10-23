@@ -176,17 +176,20 @@ pub fn footer_height(ui: &Ui) -> f32 {
 /// the right. Drawn last in a body that fills its group (leave it [`footer_height`]), the bar ends
 /// at the panel's bottom edge.
 pub fn panel_footer<R>(ui: &mut Ui, add: impl FnOnce(&mut Ui) -> R) -> R {
-    let t = Tokens::get(ui.ctx());
-    let m = body_margin(t.pro);
-    let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), footer_height(ui)), Sense::hover());
-    let y = r.top() + 0.5;
-    ui.painter().line_segment([pos2(r.left() - m.left as f32, y), pos2(r.right() + m.right as f32, y)], Stroke::new(1.0, t.separator));
-    let bar = Rect::from_min_size(pos2(r.left(), r.top() + 1.0), vec2(r.width(), FOOTER_BAR));
+    let theme = Tokens::get(ui.ctx());
+    let margins = body_margin(theme.pro);
+    let (rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), footer_height(ui)), Sense::hover());
+    let y = rect.top() + 0.5;
+    
+    ui.painter().line_segment([pos2(rect.left() - margins.left as f32, y), pos2(rect.right() + margins.right as f32, y)], Stroke::new(1.0, theme.separator));
+
+    let bar = Rect::from_min_size(pos2(rect.left(), rect.top() + 1.0), vec2(rect.width(), FOOTER_BAR));
     let mut bar_ui = ui.new_child(egui::UiBuilder::new().max_rect(bar).layout(egui::Layout::right_to_left(egui::Align::Center)));
     // The bar runs on over the body's bottom margin, past where the body's own clip ends: without
     // this its buttons were cut off there, a 26 px hover highlight drawn about 21 px tall.
     bar_ui.set_clip_rect(bar_ui.clip_rect().union(bar));
     bar_ui.spacing_mut().item_spacing.x = 2.0;
+
     add(&mut bar_ui)
 }
 
@@ -1435,7 +1438,7 @@ fn button_impl(ui: &mut Ui, label: &str, min_width: f32, bg: Color32, fg: Color3
 fn button_impl_h(ui: &mut Ui, label: &str, min_width: f32, height: Option<f32>, bg: Color32, fg: Color32, primary: bool) -> Response {
     let t = Tokens::get(ui.ctx());
     let (galley, size) = button_layout(ui, label, min_width, height, fg);
-    let h = size.y;
+    // let h = size.y;
     let (rect, resp) = ui.allocate_exact_size(size, Sense::click());
     // Painted text: name the button for accessibility (and so tests and agents can find it).
     resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), label));

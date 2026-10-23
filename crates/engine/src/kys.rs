@@ -63,6 +63,7 @@ pub fn parse(text: &str) -> Result<KysSet, String> {
     }
     let name = root.attribute("filename").map(|f| f.rsplit(['=', '/']).next().unwrap_or(f).trim()).filter(|n| !n.is_empty()).map(str::to_string);
     let mut set = KysSet { name, ..Default::default() };
+
     for node in root.children().filter(|n| n.is_element()) {
         match node.tag_name().name() {
             "command" => {
@@ -84,6 +85,7 @@ pub fn parse(text: &str) -> Result<KysSet, String> {
                     set.tool_keys += 1;
                     if let Some(name) = name {
                         let id = node.attribute(PC_ID).map(str::trim).filter(|i| !i.is_empty()).map(str::to_string);
+                        println!("{name} tool shortcut added");
                         set.tools.push(KysCommand { name: name.to_string(), shortcuts: vec![key.to_string()], id });
                     }
                 }
@@ -91,7 +93,9 @@ pub fn parse(text: &str) -> Result<KysSet, String> {
             _ => {}
         }
     }
+
     set.windows = windows_set(&set);
+
     Ok(set)
 }
 

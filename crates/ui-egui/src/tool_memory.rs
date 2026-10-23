@@ -23,6 +23,7 @@ pub(crate) type ToolBrushes = (Tool, Vec<(Tool, BrushSettings)>);
 
 /// Explicit choices override temporary pen and held-key tools, even when selecting the same tool.
 pub(crate) fn select(app: &mut PhotocraftApp, tool: Tool) {
+    println!("[tool_memory.select] tool: {tool:?}");
     app.stylus.tool_before_eraser = None;
     app.ui.spring = None;
     app.ui.tool = tool;

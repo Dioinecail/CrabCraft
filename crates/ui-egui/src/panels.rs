@@ -669,9 +669,9 @@ pub fn title_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                 let controls_end = {
                     let ui = &mut group_ui;
                     ui.spacing_mut().item_spacing.x = 6.0;
-                    let mut ws = app.ui.workspace.clone();
+                    // let mut ws = app.ui.workspace.clone();
                     let options = crate::workspace_ui::switcher_options(app);
-                    let opts: Vec<(String, &str)> = options.iter().map(|(k, l)| (k.clone(), l.as_str())).collect();
+                    // let opts: Vec<(String, &str)> = options.iter().map(|(k, l)| (k.clone(), l.as_str())).collect();
                     // A narrow bar drops what is also in a menu, the theme toggle first
                     // (Preferences), then search (Edit › Search), and narrows the switcher
                     // (Window › Workspace) before anything runs over.
@@ -683,9 +683,10 @@ pub fn title_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                     } else {
                         0
                     };
-                    let ws_width = (room - f32::from(icons_shown) * ICON_SLOT - 6.0).clamp(WORKSPACE_MIN, 130.0);
 
                     // in case you want to show the dumb workspace dropdown uncomment this
+                    // let ws_width = (room - f32::from(icons_shown) * ICON_SLOT - 6.0).clamp(WORKSPACE_MIN, 130.0);
+
                     // if room >= WORKSPACE_MIN && widgets::dropdown(ui, "workspace", &mut ws, &opts, ws_width) {
                     //     app.ui.workspace = ws;
                     //     crate::menus::apply_workspace(app);
@@ -2787,6 +2788,7 @@ fn layers(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     let footer = widgets::footer_height(ui) + ui.spacing().item_spacing.y;
     let fill = ui.available_height() > footer + 60.0;
     let rows_h = if fill { ui.available_height() - footer } else { f32::INFINITY };
+
     egui::ScrollArea::vertical()
         // Keep each document's position independent, even when tab indices change (#5522).
         .id_salt(("layer-rows", doc.id.0))
@@ -2910,8 +2912,10 @@ fn layers(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         ctx.data_mut(|d| d.remove::<MaskDrag>(mask_drag_key()));
         ctx.data_mut(|d| d.remove::<crate::smart_ui::FilterDrag>(crate::smart_ui::drag_key()));
     }
+    
     widgets::panel_footer(ui, |ui| {
         let active_layer = active.and_then(|id| doc.layer(id));
+
         let (delete, label) = if app.ui.vector_mask_target && active_layer.is_some_and(|l| l.vector_mask.is_some()) {
             ("layer.vectorMask.delete", "Delete Vector Mask")
         } else if app.ui.mask_target && active_layer.is_some_and(|l| l.mask.is_some()) {
@@ -2919,9 +2923,11 @@ fn layers(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         } else {
             ("layer.delete", "Delete layer")
         };
+
         let trash = icons::button(ui, "trash", 26.0, false, tl!(label));
         // A selected smart filter row is what Delete removes, as in Photoshop (#4751).
         let picked_filter = crate::smart_ui::selected(&ctx, &doc, active);
+
         if trash.clicked()
             && let Some(picked) = picked_filter
         {
@@ -2951,6 +2957,7 @@ fn layers(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         // though dropping a whole layer row onto the same button always deletes the layer.
         trash.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, tl!(label)));
         let new_layer = icons::button(ui, "square-plus", 26.0, false, &crate::shortcuts::tip_label(app, "Create a new layer", "layer.new.layer"));
+        
         if new_layer.clicked() {
             // A click makes the layer above the selection; ⌥-click asks first (the New Layer
             // dialog) and ⌘/Ctrl-click adds it below, as in Photoshop.
@@ -2964,6 +2971,7 @@ fn layers(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
             };
             actions.push(("layer.new.layer".into(), params));
         }
+
         actions.extend(footer_drop(ui, &new_layer, footer_drag, "layer.duplicate"));
         let group = icons::button(ui, "folder", 26.0, false, tl!("Create a new group"));
         if group.clicked() {

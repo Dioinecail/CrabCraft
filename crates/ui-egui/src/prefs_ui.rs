@@ -180,7 +180,7 @@ fn favorite_theme_groups(favorites: &[SavedTheme]) -> (Vec<ThemeKind>, Vec<Theme
 }
 
 /// Right-click menu on the top-right appearance button. A plain click still cycles modes.
-pub(crate) fn appearance_context_menu(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
+pub(crate) fn appearance_context_menu(_app: &mut PhotocraftApp, _ui: &mut egui::Ui) {
     // I DONT NEED THIS SHIT ARE YOU KIDDING ME NI-
     // if ui.button(tl!("Appearance Settings…")).clicked() {
     //     open_preferences(app, "interface");

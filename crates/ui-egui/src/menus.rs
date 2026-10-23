@@ -328,8 +328,8 @@ pub(crate) fn invoke_unguarded(app: &mut PhotocraftApp, ctx: &egui::Context, id:
         | "window.theme.breezeDark"
         | "window.theme.softLight"
         | "window.theme.softDark" => {
-            let selectedTheme = crate::theme::ThemeKind::from_name(&id["window.theme.".len()..]).unwrap_or_default();
-            app.set_theme(ctx, selectedTheme);
+            let selected_theme = crate::theme::ThemeKind::from_name(&id["window.theme.".len()..]).unwrap_or_default();
+            app.set_theme(ctx, selected_theme);
             Ok(Value::Null)
         }
         // The macOS app menu's Language (`native_menu::language_node`).
