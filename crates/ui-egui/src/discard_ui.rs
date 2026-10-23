@@ -403,7 +403,7 @@ fn button_label(mac: bool, label: &str, key: Option<Key>) -> String {
     button_labels(mac, &[(label, key)]).into_iter().next().unwrap_or_default()
 }
 
-/// The labels of one dialog's buttons, each with its key in the same style: "(Y)es" when every
+/// The labels of one dialog's buttons, each with its key in the same style: "Yes" when every
 /// translation starts with its key, otherwise appended to all ("Ja (Y)", "Nein (N)") (#5564).
 fn button_labels(mac: bool, buttons: &[(&str, Option<Key>)]) -> Vec<String> {
     let starts_with_key = |label: &str, k: Key| label.split_at_checked(1).is_some_and(|(first, _)| first.eq_ignore_ascii_case(k.name()));
@@ -416,7 +416,7 @@ fn button_labels(mac: bool, buttons: &[(&str, Option<Key>)]) -> Vec<String> {
                 None => text.to_string(),
                 Some(_) if mac => text.to_string(),
                 Some(k) => match text.split_at_checked(1) {
-                    Some((first, rest)) if inline => format!("({first}){rest}"),
+                    Some((first, rest)) if inline => format!("{first}{rest}"),
                     _ => format!("{text} ({})", k.name()),
                 },
             }
@@ -680,15 +680,15 @@ mod tests {
     #[test]
     fn each_question_comes_up_with_the_default_answer_focused() {
         let mut h = prompt_on(egui::os::OperatingSystem::Windows);
-        let labels = ["(Y)es", "(N)o", "(C)ancel"];
-        assert_eq!(focused(&h, &labels), Some("(Y)es"));
+        let labels = ["Yes", "No", "Cancel"];
+        assert_eq!(focused(&h, &labels), Some("Yes"));
         h.key_press(Key::ArrowRight);
         h.run_steps(2);
-        assert_eq!(focused(&h, &labels), Some("(N)o"));
+        assert_eq!(focused(&h, &labels), Some("No"));
         h.key_press(Key::Enter);
         h.run_steps(2);
         assert_eq!(docs_left(&h), Some(1), "Enter pressed No");
-        assert_eq!(focused(&h, &labels), Some("(Y)es"), "the next question starts on the default again");
+        assert_eq!(focused(&h, &labels), Some("Yes"), "the next question starts on the default again");
 
         let mut h = prompt_on(egui::os::OperatingSystem::Mac);
         let labels = ["Don't Save", "Cancel", "Save"];
@@ -702,7 +702,7 @@ mod tests {
     fn windows_and_linux_ask_yes_no_cancel_with_the_default_first() {
         for os in [egui::os::OperatingSystem::Windows, egui::os::OperatingSystem::Nix] {
             let mut h = prompt_on(os);
-            let labels = ["(Y)es", "(N)o", "(C)ancel"];
+            let labels = ["Yes", "No", "Cancel"];
             assert_eq!(drawn_order(&h, labels), labels, "{os:?}");
             tab_walks(&mut h, labels, 0);
             h.key_press(Key::N);
@@ -784,7 +784,7 @@ mod tests {
     #[test]
     fn one_dialog_shows_every_key_in_the_same_style() {
         let buttons = [("Yes", Some(Key::Y)), ("No", Some(Key::N)), ("Cancel", Some(Key::C))];
-        assert_eq!(button_labels(false, &buttons), ["(Y)es", "(N)o", "(C)ancel"]);
+        assert_eq!(button_labels(false, &buttons), ["Yes", "No", "Cancel"]);
         let german = crate::i18n::Lang::from_code("de").unwrap();
         crate::i18n::with_language(german, || {
             assert_eq!(button_labels(false, &buttons), ["Ja (Y)", "Nein (N)", "Abbrechen (C)"]);
@@ -869,10 +869,10 @@ mod tests {
         h.key_press(Key::Y);
         h.run_steps(3);
         assert!(h.state().file_dialog_open());
-        assert!(h.query_by_label("(Y)es").is_none(), "the prompt waits behind the dialog");
+        assert!(h.query_by_label("Yes").is_none(), "the prompt waits behind the dialog");
         answer(&mut h, None);
         assert_eq!(docs_left(&h), Some(1));
-        assert_eq!(focused(&h, &["(Y)es", "(N)o", "(C)ancel"]), Some("(Y)es"), "the prompt comes back with Yes focused");
+        assert_eq!(focused(&h, &["Yes", "No", "Cancel"]), Some("Yes"), "the prompt comes back with Yes focused");
         // Saving closes the document.
         h.key_press(Key::Y);
         h.run_steps(3);
@@ -913,14 +913,14 @@ mod tests {
         };
         let id = save(&mut h);
         assert!(h.state().file_dialog_open());
-        assert!(h.query_by_label("(Y)es").is_none(), "the prompt waits behind the question");
+        assert!(h.query_by_label("Yes").is_none(), "the prompt waits behind the question");
         assert!(written.borrow().is_empty());
 
         crate::dialogs::cancel(h.state_mut(), id).unwrap();
         h.run_steps(2);
         assert!(written.borrow().is_empty(), "Cancel writes nothing");
         assert_eq!(docs_left(&h), Some(1));
-        assert_eq!(focused(&h, &["(Y)es", "(N)o", "(C)ancel"]), Some("(Y)es"), "the prompt comes back");
+        assert_eq!(focused(&h, &["Yes", "No", "Cancel"]), Some("Yes"), "the prompt comes back");
 
         let id = save(&mut h);
         crate::dialogs::confirm(h.state_mut(), id).unwrap();
@@ -963,7 +963,7 @@ mod tests {
         h.key_press(Key::Y);
         h.run_steps(3);
         assert!(h.state().saving());
-        assert!(h.query_by_label("(Y)es").is_none(), "the prompt waits for the save");
+        assert!(h.query_by_label("Yes").is_none(), "the prompt waits for the save");
         assert_eq!(h.state().session.documents().len(), 1, "still open while saving");
         gate.store(true, Ordering::Relaxed);
         let t = std::time::Instant::now();
