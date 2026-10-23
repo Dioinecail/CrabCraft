@@ -6,6 +6,8 @@ use std::sync::Arc;
 use egui::{CursorIcon, Painter, Pos2, Vec2};
 use photocraft_paint::brush::{BrushSettings, TipShape};
 
+use crate::canvas::ViewXform;
+
 /// Below this on-screen radius an outline is unreadable: show the crosshair instead.
 const MIN_RADIUS: f32 = 3.0;
 
@@ -43,11 +45,13 @@ impl Key {
 }
 
 /// The screen vectors of one tip radius (`size / 2` document pixels) along the document's x and
-/// y axes: the view's zoom, rotation, flip and pixel aspect, which the outline follows as the
-/// stroke does.
+/// y axes: the view's zoom, rotation and pixel aspect. The view's flip is deliberately left out,
+/// so the outline keeps the tip's shape (`canvas::flipped_view_tip` mirrors the painted tip in the
+/// document to match).
 pub(crate) fn tip_axes(xf: &crate::canvas::ViewXform, size: f32) -> [Vec2; 2] {
     let r = if size.is_finite() { size.max(0.0) / 2.0 } else { 0.0 };
-    [xf.map_vec(Vec2::new(r, 0.0)), xf.map_vec(Vec2::new(0.0, r))]
+    let xf_no_flip = ViewXform { flip: false, ..*xf };
+    [xf_no_flip.map_vec(Vec2::new(r, 0.0)), xf_no_flip.map_vec(Vec2::new(0.0, r))]
 }
 
 /// Apply pen orientation after the cached tip shape, in document space before the view.
@@ -55,6 +59,7 @@ pub(crate) fn tip_axes(xf: &crate::canvas::ViewXform, size: f32) -> [Vec2; 2] {
 pub(crate) fn pen_axes(xf: &crate::canvas::ViewXform, brush: &BrushSettings, pen: Option<crate::stylus::PenSample>) -> [Vec2; 2] {
     use photocraft_paint::brush::Control;
     use photocraft_paint::dynamics::{StepInput, apply_pose, control_angle};
+
     let axes = tip_axes(xf, brush.size);
     if !brush.shape_dynamics.enabled {
         return axes;

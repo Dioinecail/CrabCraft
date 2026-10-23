@@ -693,7 +693,29 @@ fn stroke_params(app: &PhotocraftApp, d: &Drag, points: &[Vec<f64>]) -> serde_js
     if crate::eraser_ui::block_mode(app, tool) {
         p["block"] = json!(true);
     }
+    // View › Flip Horizontal mirrors the canvas on screen. The brush cursor ignores that mirror
+    // (`brush_cursor::tip_axes` follows the view's zoom and rotation only), so mirror the tip in
+    // the document as well: then the dabs look on screen the way the cursor shows them.
+    if app.ui.view.flip_horizontal {
+        let b = &app.session.tools.brush;
+        if let Some((angle, flip_y)) = flipped_view_tip(b.angle, b.flip_y) {
+            p["brush"] = json!({ "angle": angle, "flipY": flip_y });
+        }
+    }
     p
+}
+
+/// The tip to paint with while View › Flip Horizontal shows the document mirrored: the tip
+/// mirrored in the document, so the flipped view displays it as the cursor does. For a tip at
+/// `angle` with y flip `flip_y` that is a turn by `180° - angle` (360° after the tip's own
+/// mirror) with the y flip toggled.
+fn flipped_view_tip(angle: f32, flip_y: bool) -> Option<(f32, bool)> {
+    if !angle.is_finite() {
+        return None;
+    }
+    let turned = (180.0 - angle).rem_euclid(360.0);
+    let angle = if turned > 180.0 { turned - 360.0 } else { turned };
+    Some((angle, !flip_y))
 }
 
 /// Tools whose strokes the engine renders while they are drawn (`LiveStroke`).
@@ -832,79 +854,89 @@ fn eyedropper_ring(app: &mut PhotocraftApp, painter: &egui::Painter, xf: &ViewXf
 }
 
 fn begin_live_stroke(app: &PhotocraftApp) -> Option<LiveStroke> {
+    println!("[canvas.begin_live_stroke]");
     static STROKES: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-    let st = app.session.active()?;
-    let d = app.drag.as_ref()?;
-    let stroke = if d.tool == Tool::ColorReplacement {
+    let doc_state = app.session.active()?;
+    let drag = app.drag.as_ref()?;
+    let stroke = if drag.tool == Tool::ColorReplacement {
         // The params `retouch_ui::finish_stroke` commits.
         let mut p = crate::retouch_ui::color_replacement_params(app);
-        p["points"] = json!(d.points);
+        p["points"] = json!(drag.points);
         EngineStroke::Dab(photocraft_engine::brush_cmds::live_color_replacement(&app.session, &p).ok()?)
-    } else if let Some((cmd, mut p)) = crate::retouch_ui::dab_params(app, d.tool) {
+    } else if let Some((cmd, mut p)) = crate::retouch_ui::dab_params(app, drag.tool) {
         // The params `retouch_ui::finish_stroke` commits; Sample All Layers isn't previewed.
-        p["points"] = json!(d.points);
+        p["points"] = json!(drag.points);
         p["target"] = paint_target(app);
         EngineStroke::Dab(photocraft_engine::retouch_cmds::LiveDab::begin(&app.session, cmd, &p).ok()?)
-    } else if d.tool == Tool::PatternStamp {
+    } else if drag.tool == Tool::PatternStamp {
         // The params `retouch_ui::finish_stroke` commits.
-        let mut p = crate::retouch_ui::pattern_stamp_params(app, &d.points);
-        p["points"] = json!(d.points);
+        let mut p = crate::retouch_ui::pattern_stamp_params(app, &drag.points);
+        p["points"] = json!(drag.points);
         p["target"] = paint_target(app);
         if app.ui.tool_options.pattern_stamp_impressionist {
             EngineStroke::Dab(photocraft_engine::retouch_cmds::live_pattern_impressionist(&app.session, &p).ok()?)
         } else {
             EngineStroke::Retouch(photocraft_engine::retouch_cmds::LiveRetouch::begin(&app.session, "paint.patternStamp", &p).ok()?)
         }
-    } else if d.tool == Tool::BackgroundEraser {
+    } else if drag.tool == Tool::BackgroundEraser {
         // The params `eraser_ui::finish_stroke` commits (layer pixels only).
-        let p = crate::eraser_ui::background_eraser_params(app, &d.points);
+        let p = crate::eraser_ui::background_eraser_params(app, &drag.points);
         EngineStroke::Dab(photocraft_engine::eraser_cmds::live_background_eraser(&app.session, &p).ok()?)
-    } else if let Some(cmd) = live_retouch_command(d.tool) {
+    } else if let Some(cmd) = live_retouch_command(drag.tool) {
         // The params `retouch_ui::finish_stroke` commits.
-        let mut p = if d.tool == Tool::HistoryBrush { json!({}) } else { crate::retouch_ui::clone_params(app)? };
-        p["points"] = json!(d.points);
+        let mut p = if drag.tool == Tool::HistoryBrush { json!({}) } else { crate::retouch_ui::clone_params(app)? };
+        p["points"] = json!(drag.points);
         p["target"] = paint_target(app);
         EngineStroke::Retouch(photocraft_engine::retouch_cmds::LiveRetouch::begin(&app.session, cmd, &p).ok()?)
     } else {
-        let p = stroke_params(app, d, &app.stylus.stroke_points(&d.points));
-        EngineStroke::Brush(Box::new(photocraft_engine::brush_cmds::LiveStroke::begin_with(&app.session, stroke_command(app, d.tool), &p).ok()?))
+        let p = stroke_params(app, drag, &app.stylus.stroke_points(&drag.points));
+        EngineStroke::Brush(Box::new(photocraft_engine::brush_cmds::LiveStroke::begin_with(&app.session, stroke_command(app, drag.tool), &p).ok()?))
     };
     let n = STROKES.fetch_add(1, std::sync::atomic::Ordering::Relaxed) & 0xff_ffff;
     let damage = vec![stroke.bounds()];
-    Some(LiveStroke { stroke, doc: st.doc.id, revision: st.revision, key: (1 << 44) | (n << 20), damage, fed: d.points.len() })
+    Some(LiveStroke { stroke, doc: doc_state.doc.id, revision: doc_state.revision, key: (1 << 44) | (n << 20), damage, fed: drag.points.len() })
 }
 
 /// Render the drag points the live stroke hasn't seen yet, with the pen pressure, tilt and
 /// rotation the commit's `paint.stroke` gets for them.
 fn feed_live_stroke(app: &mut PhotocraftApp) {
+    println!("[canvas.feed_live_stroke]");
     // A batched move replays several samples in one frame and calls this once at the end, so the
     // per-sample calls from `tool_event` are skipped (see `canvas_view`).
     if app.defer_live_stroke {
         return;
     }
-    let (Some(l), Some(d)) = (app.live_stroke.as_mut(), app.drag.as_ref()) else { return };
+
+    let (Some(live_stroke), Some(drag)) = (app.live_stroke.as_mut(), app.drag.as_ref()) else { return };
     let pose = &app.stylus.stroke;
     // The same times `stroke_points` gives the commit (from the drag's first point).
     let t0 = app.stylus.point_ms(0);
-    let pts: Vec<_> = (l.fed..d.points.len())
+    let pts: Vec<_> = (live_stroke.fed..drag.points.len())
         .filter_map(|i| {
-            let p = d.points.get(i)?;
-            let t = pose.get(i).or(pose.last()).copied().unwrap_or_default();
-            let mut sp = photocraft_engine::paint::StrokePoint::new(p[0], p[1], p[2] as f32);
-            (sp.tilt_x, sp.tilt_y, sp.rotation) = (t[0], t[1], t[2]);
-            sp.time = app.stylus.point_ms(i) - t0;
-            Some(sp)
+            let point = drag.points.get(i)?;
+            let last_pose = pose.get(i).or(pose.last()).copied().unwrap_or_default();
+            let mut stroke_point = photocraft_engine::paint::StrokePoint::new(point[0], point[1], point[2] as f32);
+
+            (stroke_point.tilt_x, stroke_point.tilt_y, stroke_point.rotation) = (last_pose[0], last_pose[1], last_pose[2]);
+            
+            stroke_point.time = app.stylus.point_ms(i) - t0;
+            Some(stroke_point)
         })
         .collect();
+    
     if pts.is_empty() {
         return;
     }
-    l.fed = d.points.len();
+
+    live_stroke.fed = drag.points.len();
+
     let started = crate::gpu_canvas::now_ms();
-    match l.stroke.push(&pts) {
-        Ok(r) => l.damage.push(r),
+
+    match live_stroke.stroke.push(&pts) {
+        Ok(rect) => live_stroke.damage.push(rect),
         Err(_) => app.live_stroke = None,
     }
+
     app.stroke_trace.stroke(crate::gpu_canvas::now_ms() - started);
 }
 
@@ -6156,28 +6188,28 @@ pub fn tool_event(app: &mut PhotocraftApp, ev: ToolEvent, mods: egui::Modifiers)
                 crate::vector_ui::curvature_up(app);
             }
             let zoom = app.point_zoom();
-            let Some(mut d) = app.drag.take() else { return };
-            d.track(mods);
-            if d.reposition {
-                d.shift_to([x, y]);
+            let Some(mut drag) = app.drag.take() else { return };
+            drag.track(mods);
+            if drag.reposition {
+                drag.shift_to([x, y]);
             }
-            let last = d.points.last().map_or(d.start, |p| [p[0], p[1]]);
-            let [x, y] = crate::stroke_constraint::constrain(d.tool, &mut d.constrain, d.start, last, [x, y], mods.shift, zoom);
+            let last = drag.points.last().map_or(drag.start, |p| [p[0], p[1]]);
+            let [x, y] = crate::stroke_constraint::constrain(drag.tool, &mut drag.constrain, drag.start, last, [x, y], mods.shift, zoom);
             // A Move-tool click (released where it was pressed) selects, it never moves: snapping
             // the release point would otherwise nudge the layer onto a nearby edge.
-            if d.tool == Tool::Move && d.points.len() < 2 && matches!(raw, ToolEvent::Up { x, y } if [x, y] == d.start) {
+            if drag.tool == Tool::Move && drag.points.len() < 2 && matches!(raw, ToolEvent::Up { x, y } if [x, y] == drag.start) {
                 app.move_preview = None;
                 crate::move_mods::finish(app);
-                if d.sel_move.is_some() {
-                    finish_selection_drag(app, true, d.start, d.start);
+                if drag.sel_move.is_some() {
+                    finish_selection_drag(app, true, drag.start, drag.start);
                 }
                 return;
             }
-            if d.points.last().is_none_or(|p| p[0] != x || p[1] != y) {
-                d.points.push([x, y, d.points.last().map_or(1.0, |p| p[2])]);
+            if drag.points.last().is_none_or(|p| p[0] != x || p[1] != y) {
+                drag.points.push([x, y, drag.points.last().map_or(1.0, |p| p[2])]);
                 app.stylus.record_point();
             }
-            finish_gesture(app, d);
+            finish_gesture(app, drag);
             crate::move_mods::finish(app);
         }
     }
