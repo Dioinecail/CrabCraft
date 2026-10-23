@@ -670,7 +670,7 @@ pub fn title_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                     let ui = &mut group_ui;
                     ui.spacing_mut().item_spacing.x = 6.0;
                     // let mut ws = app.ui.workspace.clone();
-                    let options = crate::workspace_ui::switcher_options(app);
+                    // let options = crate::workspace_ui::switcher_options(app);
                     // let opts: Vec<(String, &str)> = options.iter().map(|(k, l)| (k.clone(), l.as_str())).collect();
                     // A narrow bar drops what is also in a menu, the theme toggle first
                     // (Preferences), then search (Edit › Search), and narrows the switcher

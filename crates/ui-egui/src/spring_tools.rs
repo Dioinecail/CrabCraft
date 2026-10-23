@@ -91,48 +91,48 @@ pub fn note_canvas_press(app: &mut PhotocraftApp) {
 
 /// Once a frame, before the key handling: notice released letters and give the previous tool
 /// back when the switch was temporary and no drag is in progress.
-pub fn tick(app: &mut PhotocraftApp, ctx: &egui::Context) {
+pub fn tick(_app: &mut PhotocraftApp, _ctx: &egui::Context) {
 
     // TODO: Change this to be a setting in the Preferences window
     return;
-    let Some(mut s) = app.ui.spring.take() else { return };
-    // Type editing begun with the temporary Type tool keeps it: the edit owns the tool now. So
-    // does a tool picked another way while the letter is down.
-    if app.ui.text_edit.is_some() || app.ui.tool != s.tool {
-        return;
-    }
+    // let Some(mut s) = app.ui.spring.take() else { return };
+    // // Type editing begun with the temporary Type tool keeps it: the edit owns the tool now. So
+    // // does a tool picked another way while the letter is down.
+    // if app.ui.text_edit.is_some() || app.ui.tool != s.tool {
+    //     return;
+    // }
 
-    let (now, button) = ctx.input(|i| (i.time, i.pointer.any_down()));
-    let dragging = app.drag.is_some() || button;
+    // let (now, button) = ctx.input(|i| (i.time, i.pointer.any_down()));
+    // let dragging = app.drag.is_some() || button;
 
-    if !s.released {
+    // if !s.released {
         
-        if app.drag.is_some() {
-            s.used = true;
-        }
+    //     if app.drag.is_some() {
+    //         s.used = true;
+    //     }
 
-        s.keys.retain(|k| key_of(*k).is_some_and(|k| ctx.input(|i| i.key_down(k))));
+    //     s.keys.retain(|k| key_of(*k).is_some_and(|k| ctx.input(|i| i.key_down(k))));
 
-        if !s.keys.is_empty() {
-            app.ui.spring = Some(s);
-            return;
-        }
+    //     if !s.keys.is_empty() {
+    //         app.ui.spring = Some(s);
+    //         return;
+    //     }
 
-        if !s.used && now - s.since < SPRING_HOLD_SECS {
-            // A tap: the switch stands.
-            return;
-        }
+    //     if !s.used && now - s.since < SPRING_HOLD_SECS {
+    //         // A tap: the switch stands.
+    //         return;
+    //     }
 
-        s.released = true;
-    }
+    //     s.released = true;
+    // }
 
-    if dragging {
-        app.ui.spring = Some(s);
-        ctx.request_repaint();
-        return;
-    }
+    // if dragging {
+    //     app.ui.spring = Some(s);
+    //     ctx.request_repaint();
+    //     return;
+    // }
 
-    app.ui.tool = s.previous;
+    // app.ui.tool = s.previous;
 }
 
 #[cfg(test)]
