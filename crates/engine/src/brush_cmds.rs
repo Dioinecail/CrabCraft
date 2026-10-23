@@ -418,11 +418,11 @@ fn with_blend_mode(mut b: BrushSettings, p: &Value) -> BrushSettings {
 }
 
 /// `paint.stroke`: the Brush (and Eraser) tool.
-pub fn paint_stroke(s: &mut Session, p: &Value) -> Result<Value> {
+pub fn paint_stroke(session: &mut Session, p: &Value) -> Result<Value> {
     let pts = parse_points(p, "paint.stroke")?;
-    let brush = with_blend_mode(resolve_brush(s, p, "paint.stroke")?, p);
+    let brush = with_blend_mode(resolve_brush(session, p, "paint.stroke")?, p);
     let label = if brush.erase && !clear_mode(p) { "Eraser" } else { "Brush Tool" };
-    stroke_with(s, "paint.stroke", p, label, brush, pts, false)
+    stroke_with(session, "paint.stroke", p, label, brush, pts, false)
 }
 
 /// A `paint.stroke` rendered while it is drawn, onto a copy of the active document, so the canvas

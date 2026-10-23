@@ -119,23 +119,23 @@ fn magic_eraser(s: &mut Session, p: &Value) -> Result<Value> {
 
 /// The stroke, settings and layer of a `paint.backgroundEraser` (shared by the command and its
 /// live preview), after the same checks.
-fn background_eraser_setup(s: &Session, p: &Value) -> Result<(Stroke, BgEraseSettings, LayerId)> {
+fn background_eraser_setup(session: &Session, parameters: &Value) -> Result<(Stroke, BgEraseSettings, LayerId)> {
     const CMD: &str = "paint.backgroundEraser";
-    let pts = crate::brush_cmds::parse_points(p, CMD)?;
+    let pts = crate::brush_cmds::parse_points(parameters, CMD)?;
     if pts.iter().any(|q| !q.x.is_finite() || !q.y.is_finite() || q.x.abs() > 1e7 || q.y.abs() > 1e7) {
         return Err(bad(CMD, "`points` must be finite canvas coordinates"));
     }
-    let brush = crate::brush_cmds::resolve_brush(s, p, CMD)?;
+    let brush = crate::brush_cmds::resolve_brush(session, parameters, CMD)?;
     let bs = BgEraseSettings {
-        sampling: enum_param(p, CMD, "sampling", Sampling::Continuous, "continuous|once|backgroundSwatch")?,
-        limits: enum_param(p, CMD, "limits", Limits::Contiguous, "discontiguous|contiguous|findEdges")?,
-        tolerance: number(p, CMD, "tolerance", 50.0, 0.0..=100.0)? as f32 / 100.0,
-        protect_foreground: flag(p, "protectForegroundColor", false),
-        foreground: s.tools.foreground,
-        background: s.tools.background,
+        sampling: enum_param(parameters, CMD, "sampling", Sampling::Continuous, "continuous|once|backgroundSwatch")?,
+        limits: enum_param(parameters, CMD, "limits", Limits::Contiguous, "discontiguous|contiguous|findEdges")?,
+        tolerance: number(parameters, CMD, "tolerance", 50.0, 0.0..=100.0)? as f32 / 100.0,
+        protect_foreground: flag(parameters, "protectForegroundColor", false),
+        foreground: session.tools.foreground,
+        background: session.tools.background,
     };
-    let id = active_pixel_layer(s, CMD)?;
-    let d = s.active().ok_or(EngineError::NoDocument)?;
+    let id = active_pixel_layer(session, CMD)?;
+    let d = session.active().ok_or(EngineError::NoDocument)?;
     let l = d.doc.layer(id).ok_or(EngineError::NoLayer(id))?;
     if let Some(e) = pixels_locked(&d.doc, l) {
         return Err(e);
@@ -147,17 +147,31 @@ fn background_eraser_setup(s: &Session, p: &Value) -> Result<(Stroke, BgEraseSet
 }
 
 /// `paint.backgroundEraser`: a stroke erasing colours similar to the sampled one.
-fn background_eraser(s: &mut Session, p: &Value) -> Result<Value> {
+fn background_eraser(session: &mut Session, parameters: &Value) -> Result<Value> {
     const CMD: &str = "paint.backgroundEraser";
-    let (stroke, bs, id) = background_eraser_setup(s, p)?;
-    let dmg = s.edit("Background Eraser", |doc, _| {
+    let (stroke, bs, id) = background_eraser_setup(session, parameters)?;
+    let dmg = session.edit("Background Eraser", |doc, _| {
         let selection = doc.selection.clone();
         crate::extra_cmds::background_to_layer(doc, id);
         let l = doc.layer_mut(id).ok_or(EngineError::NoLayer(id))?;
         let surf = l.surface_mut().ok_or_else(|| bad(CMD, "not a pixel layer"))?;
         Ok(apply_background_eraser(surf, &stroke, &bs, selection.as_ref()))
     })?;
-    Ok(damage(s, dmg, true))
+    Ok(damage(session, dmg, true))
+}
+
+/// `paint.eraserModeToggle`: Toggles eraser mode on current brush.
+fn toggle_eraser_mode(session: &mut Session, _parameters: &Value) -> Result<Value> {
+    const CMD: &str = "paint.eraserModeToggle";
+
+    session.is_eraser_mode = !session.is_eraser_mode;
+
+    Ok(Default::default())
+}
+
+/// The active layer must hold pixels (the erasers don't work on type, shapes, smart objects…).
+fn is_eraser_mode_enabled(s: &Session) -> std::result::Result<(), String> {
+    Ok(())
 }
 
 /// A `paint.backgroundEraser` stroke shown while it is drawn: the same params, checks and
@@ -199,6 +213,16 @@ pub fn specs() -> Vec<CommandSpec> {
             params: r##"{"points":[[x,y,pressure?],…],"size":px?,"hardness":0..1?,"brush":{…}?,"preset":name?,"sampling":"continuous|once|backgroundSwatch"="continuous","limits":"discontiguous|contiguous|findEdges"="contiguous","tolerance":0..100=50,"protectForegroundColor":bool=false,"seed":u64?}"##,
             enabled: has_pixel_layer,
             run: background_eraser,
+            journal: true,
+        },
+        CommandSpec {
+            id: "paint.eraserModeToggle",
+            label: "Eraser Mode Toggle",
+            menu: &[],
+            shortcut: Some("C"),
+            params: r##"{}"##,
+            enabled: is_eraser_mode_enabled,
+            run: toggle_eraser_mode,
             journal: true,
         },
     ]

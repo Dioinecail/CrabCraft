@@ -3875,7 +3875,7 @@ pub fn canvas_view(app: &mut PhotocraftApp, ui: &mut egui::Ui, idx: usize, rect:
     // and Zoom never reach `tool_event`, so only the Move needs the state machine to know.
     app.tool_override = (temporary == Some(crate::hold_keys::Temporary::Move)).then_some(Tool::Move);
     // `~` held: a Brush or Pencil stroke that starts now erases (`tool_event`'s `Down`).
-    app.held_erase = crate::hold_keys::erase_held(app, &ctx);
+    app.held_erase = app.session.is_eraser_mode;
     // Zoom direction: the temporary zoom key decides, else ⌥ (Zoom tool), held or latched in
     // Window › Modifier Keys (the way around a desktop that takes Alt+click, `alt_grab`).
     let sticky_alt = app.ui.shell.sticky_alt;

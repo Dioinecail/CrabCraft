@@ -544,6 +544,7 @@ pub struct Session {
     /// document, source read-only)`. The shell takes them with [`Session::take_held_open`].
     held_opens: Vec<(u64, Document, bool)>,
     next_held_open: u64,
+    pub is_eraser_mode: bool,
 }
 
 /// Move item `i` of `v` to position `to`, clamped to the end. Returns where it went; `None` when
