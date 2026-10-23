@@ -677,6 +677,7 @@ pub fn confirm(app: &mut PhotocraftApp, id: u64) -> Result<Value, String> {
                 // File › New › Recent. Best effort: the document exists either way.
                 let _ = app.run("document.recent.add", json!({"settings": crate::new_doc_ui::document_settings(&d.fields)}));
                 // TODO: add new layer here
+                _ = app.run("layer.lockLayers", json!({"all": true}));
                 _ = app.run("layer.new.layer", json!({"name": "Layer 0"}));
             }
             r
