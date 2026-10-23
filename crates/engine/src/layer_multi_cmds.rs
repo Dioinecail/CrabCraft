@@ -1385,11 +1385,11 @@ fn link_layers(s: &mut Session) -> Result<Value> {
     Ok(json!({"linked": linked}))
 }
 
-fn lock_layers(s: &mut Session, p: &Value) -> Result<Value> {
-    let sel = selected(s);
+fn lock_layers(session: &mut Session, parameters: &Value) -> Result<Value> {
+    let sel = selected(session);
     let keys = ["transparency", "pixels", "position", "artboard", "all"];
-    let given: Vec<(&str, bool)> = keys.iter().filter_map(|k| Some((*k, p.get(*k)?.as_bool()?))).collect();
-    s.edit("Lock Layers", |doc, _| {
+    let given: Vec<(&str, bool)> = keys.iter().filter_map(|key| Some((*key, parameters.get(*key)?.as_bool()?))).collect();
+    session.edit("Lock Layers", |doc, _| {
         // No explicit locks: toggle "lock all" (on unless every selected layer is already locked).
         let all_locked = sel.iter().all(|id| doc.layer(*id).is_some_and(|l| l.locks.all));
         let given: Vec<(&str, bool)> = if given.is_empty() { vec![("all", !all_locked)] } else { given.clone() };
