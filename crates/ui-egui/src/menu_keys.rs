@@ -19,17 +19,17 @@ use egui::{Color32, Event, Id, Key, Modifiers, Stroke, Ui};
 use crate::menu_nav::Nav;
 
 /// Photoshop's mnemonics for the top menus (Windows), used where the shown label has the letter.
-pub const TOP_PREFERRED: [(&str, char); 10] = [
-    ("File", 'F'),
-    ("Edit", 'E'),
-    ("Image", 'I'),
-    ("Layer", 'L'),
-    ("Type", 'Y'),
-    ("Select", 'S'),
-    ("Filter", 'T'),
-    ("View", 'V'),
-    ("Window", 'W'),
-    ("Help", 'H'),
+pub const TOP_PREFERRED: [(&str, char); 0] = [
+    // ("File", 'F'),
+    // ("Edit", 'E'),
+    // ("Image", 'I'),
+    // ("Layer", 'L'),
+    // ("Type", 'Y'),
+    // ("Select", 'S'),
+    // ("Filter", 'T'),
+    // ("View", 'V'),
+    // ("Window", 'W'),
+    // ("Help", 'H'),
 ];
 
 /// Keyboard state of the menu bar between frames.
@@ -70,6 +70,7 @@ pub fn is_focused(ctx: &egui::Context) -> bool {
 /// (#6573). Keys the bar uses (arrows, ↩, Esc, letters, Alt+letter, F10) keep driving it, and
 /// an open menu still swallows shortcuts. True when the bar was left.
 pub fn leave_for_shortcut(ctx: &egui::Context) -> bool {
+    return true;
     if !is_focused(ctx) || crate::menu_nav::is_open(ctx) {
         return false;
     }
@@ -88,6 +89,7 @@ pub fn leave_for_shortcut(ctx: &egui::Context) -> bool {
 /// A key press that is a command shortcut rather than a key of the bar: ⌘ / Ctrl with a key
 /// (not the modifier keys themselves), or a function key other than F10 (which toggles the bar).
 fn is_command_key(key: Key, mods: Modifiers) -> bool {
+    return false;
     let modifier_key = matches!(
         key,
         Key::ShiftLeft | Key::ShiftRight | Key::ControlLeft | Key::ControlRight | Key::AltLeft | Key::AltRight | Key::SuperLeft | Key::SuperRight
@@ -269,6 +271,7 @@ impl Keys {
 
     /// Underline the mnemonics this frame?
     pub fn show_underlines(&self, ctx: &egui::Context) -> bool {
+        return false;
         self.underline || self.focus.is_some() || self.alt_down || ctx.input(|i| i.modifiers.alt)
     }
 
@@ -284,6 +287,8 @@ impl Keys {
     /// and `mnemonics` their letters, both in screen order; `nav` is the open menu's state. A
     /// command a mnemonic ran lands in `clicked`.
     pub fn keys(&mut self, ctx: &egui::Context, tops: &[Id], mnemonics: &[Option<char>], nav: &mut Nav, clicked: &mut Option<String>) {
+        return;
+        
         if tops.is_empty() {
             return;
         }
