@@ -1086,15 +1086,15 @@ pub struct ViewXform {
 impl ViewXform {
     /// The main canvas's mapping for the active document as last laid out (inside the rulers).
     pub fn active(app: &PhotocraftApp) -> Option<Self> {
-        let v = app.ui.views.get(app.session.active_index()?)?;
+        let view = app.ui.views.get(app.session.active_index()?)?;
         let (zoom, center) =
-            if v.zoom_animating && app.session.prefs().general.animated_zoom { v.display_camera.unwrap_or((v.zoom, v.center)) } else { (v.zoom, v.center) };
+            if view.zoom_animating && app.session.prefs().general.animated_zoom { view.display_camera.unwrap_or((view.zoom, view.center)) } else { (view.zoom, view.center) };
         Some(Self {
             rect: crate::rulers::content_rect(app, app.last_canvas_rect),
             zoom: zoom / app.canvas_ppp(),
             center,
             flip: app.ui.view.flip_horizontal,
-            rotation: v.rotation,
+            rotation: view.rotation,
             aspect: app.ui.view.display_aspect(),
         })
     }
@@ -2519,6 +2519,9 @@ pub(crate) fn arranged_cells(app: &PhotocraftApp, rect: Rect) -> Option<Vec<(usi
 }
 
 fn documents(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
+    // Only a canvas laid out this frame can follow a `window.togglePanels`; on the start screen
+    // (or with no document) the rect is not a canvas, so the note is dropped.
+    let recenter_from = app.view_recenter_from.take();
     app.drop_canvas_rect = None;
     app.tab_strip = None;
     retain_gpu_documents(app);
@@ -2556,6 +2559,11 @@ fn documents(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     }
     let Some(idx) = app.session.active_index() else { return };
     let rect = ui.available_rect_before_wrap();
+    // Tab hid or showed the chrome just before this frame: follow the canvas rect so the image
+    // does not jump sideways with the panels.
+    if let Some(before) = recenter_from {
+        keep_document_in_place(app, idx, before, rect);
+    }
     app.last_canvas_rect = rect;
     app.drop_canvas_rect = Some(rect);
     // Window › Arrange: tiled / n-up layouts show several documents side by side; the active one
@@ -2580,6 +2588,40 @@ fn documents(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     }
     let view = app.ui.views[idx].clone();
     canvas_view(app, ui, idx, rect, view, true);
+}
+
+/// Move the active view's centre by the shift of the canvas rect (`window.togglePanels` hid or
+/// showed the chrome), so the image stays at the same place on screen instead of jumping with the
+/// panels. The screen shift is mapped back through the view's zoom, rotation, flip and pixel
+/// aspect: it is what [`ViewXform::to_screen`] would add to every document point.
+fn keep_document_in_place(app: &mut PhotocraftApp, idx: usize, before: Rect, now: Rect) {
+    let delta = before.center() - now.center();
+
+    if !(delta.x.is_finite() && delta.y.is_finite()) || delta.length() <= 1e-3 {
+        return;
+    }
+
+    let (ppp, flip, aspect) = (app.canvas_ppp(), app.ui.view.flip_horizontal, app.ui.view.display_aspect());
+    let Some(view) = app.ui.views.get_mut(idx) else { return };
+    let zoom = view.zoom / ppp;
+
+    if !zoom.is_finite() || zoom <= 0.0 {
+        return;
+    }
+
+    let xf = ViewXform { rect: now, zoom, center: view.center, flip, rotation: view.rotation, aspect };
+    let d = xf.unmap_vec(delta / zoom);
+
+    if !(d.x.is_finite() && d.y.is_finite()) {
+        return;
+    }
+
+    view.center = [view.center[0] - d.x, view.center[1] - d.y];
+    // A zoom in flight keeps its picture camera with the view; its anchor no longer holds.
+    if let Some((shown_zoom, shown_center)) = view.display_camera {
+        view.display_camera = Some((shown_zoom, [shown_center[0] - d.x, shown_center[1] - d.y]));
+    }
+    view.zoom_anchor = None;
 }
 
 /// The tab strip; returns where its document tabs are.
@@ -4407,10 +4449,10 @@ pub fn canvas_view(app: &mut PhotocraftApp, ui: &mut egui::Ui, idx: usize, rect:
             && app.ui.tool == Tool::Move
             && app.ui.transform.is_none()
             && response.double_clicked()
-            && let Some(p) = response.interact_pointer_pos()
+            && let Some(point) = response.interact_pointer_pos()
         {
-            let d = xf.to_doc(p);
-            crate::type_tool::edit_at(app, d[0], d[1]);
+            let delta = xf.to_doc(point);
+            crate::type_tool::edit_at(app, delta[0], delta[1]);
         }
         if app.ui.transform.is_some() && response.double_clicked() {
             crate::transform_tool::commit(app);

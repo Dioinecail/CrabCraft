@@ -610,6 +610,12 @@ pub(crate) fn invoke_unguarded(app: &mut PhotocraftApp, ctx: &egui::Context, id:
             Ok(json!({"dialog": crate::adjust_dialog::open(app, a).ok_or("no document")?}))
         }
         "window.togglePanels" => {
+            // Hiding or showing the chrome moves the canvas rect, and the active view draws the
+            // image at that rect's centre: remember where the canvas was, so the next layout can
+            // move the view's centre by the same amount and the image stays put on screen.
+            if app.session.active_index().is_some() {
+                app.view_recenter_from = Some(app.last_canvas_rect);
+            }
             // Tab hides the Tools panel, the options bar and the dock; Tab again shows what it hid.
             if app.ui.view.hides_chrome() {
                 // Full Screen Mode: Tab only shows or hides the chrome for now (#6760); the panels'
@@ -617,17 +623,18 @@ pub(crate) fn invoke_unguarded(app: &mut PhotocraftApp, ctx: &egui::Context, id:
                 app.ui.panels.full_screen_chrome = !app.ui.panels.full_screen_chrome;
                 return Ok(Value::Null);
             }
-            let p = &mut app.ui.panels;
-            match p.hidden_by_tab.take() {
-                Some([toolbar, options, dock]) if !(p.toolbar || p.options_bar || p.dock) => {
-                    (p.toolbar, p.options_bar, p.dock) = (toolbar, options, dock);
+            let panels = &mut app.ui.panels;
+            match panels.hidden_by_tab.take() {
+                Some([toolbar, options, dock]) if !(panels.toolbar || panels.options_bar || panels.dock) => {
+                    (panels.toolbar, panels.options_bar, panels.dock) = (toolbar, options, dock);
                 }
-                _ if p.toolbar || p.options_bar || p.dock => {
-                    p.hidden_by_tab = Some([p.toolbar, p.options_bar, p.dock]);
-                    (p.toolbar, p.options_bar, p.dock) = (false, false, false);
+                _ if panels.toolbar || panels.options_bar || panels.dock => {
+                    panels.hidden_by_tab = Some([panels.toolbar, panels.options_bar, panels.dock]);
+                    (panels.toolbar, panels.options_bar, panels.dock) = (false, false, false);
                 }
-                _ => (p.toolbar, p.options_bar, p.dock) = (true, true, true),
+                _ => (panels.toolbar, panels.options_bar, panels.dock) = (true, true, true),
             }
+
             Ok(Value::Null)
         }
         "window.nextDocument" | "window.previousDocument" => {

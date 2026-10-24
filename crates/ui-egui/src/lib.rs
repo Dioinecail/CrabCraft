@@ -794,6 +794,10 @@ pub struct PhotocraftApp {
     fonts_ready: bool,
     /// Screen rect of the main canvas last frame (for overlays and the navigator).
     pub last_canvas_rect: egui::Rect,
+    /// The canvas rect before `window.togglePanels` hid or showed the chrome. The next canvas
+    /// layout moves the active view's centre by the rect's shift, so the image stays where it is
+    /// on screen instead of jumping sideways with the panels (`canvas::keep_document_in_place`).
+    pub(crate) view_recenter_from: Option<egui::Rect>,
     /// Window › Arrange: the first document of the shown run of tiles, when there are more
     /// documents than tiles (`canvas::arranged_cells`).
     pub(crate) arrange_start: usize,
@@ -1055,6 +1059,7 @@ impl PhotocraftApp {
             last_window_title: String::new(),
             fonts_ready: false,
             last_canvas_rect: egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(800.0, 600.0)),
+            view_recenter_from: None,
             arrange_start: 0,
             ppp: 1.0,
             drop_canvas_rect: None,
