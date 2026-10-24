@@ -218,6 +218,7 @@ mod tests {
             group: group.into(),
             folder: folder.iter().map(|f| f.to_string()).collect(),
             captures: Default::default(),
+            current_size: size
         }
     }
 

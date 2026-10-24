@@ -820,7 +820,8 @@ fn presets_save(s: &mut Session, p: &Value) -> Result<Value> {
     if captures.color {
         brush.color = s.tools.foreground;
     }
-    upsert(s, BrushPreset { name: name.clone(), brush, builtin: false, group: String::new(), folder: Vec::new(), captures });
+    let size = brush.size;
+    upsert(s, BrushPreset { name: name.clone(), brush, builtin: false, group: String::new(), folder: Vec::new(), current_size: size, captures });
     // The saved brush is the current brush now (Photoshop selects the brush it just saved).
     s.tools.current_preset = Some(name.clone());
     s.tools.brush_changed();
@@ -929,7 +930,18 @@ fn define_from_selection(s: &mut Session, p: &Value) -> Result<Value> {
         }
     }
     let (brush, tw, th) = sampled_brush(cmd, &v, w, h)?;
-    upsert(s, BrushPreset { name: name.clone(), brush: brush.clone(), builtin: false, group: String::new(), folder: Vec::new(), captures: Default::default() });
+    upsert(
+        s,
+        BrushPreset {
+            name: name.clone(),
+            brush: brush.clone(),
+            builtin: false,
+            group: String::new(),
+            folder: Vec::new(),
+            current_size: brush.size,
+            captures: Default::default(),
+        },
+    );
     s.tools.brush = brush;
     s.tools.current_preset = Some(name.clone());
     s.tools.brush_changed();
@@ -969,65 +981,96 @@ pub(crate) fn sampled_brush(cmd: &str, v: &[f32], w: usize, h: usize) -> Result<
     Ok((brush, tw, th))
 }
 
-pub(crate) fn set_brush(s: &mut Session, p: &Value) -> Result<Value> {
+pub(crate) fn set_brush(session: &mut Session, parameters: &Value) -> Result<Value> {
     let cmd = "tools.setBrush";
-    let mut b = s.tools.brush.clone();
+    let mut brush = session.tools.brush.clone();
     let mut picked = None;
     let mut picked_color = None;
-    if let Some(name) = p.get("preset").and_then(Value::as_str) {
-        let preset = find_preset(s, name, cmd)?;
-        b = preset.picked_over(&s.tools.brush);
+
+    println!("[brush_cmds.set_brush] {parameters:?}");
+
+    if let Some(brush_parameter) = parameters.get("brush").and_then(Value::as_object) {
+        if let Some(brush_size_parameter) = brush_parameter.get("size").and_then(Value::as_number) {
+            if let Some(current_preset_name) = session.tools.current_preset.clone() {
+                let preset_index = session.tools.presets.iter().position(|x| x.name == current_preset_name).unwrap_or(0);
+
+                if let Some(size_float) = brush_size_parameter.as_f64() {
+                    let current_preset = &mut session.tools.presets[preset_index];
+
+                    current_preset.current_size = size_float as f32;
+                }
+            }
+        }
+    }
+    let mut patch = parameters.clone();
+
+    if let Some(preset_name) = parameters.get("preset").and_then(Value::as_str) {
+        let preset = find_preset(session, preset_name, cmd)?;
+        
+        let preset_current_size = preset.current_size;
+
+        if let Some(patch_as_object) = patch.as_object_mut() {
+            patch_as_object.insert("brush".to_string(), json!({ "size": preset_current_size }));
+        }
+
+        brush = preset.picked_over(&session.tools.brush);
+
         picked_color = preset.captures.color.then_some(preset.brush.color);
-        picked = Some(name.to_string());
+        picked = Some(preset_name.to_string());
     }
-    let reset = flag(p, "reset", false);
+
+    let reset = flag(parameters, "reset", false);
+
     if reset {
-        b = BrushSettings::default();
+        brush = BrushSettings::default();
     }
-    let mut patch = p.clone();
+
     if let Some(o) = patch.as_object_mut() {
         for k in ["preset", "reset", "coalesce"] {
             o.remove(k);
         }
         if let Some(inner) = o.remove("brush") {
-            let tmp = merge_brush(&b, &inner, cmd)?;
+            let tmp = merge_brush(&brush, &inner, cmd)?;
             // Before the second merge: a non-finite value would serialise as `null` there and be
             // reported as a type error instead of naming the value (#977).
             validate_brush(&tmp, cmd)?;
-            b = tmp;
+            brush = tmp;
         }
     }
-    b = merge_brush(&b, &patch, cmd)?;
-    validate_brush(&b, cmd)?;
+    brush = merge_brush(&brush, &patch, cmd)?;
+    validate_brush(&brush, cmd)?;
     // The picked preset stays "the current brush" across later edits, so `brush.presets.update`
     // knows what to overwrite. Only once the brush is accepted: a failed call leaves no state
     // behind (a `reset` wins over a `preset`, as it replaces the whole brush).
     if reset {
-        s.tools.current_preset = None;
+        session.tools.current_preset = None;
     } else if let Some(name) = picked {
-        s.tools.current_preset = Some(name);
+        session.tools.current_preset = Some(name);
         // A preset saved with Include Color brings its colour as the foreground (Photoshop).
         if let Some(c) = picked_color {
-            s.tools.foreground = c;
+            session.tools.foreground = c;
         }
     }
     // The tool's brush always paints with full tips: load a library preset's from the store.
-    s.load_brush_tips(&mut b).map_err(|e| bad(cmd, e))?;
-    let before = std::mem::replace(&mut s.tools.brush, b);
+    session.load_brush_tips(&mut brush).map_err(|e| bad(cmd, e))?;
+    let before = std::mem::replace(&mut session.tools.brush, brush);
     // A coalesced gesture (one slider drag) journals as one call: remember the brush it started from.
-    let key = p.get("coalesce").and_then(Value::as_str).filter(|_| p.get("preset").is_none() && p.get("reset").is_none());
+    let key = parameters.get("coalesce").and_then(Value::as_str).filter(|_| parameters.get("preset").is_none() && parameters.get("reset").is_none());
     let continuing = |s: &Session, k: &str| {
         s.tools.brush_gesture.as_ref().is_some_and(|(g, _)| g == k)
             && s.journal.last().is_some_and(|(id, lp)| id == cmd && lp.get("coalesce").and_then(Value::as_str) == Some(k))
     };
     match key {
-        Some(k) if continuing(s, k) => {}
-        Some(k) => s.tools.brush_gesture = Some((k.to_string(), before)),
-        None => s.tools.brush_gesture = None,
+        Some(k) if continuing(session, k) => {}
+        Some(k) => session.tools.brush_gesture = Some((k.to_string(), before)),
+        None => session.tools.brush_gesture = None,
     }
     // The one accepted brush change everyone (UI sliders, control channel, presets) lands here.
-    s.tools.brush_changed();
-    Ok(brush_json(&s.tools.brush))
+    session.tools.brush_changed();
+
+    // TODO: Also cache the new brush preset size here so it can be restored later
+
+    Ok(brush_json(&session.tools.brush))
 }
 
 /// Remember the current brush in `Preferences::last_brush` (see [`remembered_brush`]). Called

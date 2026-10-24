@@ -672,6 +672,7 @@ pub fn open(backend: Box<dyn PresetBackend>) -> Opened {
                             hashes.push(i.preview.clone());
                         }
                     }
+                    let brush_size = brush.size;
                     items.push(BrushPreset {
                         name: sp.name,
                         brush,
@@ -679,6 +680,7 @@ pub fn open(backend: Box<dyn PresetBackend>) -> Opened {
                         group: g.group.clone(),
                         folder: sanitize_folder(sp.folder),
                         captures: sp.captures,
+                        current_size: brush_size
                     });
                 }
                 None => missing += 1,

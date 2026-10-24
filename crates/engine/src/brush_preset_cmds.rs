@@ -503,6 +503,7 @@ mod tests {
                 group: g.into(),
                 folder: Vec::new(),
                 captures: Default::default(),
+                current_size: 0.0
             });
         }
         s
@@ -615,6 +616,7 @@ mod tests {
                 group: "Set".into(),
                 folder,
                 captures: Default::default(),
+                current_size: 0.0
             });
         }
         s
@@ -722,6 +724,7 @@ mod tests {
                 group: "Other".into(),
                 folder,
                 captures: Default::default(),
+                current_size: 0.0
             });
         }
         s
@@ -762,6 +765,7 @@ mod tests {
             group: "Set".into(),
             folder: deep.clone(),
             captures: Default::default(),
+            current_size: 0.0
         });
         s.tools.presets.push(BrushPreset {
             name: "Y".into(),
@@ -770,6 +774,7 @@ mod tests {
             group: "Other".into(),
             folder: vec!["Dry".into()],
             captures: Default::default(),
+            current_size: 0.0
         });
         let before = s.tools.presets.clone();
         let deep_json = json!(deep);
@@ -810,6 +815,7 @@ mod tests {
             group: String::new(),
             folder: Vec::new(),
             captures: Default::default(),
+            current_size: 0.0
         });
         assert!(s.execute("brush.presets.moveGroup", json!({"group": "", "into": {"group": "Set"}})).is_err());
     }

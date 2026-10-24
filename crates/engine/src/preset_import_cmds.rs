@@ -209,6 +209,7 @@ fn import_image(s: &mut Session, p: &Value) -> Result<Value> {
     let (v, w, h) = image_paint(&doc, cmd)?;
     let (brush, tw, th) = crate::brush_cmds::sampled_brush(cmd, &v, w, h)?;
     let name = UniqueNames::new(s.tools.presets.iter().map(|x| x.name.as_str())).unique(&name);
+    let size = brush.size;
     s.tools.presets.push(photocraft_paint::BrushPreset {
         name: name.clone(),
         brush: brush.clone(),
@@ -216,6 +217,7 @@ fn import_image(s: &mut Session, p: &Value) -> Result<Value> {
         group: String::new(),
         folder: Vec::new(),
         captures: Default::default(),
+        current_size: size
     });
     s.brush_presets_changed();
     if p.get("select").and_then(Value::as_bool).unwrap_or(true) {

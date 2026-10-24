@@ -778,6 +778,7 @@ pub struct BrushPreset {
     /// dialog's boxes.
     #[serde(default, skip_serializing_if = "PresetCaptures::is_default")]
     pub captures: PresetCaptures,
+    pub current_size: f32,
 }
 
 /// The New Brush Preset dialog's boxes, kept with the preset. The default is a preset made
