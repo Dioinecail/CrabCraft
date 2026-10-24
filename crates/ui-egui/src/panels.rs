@@ -4263,8 +4263,9 @@ fn color_field(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     // Photoshop's Color panel field fills the panel: take the height the dock offers, less the
     // hex/RGB readout (which folds onto a second line in a narrow dock). Without a dock, 120 pt.
     // Only Photoshop's themes stretch it over the group: the other themes put sliders under it.
-    let fill = if t.pro { ui.data(|d| d.get_temp::<f32>(color_field_fill_id())) } else { None };
-    let h = color_field_height(fill, w);
+    // let fill = if t.pro { ui.data(|d| d.get_temp::<f32>(color_field_fill_id())) } else { None };
+    // let h = color_field_height(fill, w);
+    let h = w;
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = 8.0;
         let (chips, _) = ui.allocate_exact_size(vec2(38.0, h), Sense::hover());
