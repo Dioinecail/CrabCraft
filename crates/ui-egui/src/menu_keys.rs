@@ -272,7 +272,7 @@ impl Keys {
     /// Underline the mnemonics this frame?
     pub fn show_underlines(&self, ctx: &egui::Context) -> bool {
         return false;
-        self.underline || self.focus.is_some() || self.alt_down || ctx.input(|i| i.modifiers.alt)
+        // self.underline || self.focus.is_some() || self.alt_down || ctx.input(|i| i.modifiers.alt)
     }
 
     /// A menu just opened from the keyboard: light its first row (once, when it is drawn).
@@ -286,143 +286,146 @@ impl Keys {
     /// Handle this frame's keys, after the menus were drawn. `tops` are the titles' popup ids
     /// and `mnemonics` their letters, both in screen order; `nav` is the open menu's state. A
     /// command a mnemonic ran lands in `clicked`.
-    pub fn keys(&mut self, ctx: &egui::Context, tops: &[Id], mnemonics: &[Option<char>], nav: &mut Nav, clicked: &mut Option<String>) {
+    pub fn keys(&mut self, _ctx: &egui::Context, _tops: &[Id], _mnemonics: &[Option<char>], _nav: &mut Nav, _clicked: &mut Option<String>) {
         return;
         
-        if tops.is_empty() {
-            return;
-        }
-        let events = ctx.input(|i| i.events.clone());
-        let mut tap = false;
-        // The tap is judged on every event of the frame, also those another handler consumed
-        // before the bar's turn: the shortcuts run first, so Ctrl+Alt+I (Image Size) left no
-        // trace in `events`, and releasing Alt counted as a tap that put the keyboard on the bar;
-        // Enter then opened File instead of confirming the dialog (#7481).
-        let raw = ctx.input(|i| i.raw.events.clone());
-        for e in &raw {
-            match e {
-                Event::Key { key: Key::AltLeft | Key::AltRight, pressed: true, .. } => {
-                    self.alt_down = true;
-                    // Alt pressed while a mouse button is down is a modifier for that drag
-                    // (Free Transform's scale-from-centre), never a tap (#8113).
-                    self.alt_tap = self.buttons_held == 0;
-                }
-                Event::Key { key: Key::AltLeft | Key::AltRight, pressed: false, .. } => {
-                    self.alt_down = false;
-                    tap |= std::mem::take(&mut self.alt_tap);
-                }
-                // A click or the end of a drag while Alt is held is no tap. It also cancels a tap
-                // taken earlier in this frame: a whole drag can arrive in one frame (press, Alt
-                // down, Alt up, release).
-                Event::PointerButton { button, pressed, .. } => {
-                    let bit = 1u8 << (*button as u8);
-                    if *pressed {
-                        self.buttons_held |= bit;
-                    } else {
-                        self.buttons_held &= !bit;
-                    }
-                    self.alt_tap = false;
-                    tap = false;
-                }
-                // Alt going to the desktop is no tap, and a button let go out there is up.
-                Event::WindowFocused(false) => {
-                    self.alt_tap = false;
-                    self.buttons_held = 0;
-                }
-                // Alt+wheel (zoom, brush size…) is no tap either.
-                Event::Key { pressed: true, .. } | Event::Text(_) | Event::MouseWheel { .. } => self.alt_tap = false,
-                _ => {}
-            }
-        }
-        if events.iter().any(|e| matches!(e, Event::PointerButton { pressed: true, .. })) {
-            self.focus = None;
-            self.underline = false;
-        }
-        let open = nav.top.is_some();
-        let n = tops.len();
-        let open_top = |i: usize, keys: &mut Keys| {
-            if let Some(&id) = tops.get(i) {
-                egui::Popup::open_id(ctx, id);
-                keys.focus = None;
-                keys.underline = true;
-                keys.first_row = true;
-                ctx.request_repaint();
-            }
-        };
-        let consume = |m: Modifiers, k: Key| ctx.input_mut(|i| i.consume_key(m, k));
-        // Alt+letter opens that menu, open or not (an open one switches), as on Windows.
-        let alt_letter = events.iter().find_map(|e| match e {
-            Event::Key { key, pressed: true, modifiers, .. } if modifiers.alt && !modifiers.command && !modifiers.ctrl => key_char(*key).map(|c| (*key, c)),
-            _ => None,
-        });
-        if let Some((key, c)) = alt_letter
-            && let Some(i) = mnemonics.iter().position(|m| *m == Some(c))
-        {
-            consume(Modifiers::ALT, key);
-            self.alt_tap = false;
-            open_top(i, self);
-            return;
-        }
-        if open {
-            // A letter runs the row with that mnemonic in the level the arrows are in, unless it is
-            // typed into a field in the menu: Help › Search took "S" for System Info (#5996).
-            let typing = ctx.text_edit_focused();
-            let letter = events.iter().filter(|_| !typing).find_map(|e| match e {
-                Event::Key { key, pressed: true, modifiers, .. } if !modifiers.command && !modifiers.ctrl && !modifiers.alt => {
-                    key_char(*key).map(|c| (*key, c))
-                }
-                _ => None,
-            });
-            if let Some((key, c)) = letter
-                && let Some(row) = nav.row_with_mnemonic(c)
-            {
-                consume(Modifiers::NONE, key);
-                self.underline = true;
-                if let Some(cmd) = row.command.clone() {
-                    *clicked = Some(cmd);
-                    egui::Popup::close_all(ctx);
-                } else {
-                    nav.open_sub_row(ctx, row.widget);
-                }
-                ctx.request_repaint();
-            }
-            if tap {
-                egui::Popup::close_all(ctx);
-                self.underline = false;
-                ctx.request_repaint();
-            }
-            return;
-        }
-        // No menu open: Alt (tapped) or F10 puts the keyboard on the bar or takes it off again.
-        let f10 = consume(Modifiers::NONE, Key::F10);
-        if tap || f10 {
-            self.focus = if self.focus.is_some() { None } else { Some(0) };
-            self.underline = false;
-            ctx.request_repaint();
-            return;
-        }
-        let Some(focus) = self.focus else { return };
-        let press = |k: Key| consume(Modifiers::NONE, k);
-        if press(Key::Escape) {
-            self.focus = None;
-        } else if press(Key::ArrowRight) {
-            self.focus = Some((focus + 1) % n);
-        } else if press(Key::ArrowLeft) {
-            self.focus = Some((focus + n - 1) % n);
-        } else if press(Key::ArrowDown) || press(Key::Enter) || press(Key::Space) {
-            open_top(focus, self);
-        } else if let Some((key, c)) = events.iter().find_map(|e| match e {
-            Event::Key { key, pressed: true, modifiers, .. } if modifiers.is_none() => key_char(*key).map(|c| (*key, c)),
-            _ => None,
-        }) {
-            if let Some(i) = mnemonics.iter().position(|m| *m == Some(c)) {
-                consume(Modifiers::NONE, key);
-                open_top(i, self);
-            }
-        } else {
-            return;
-        }
-        ctx.request_repaint();
+        // was used for putting focus at the top system menu of the app on windows, which is i dont think is useful 
+        // because when you're constantly pressing Alt for color picker you're gonna accidentally call the top menu which was annoying
+
+        // if tops.is_empty() {
+        //     return;
+        // }
+        // let events = ctx.input(|i| i.events.clone());
+        // let mut tap = false;
+        // // The tap is judged on every event of the frame, also those another handler consumed
+        // // before the bar's turn: the shortcuts run first, so Ctrl+Alt+I (Image Size) left no
+        // // trace in `events`, and releasing Alt counted as a tap that put the keyboard on the bar;
+        // // Enter then opened File instead of confirming the dialog (#7481).
+        // let raw = ctx.input(|i| i.raw.events.clone());
+        // for e in &raw {
+        //     match e {
+        //         Event::Key { key: Key::AltLeft | Key::AltRight, pressed: true, .. } => {
+        //             self.alt_down = true;
+        //             // Alt pressed while a mouse button is down is a modifier for that drag
+        //             // (Free Transform's scale-from-centre), never a tap (#8113).
+        //             self.alt_tap = self.buttons_held == 0;
+        //         }
+        //         Event::Key { key: Key::AltLeft | Key::AltRight, pressed: false, .. } => {
+        //             self.alt_down = false;
+        //             tap |= std::mem::take(&mut self.alt_tap);
+        //         }
+        //         // A click or the end of a drag while Alt is held is no tap. It also cancels a tap
+        //         // taken earlier in this frame: a whole drag can arrive in one frame (press, Alt
+        //         // down, Alt up, release).
+        //         Event::PointerButton { button, pressed, .. } => {
+        //             let bit = 1u8 << (*button as u8);
+        //             if *pressed {
+        //                 self.buttons_held |= bit;
+        //             } else {
+        //                 self.buttons_held &= !bit;
+        //             }
+        //             self.alt_tap = false;
+        //             tap = false;
+        //         }
+        //         // Alt going to the desktop is no tap, and a button let go out there is up.
+        //         Event::WindowFocused(false) => {
+        //             self.alt_tap = false;
+        //             self.buttons_held = 0;
+        //         }
+        //         // Alt+wheel (zoom, brush size…) is no tap either.
+        //         Event::Key { pressed: true, .. } | Event::Text(_) | Event::MouseWheel { .. } => self.alt_tap = false,
+        //         _ => {}
+        //     }
+        // }
+        // if events.iter().any(|e| matches!(e, Event::PointerButton { pressed: true, .. })) {
+        //     self.focus = None;
+        //     self.underline = false;
+        // }
+        // let open = nav.top.is_some();
+        // let n = tops.len();
+        // let open_top = |i: usize, keys: &mut Keys| {
+        //     if let Some(&id) = tops.get(i) {
+        //         egui::Popup::open_id(ctx, id);
+        //         keys.focus = None;
+        //         keys.underline = true;
+        //         keys.first_row = true;
+        //         ctx.request_repaint();
+        //     }
+        // };
+        // let consume = |m: Modifiers, k: Key| ctx.input_mut(|i| i.consume_key(m, k));
+        // // Alt+letter opens that menu, open or not (an open one switches), as on Windows.
+        // let alt_letter = events.iter().find_map(|e| match e {
+        //     Event::Key { key, pressed: true, modifiers, .. } if modifiers.alt && !modifiers.command && !modifiers.ctrl => key_char(*key).map(|c| (*key, c)),
+        //     _ => None,
+        // });
+        // if let Some((key, c)) = alt_letter
+        //     && let Some(i) = mnemonics.iter().position(|m| *m == Some(c))
+        // {
+        //     consume(Modifiers::ALT, key);
+        //     self.alt_tap = false;
+        //     open_top(i, self);
+        //     return;
+        // }
+        // if open {
+        //     // A letter runs the row with that mnemonic in the level the arrows are in, unless it is
+        //     // typed into a field in the menu: Help › Search took "S" for System Info (#5996).
+        //     let typing = ctx.text_edit_focused();
+        //     let letter = events.iter().filter(|_| !typing).find_map(|e| match e {
+        //         Event::Key { key, pressed: true, modifiers, .. } if !modifiers.command && !modifiers.ctrl && !modifiers.alt => {
+        //             key_char(*key).map(|c| (*key, c))
+        //         }
+        //         _ => None,
+        //     });
+        //     if let Some((key, c)) = letter
+        //         && let Some(row) = nav.row_with_mnemonic(c)
+        //     {
+        //         consume(Modifiers::NONE, key);
+        //         self.underline = true;
+        //         if let Some(cmd) = row.command.clone() {
+        //             *clicked = Some(cmd);
+        //             egui::Popup::close_all(ctx);
+        //         } else {
+        //             nav.open_sub_row(ctx, row.widget);
+        //         }
+        //         ctx.request_repaint();
+        //     }
+        //     if tap {
+        //         egui::Popup::close_all(ctx);
+        //         self.underline = false;
+        //         ctx.request_repaint();
+        //     }
+        //     return;
+        // }
+        // // No menu open: Alt (tapped) or F10 puts the keyboard on the bar or takes it off again.
+        // let f10 = consume(Modifiers::NONE, Key::F10);
+        // if tap || f10 {
+        //     self.focus = if self.focus.is_some() { None } else { Some(0) };
+        //     self.underline = false;
+        //     ctx.request_repaint();
+        //     return;
+        // }
+        // let Some(focus) = self.focus else { return };
+        // let press = |k: Key| consume(Modifiers::NONE, k);
+        // if press(Key::Escape) {
+        //     self.focus = None;
+        // } else if press(Key::ArrowRight) {
+        //     self.focus = Some((focus + 1) % n);
+        // } else if press(Key::ArrowLeft) {
+        //     self.focus = Some((focus + n - 1) % n);
+        // } else if press(Key::ArrowDown) || press(Key::Enter) || press(Key::Space) {
+        //     open_top(focus, self);
+        // } else if let Some((key, c)) = events.iter().find_map(|e| match e {
+        //     Event::Key { key, pressed: true, modifiers, .. } if modifiers.is_none() => key_char(*key).map(|c| (*key, c)),
+        //     _ => None,
+        // }) {
+        //     if let Some(i) = mnemonics.iter().position(|m| *m == Some(c)) {
+        //         consume(Modifiers::NONE, key);
+        //         open_top(i, self);
+        //     }
+        // } else {
+        //     return;
+        // }
+        // ctx.request_repaint();
     }
 }
 

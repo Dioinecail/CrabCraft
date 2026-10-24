@@ -4223,14 +4223,15 @@ pub(crate) fn offer_color_field_fill(ui: &egui::Ui, pro: bool, group: crate::doc
     }
 }
 
+// Was used for the old height calculation
 /// Height of the Color field: the group body's height (when docked) less the hex/RGB readout,
 /// which folds onto a second line in a narrow dock. 120 pt when nothing sets a height.
-fn color_field_height(avail: Option<f32>, width: f32) -> f32 {
-    let reserve = 32.0 + if width < 280.0 { 26.0 } else { 0.0 };
-    // When docked, shrink the field so the hex/RGB readout stays in view (#6885). A 120 pt floor
-    // here pushed the readout below the scroll area in a compact Color group.
-    avail.filter(|a| a.is_finite()).map_or(120.0, |a| (a - reserve).clamp(0.0, 2000.0))
-}
+// fn color_field_height(avail: Option<f32>, width: f32) -> f32 {
+//     let reserve = 32.0 + if width < 280.0 { 26.0 } else { 0.0 };
+//     // When docked, shrink the field so the hex/RGB readout stays in view (#6885). A 120 pt floor
+//     // here pushed the readout below the scroll area in a compact Color group.
+//     avail.filter(|a| a.is_finite()).map_or(120.0, |a| (a - reserve).clamp(0.0, 2000.0))
+// }
 
 /// The colour the SV field draws for `hsva`, with what the field showed last (`hue`, `saturation`)
 /// filling in what the colour itself cannot carry: a grey has no hue of its own, and black has

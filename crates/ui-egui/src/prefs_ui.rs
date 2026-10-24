@@ -172,12 +172,13 @@ const DARK_THEME_OPTIONS: &[(&str, ThemeKind)] = &[
     ("softDark", ThemeKind::SoftDark),
 ];
 
-fn favorite_theme_groups(favorites: &[SavedTheme]) -> (Vec<ThemeKind>, Vec<ThemeKind>) {
-    let group = |options: &[(&str, ThemeKind)]| {
-        options.iter().filter_map(|(id, kind)| SavedTheme::parse(id).filter(|theme| favorites.contains(theme)).map(|_| *kind)).collect()
-    };
-    (group(LIGHT_THEME_OPTIONS), group(DARK_THEME_OPTIONS))
-}
+// was used for workspace select button? i dont really need it
+// fn favorite_theme_groups(favorites: &[SavedTheme]) -> (Vec<ThemeKind>, Vec<ThemeKind>) {
+//     let group = |options: &[(&str, ThemeKind)]| {
+//         options.iter().filter_map(|(id, kind)| SavedTheme::parse(id).filter(|theme| favorites.contains(theme)).map(|_| *kind)).collect()
+//     };
+//     (group(LIGHT_THEME_OPTIONS), group(DARK_THEME_OPTIONS))
+// }
 
 /// Right-click menu on the top-right appearance button. A plain click still cycles modes.
 pub(crate) fn appearance_context_menu(_app: &mut PhotocraftApp, _ui: &mut egui::Ui) {
