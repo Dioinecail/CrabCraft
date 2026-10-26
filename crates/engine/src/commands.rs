@@ -1195,9 +1195,9 @@ fn build() -> Vec<CommandSpec> {
             None,
             r##"{"foreground":"#rrggbb"|[r,g,b,a?]?,"background":same?,"foregroundCmyk":[c,m,y,k]? (inks 0..1 the foreground was picked as: a CMYK document is filled with exactly these),"backgroundCmyk":same?}"##,
             always,
-            |s, p| {
+            |session, parameters| {
                 let cmyk = |key: &str| -> Result<Option<[f32; 4]>> {
-                    let Some(v) = p.get(key).filter(|v| !v.is_null()) else { return Ok(None) };
+                    let Some(v) = parameters.get(key).filter(|v| !v.is_null()) else { return Ok(None) };
                     let inks: Option<Vec<f32>> = v
                         .as_array()
                         .filter(|a| a.len() == 4)
@@ -1208,17 +1208,20 @@ fn build() -> Vec<CommandSpec> {
                     }
                 };
                 let (fg_cmyk, bg_cmyk) = (cmyk("foregroundCmyk")?, cmyk("backgroundCmyk")?);
-                let foreground = color_param("tools.setColors", p, "foreground", s.tools.foreground)?;
-                let background = color_param("tools.setColors", p, "background", s.tools.background)?;
-                s.tools.foreground = foreground;
-                s.tools.background = background;
+                let foreground = color_param("tools.setColors", parameters, "foreground", session.tools.foreground)?;
+                let background = color_param("tools.setColors", parameters, "background", session.tools.background)?;
+                
+                session.is_eraser_mode = false;
+
+                session.tools.foreground = foreground;
+                session.tools.background = background;
                 if let Some(k) = fg_cmyk {
-                    let [r, g, b, _] = s.tools.foreground;
-                    s.tools.remember_cmyk([r, g, b], k);
+                    let [r, g, b, _] = session.tools.foreground;
+                    session.tools.remember_cmyk([r, g, b], k);
                 }
                 if let Some(k) = bg_cmyk {
-                    let [r, g, b, _] = s.tools.background;
-                    s.tools.remember_cmyk([r, g, b], k);
+                    let [r, g, b, _] = session.tools.background;
+                    session.tools.remember_cmyk([r, g, b], k);
                 }
                 Ok(Value::Null)
             }
