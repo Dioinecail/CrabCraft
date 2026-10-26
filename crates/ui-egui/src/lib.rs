@@ -1246,6 +1246,7 @@ impl PhotocraftApp {
 
     /// Run an engine command, reporting errors in the status bar.
     pub fn run(&mut self, id: &str, params: Value) -> Result<Value, String> {
+        println!("[app.run] Command: '{id}'");
         if let Some(result) = delete_layer_prompt::intercept(self, id, &params) {
             return result;
         }
@@ -2213,21 +2214,6 @@ impl PhotocraftApp {
         }
     }
 }
-
-impl PhotocraftApp {
-    /// Wait out the rest of [`Self::min_frame_ms`] since the last frame started.
-    fn cap_frame_rate(&mut self) {
-        #[cfg(not(target_arch = "wasm32"))]
-        if let Some(min) = self.min_frame_ms.filter(|m| m.is_finite() && *m > 0.0) {
-            let wait = min.min(100.0) - (gpu_canvas::now_ms() - self.last_frame_start_ms);
-            if wait > 0.0 {
-                std::thread::sleep(std::time::Duration::from_secs_f64(wait / 1000.0));
-            }
-        }
-        self.last_frame_start_ms = gpu_canvas::now_ms();
-    }
-}
-
 impl eframe::App for PhotocraftApp {
     fn on_exit(&mut self) {
         if let Err(err) = tool_memory::save_on_exit(self) {
@@ -2550,6 +2536,17 @@ fn read_dropped(_f: &dyn egui::DroppedFile) -> Result<Vec<u8>, String> {
 }
 
 impl PhotocraftApp {
+    /// Wait out the rest of [`Self::min_frame_ms`] since the last frame started.
+    fn cap_frame_rate(&mut self) {
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(min) = self.min_frame_ms.filter(|m| m.is_finite() && *m > 0.0) {
+            let wait = min.min(100.0) - (gpu_canvas::now_ms() - self.last_frame_start_ms);
+            if wait > 0.0 {
+                std::thread::sleep(std::time::Duration::from_secs_f64(wait / 1000.0));
+            }
+        }
+        self.last_frame_start_ms = gpu_canvas::now_ms();
+    }
     /// Whether the title bar's free gap gets the drag overlay this frame: the app draws its title
     /// strip (`chrome`: not hidden by the screen mode) and a dialog's modal layer covers it. Not
     /// only with the custom title bar: on macOS the strip under the traffic lights is the window's

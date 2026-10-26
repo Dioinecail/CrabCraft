@@ -162,7 +162,7 @@ fn background_eraser(session: &mut Session, parameters: &Value) -> Result<Value>
 
 /// `paint.eraserModeToggle`: Toggles eraser mode on current brush.
 fn toggle_eraser_mode(session: &mut Session, _parameters: &Value) -> Result<Value> {
-    const CMD: &str = "paint.eraserModeToggle";
+    // const CMD: &str = "paint.eraserModeToggle";
 
     session.is_eraser_mode = !session.is_eraser_mode;
 
