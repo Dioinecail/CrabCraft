@@ -1981,20 +1981,32 @@ fn info_panel(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
             ui.label(RichText::new(v).font(mono.clone()).color(t.text));
         });
     };
-    ui.columns(2, |cols| {
+
+    ui.horizontal(|ui| {
         let q = |v: f32| (v.clamp(0.0, 1.0) * 255.0).round() as i32;
         let dash = || "—".to_string();
-        row(&mut cols[0], "R:", rgba.map_or_else(dash, |c| q(c[0]).to_string()));
-        row(&mut cols[0], "G:", rgba.map_or_else(dash, |c| q(c[1]).to_string()));
-        row(&mut cols[0], "B:", rgba.map_or_else(dash, |c| q(c[2]).to_string()));
-        // Colour-managed CMYK in percent like Photoshop's readout, through the same conversion as
-        // the Color Picker (#8101) and the Color Sampler readout (`sampler_cmds::device_cmyk`).
+
+        let r = rgba.map_or_else(dash, |c| q(c[0]).to_string());
+        let g = rgba.map_or_else(dash, |c| q(c[1]).to_string());
+        let b = rgba.map_or_else(dash, |c| q(c[2]).to_string());
+
+        ui.label(RichText::new(format!("RGB: {r} {g} {b}")));
+    });
+
+    ui.horizontal(|ui| {
+        let dash = || "—".to_string();
+
         let cmyk =
             rgba.map(|c| photocraft_color::convert::with_cmyk_space(cmyk_space.as_ref(), || photocraft_engine::sampler_cmds::device_cmyk(c[0], c[1], c[2])));
-        for (i, k) in ["C:", "M:", "Y:", "K:"].iter().enumerate() {
-            row(&mut cols[1], k, cmyk.map_or_else(dash, |c| format!("{}%", c[i])));
-        }
+
+        let c1 = cmyk.map_or_else(dash, |cm| cm[0].to_string());
+        let m1 = cmyk.map_or_else(dash, |cm| cm[1].to_string());
+        let y1 = cmyk.map_or_else(dash, |cm| cm[2].to_string());
+        let k1 = cmyk.map_or_else(dash, |cm| cm[3].to_string());
+
+        ui.label(RichText::new(format!("CMYK: {c1}% {m1}% {y1}% {k1}%")));
     });
+
     widgets::hairline(ui);
     ui.columns(2, |cols| {
         let dash = || "—".to_string();
@@ -2912,7 +2924,7 @@ fn layers(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         ctx.data_mut(|d| d.remove::<MaskDrag>(mask_drag_key()));
         ctx.data_mut(|d| d.remove::<crate::smart_ui::FilterDrag>(crate::smart_ui::drag_key()));
     }
-    
+
     widgets::panel_footer(ui, |ui| {
         let active_layer = active.and_then(|id| doc.layer(id));
 
@@ -2957,7 +2969,7 @@ fn layers(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         // though dropping a whole layer row onto the same button always deletes the layer.
         trash.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, tl!(label)));
         let new_layer = icons::button(ui, "square-plus", 26.0, false, &crate::shortcuts::tip_label(app, "Create a new layer", "layer.new.layer"));
-        
+
         if new_layer.clicked() {
             // A click makes the layer above the selection; ⌥-click asks first (the New Layer
             // dialog) and ⌘/Ctrl-click adds it below, as in Photoshop.
