@@ -22,6 +22,25 @@ use crate::brush_preview;
 use crate::theme::{self, Tokens};
 use crate::{PhotocraftApp, icons, widgets};
 
+/// A group's content in panel order: its presets and nested folders.
+#[derive(Debug)]
+pub enum Node<'a> {
+    Preset(&'a BrushPreset),
+    Folder(FolderNode<'a>),
+}
+
+/// A nested folder and what it holds.
+#[derive(Debug)]
+pub struct FolderNode<'a> {
+    /// The folder's path in its group.
+    pub path: Vec<String>,
+    pub children: Vec<Node<'a>>,
+    /// Presets in it and below it.
+    pub count: usize,
+}
+/// Deepest nested folder the panel draws; deeper folders show at this depth.
+pub const MAX_VIEW_DEPTH: usize = photocraft_engine::brush_preset_cmds::MAX_FOLDER_DEPTH;
+
 /// What a drag in the Brushes tab carries.
 #[derive(Clone, Debug, PartialEq)]
 pub enum BrushDrag {
@@ -95,8 +114,41 @@ pub struct ListLayout {
     pub cards: bool,
 }
 
+/// How a group's content is drawn.
+struct Draw<'a> {
+    label: &'a str,
+    key: &'a str,
+    presets: &'a [BrushPreset],
+    /// The selected preset's name (by identity, so look-alike duplicates stay distinct).
+    current: Option<&'a str>,
+    collapsed: &'a [String],
+    grid: bool,
+    layout: ListLayout,
+    /// The picker cards' parts — name, stroke, tip — from the gear's boxes.
+    show: (bool, bool, bool),
+    /// The picker cards' size scale (its footer slider, 1 = standard): multiplies [`CARD_MAX_W`]
+    /// and [`CARD_MAX_H`], or [`CARD_TIP_ONLY_W`]/[`CARD_TIP_ONLY_H`] for tip-only cards and
+    /// [`CARD_TIP_NAME_W`]/[`CARD_TIP_NAME_H`] for tip-and-name ones; the text holds its 1.0
+    /// size ([`CARD_NAME_FONT`], [`CARD_NUM_FONT`]); at or below [`CARD_COMPACT_SCALE`] the tips
+    /// drop their size numbers.
+    scale: f32,
+}
+
+/// A preset with its folder path below the level being built.
+type Entry<'a> = (&'a [String], &'a BrushPreset);
+
 /// The Brushes tab's list.
 pub const PANEL_LIST: ListLayout = ListLayout { id: "brush-presets", max_height: 400.0, cell: 52.0, indent: 20.0, cards: false };
+/// Width a list row keeps for the gaps around its stroke preview and the preset name.
+const STROKE_NAME_ROOM: f32 = 140.0;
+
+/// The gap between grid cells, across and down.
+const GRID_GAP: f32 = 3.0;
+/// The picker's cards pack tighter than the grid: their horizontal gap (the vertical one stays
+/// [`GRID_GAP`]).
+const CARD_GAP: f32 = 1.0;
+/// Indent of one nested folder level.
+const FOLDER_INDENT: f32 = 16.0;
 
 fn responsive_list_layout(ui: &egui::Ui) -> ListLayout {
     let height = ui.available_height().clamp(180.0, 640.0);
@@ -109,30 +161,10 @@ pub fn group_key(presets: &[BrushPreset], label: &str) -> String {
     if label == UNGROUPED && !presets.iter().any(|p| p.group == UNGROUPED) { String::new() } else { label.to_string() }
 }
 
-/// Deepest nested folder the panel draws; deeper folders show at this depth.
-pub const MAX_VIEW_DEPTH: usize = photocraft_engine::brush_preset_cmds::MAX_FOLDER_DEPTH;
-
 /// The collapse key of a nested folder of the group shown as `label` (`label` itself for the
 /// group).
 pub fn folder_view_key(label: &str, folder: &[String]) -> String {
     if folder.is_empty() { label.to_string() } else { format!("{label}/{}", folder.join("/")) }
-}
-
-/// A group's content in panel order: its presets and nested folders.
-#[derive(Debug)]
-pub enum Node<'a> {
-    Preset(&'a BrushPreset),
-    Folder(FolderNode<'a>),
-}
-
-/// A nested folder and what it holds.
-#[derive(Debug)]
-pub struct FolderNode<'a> {
-    /// The folder's path in its group.
-    pub path: Vec<String>,
-    pub children: Vec<Node<'a>>,
-    /// Presets in it and below it.
-    pub count: usize,
 }
 
 /// The tree of a group's presets (`items`, in library order): each folder appears where its first
@@ -140,9 +172,6 @@ pub struct FolderNode<'a> {
 pub fn folder_tree<'a>(items: &[&'a BrushPreset]) -> Vec<Node<'a>> {
     level(items.iter().map(|p| (p.folder.get(..p.folder.len().min(MAX_VIEW_DEPTH)).unwrap_or_default(), *p)).collect(), &[])
 }
-
-/// A preset with its folder path below the level being built.
-type Entry<'a> = (&'a [String], &'a BrushPreset);
 
 /// One level of [`folder_tree`]: `items` pairs each preset with its path below `prefix`. The
 /// recursion is as deep as the longest path (at most [`MAX_VIEW_DEPTH`]).
@@ -330,9 +359,6 @@ fn preset_interactions(ui: &egui::Ui, resp: &egui::Response, r: egui::Rect, p: &
     });
 }
 
-/// Width a list row keeps for the gaps around its stroke preview and the preset name.
-const STROKE_NAME_ROOM: f32 = 140.0;
-
 /// The Brushes tab's preview size slider range: what the grid cells and list rows scale between
 /// (1 = the standard size). Not the picker's cards' scale ([`crate::brush_picker::SCALE_RANGE`]).
 pub(crate) const PREVIEW_SCALE_RANGE: std::ops::RangeInclusive<f32> = 0.5..=2.0;
@@ -383,12 +409,6 @@ fn list_row(ui: &mut egui::Ui, p: &BrushPreset, current: bool, presets: &[BrushP
     crate::layer_row_ui::label(ui.painter(), sr.right() + 12.0, r.center().y, r.right() - 4.0, &p.name, egui::FontId::proportional(12.0), t.text_dim);
     preset_interactions(ui, &resp, r, p, presets, false, acts);
 }
-
-/// The gap between grid cells, across and down.
-const GRID_GAP: f32 = 3.0;
-/// The picker's cards pack tighter than the grid: their horizontal gap (the vertical one stays
-/// [`GRID_GAP`]).
-const CARD_GAP: f32 = 1.0;
 
 /// The grid's columns in a list `width` points wide: how many `cell`-wide cells separated by
 /// `gap` fit past the `indent`, and the left margin that centres them in the room past it. At
@@ -632,9 +652,6 @@ fn preset_card(
     preset_interactions(ui, &resp, card, p, presets, tip_only, acts);
 }
 
-/// Indent of one nested folder level.
-const FOLDER_INDENT: f32 = 16.0;
-
 /// What dropping the group or folder (`src_group`, `src_folder`; a group when `src_folder` is
 /// empty) on the header of (`group`, `folder`) does, as in Photoshop's Brushes panel: on the
 /// header's upper edge (`edge`) it lands before that folder, next to it (reordering when they are
@@ -737,26 +754,6 @@ fn group_header(ui: &mut egui::Ui, label: &str, key: &str, folder: &[String], op
             ui.close();
         }
     });
-}
-
-/// How a group's content is drawn.
-struct Draw<'a> {
-    label: &'a str,
-    key: &'a str,
-    presets: &'a [BrushPreset],
-    /// The selected preset's name (by identity, so look-alike duplicates stay distinct).
-    current: Option<&'a str>,
-    collapsed: &'a [String],
-    grid: bool,
-    layout: ListLayout,
-    /// The picker cards' parts — name, stroke, tip — from the gear's boxes.
-    show: (bool, bool, bool),
-    /// The picker cards' size scale (its footer slider, 1 = standard): multiplies [`CARD_MAX_W`]
-    /// and [`CARD_MAX_H`], or [`CARD_TIP_ONLY_W`]/[`CARD_TIP_ONLY_H`] for tip-only cards and
-    /// [`CARD_TIP_NAME_W`]/[`CARD_TIP_NAME_H`] for tip-and-name ones; the text holds its 1.0
-    /// size ([`CARD_NAME_FONT`], [`CARD_NUM_FONT`]); at or below [`CARD_COMPACT_SCALE`] the tips
-    /// drop their size numbers.
-    scale: f32,
 }
 
 /// Draw `nodes` (a group's or folder's content) at nesting `depth`: runs of presets as rows or a

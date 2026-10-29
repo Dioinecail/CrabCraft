@@ -675,6 +675,7 @@ fn drop_targets_and_actions_reorder_presets() {
             group: g.into(),
             folder: Vec::new(),
             captures: Default::default(),
+            current_size: 0.0
         });
     }
     let p = &app.session.tools.presets;
@@ -1143,6 +1144,7 @@ fn kit(name: &str, folder: &[&str]) -> paint::BrushPreset {
         group: "Kit".into(),
         folder: folder.iter().map(|s| s.to_string()).collect(),
         captures: Default::default(),
+        current_size: 0.0
     }
 }
 
