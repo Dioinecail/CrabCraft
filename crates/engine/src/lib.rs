@@ -129,6 +129,7 @@ pub mod type_mask_cmds;
 pub mod type_spell_cmds;
 pub mod type_styles_cmds;
 mod variables_cmds;
+use chrono::Utc;
 pub use variables_cmds::{export_data_sets_with, import_data_sets_text};
 pub mod vector_cmds;
 mod video_cmds;
@@ -248,6 +249,7 @@ pub struct DocState {
     /// The snapshot set as the History Brush's source (`history.setSource {snapshot}`); `None`:
     /// the source is a state, kept by the history ([`photocraft_ops::History::brush_source`]).
     pub(crate) source_snapshot: Option<u64>,
+    pub opened_time: chrono::DateTime<Utc>
 }
 
 impl DocState {
@@ -293,6 +295,7 @@ impl DocState {
             snapshots: Vec::new(),
             next_snapshot: 1,
             source_snapshot: None,
+            opened_time: Utc::now()
         }
     }
     /// The selected layers in bottom-to-top document order, always including the active layer.

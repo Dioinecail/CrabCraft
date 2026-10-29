@@ -10,6 +10,9 @@ use crate::mask_thumbs_ui::MaskKind;
 use crate::state::{ColorPanelSliderMode, Tool};
 use crate::theme::{self, Tokens};
 use crate::{PhotocraftApp, icons, widgets};
+use chrono::{NaiveTime, TimeDelta, Timelike, Utc};
+use std::ops::Sub;
+use std::time::Duration;
 
 // ----------------------------------------------------------------------------- toolbar
 
@@ -1982,9 +1985,10 @@ fn info_panel(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         });
     };
 
+    let dash = || "—".to_string();
+
     ui.horizontal(|ui| {
         let q = |v: f32| (v.clamp(0.0, 1.0) * 255.0).round() as i32;
-        let dash = || "—".to_string();
 
         let r = rgba.map_or_else(dash, |c| q(c[0]).to_string());
         let g = rgba.map_or_else(dash, |c| q(c[1]).to_string());
@@ -1994,7 +1998,6 @@ fn info_panel(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     });
 
     ui.horizontal(|ui| {
-        let dash = || "—".to_string();
 
         let cmyk =
             rgba.map(|c| photocraft_color::convert::with_cmyk_space(cmyk_space.as_ref(), || photocraft_engine::sampler_cmds::device_cmyk(c[0], c[1], c[2])));
@@ -2007,21 +2010,48 @@ fn info_panel(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         ui.label(RichText::new(format!("CMYK: {c1}% {m1}% {y1}% {k1}%")));
     });
 
-    widgets::hairline(ui);
-    ui.columns(2, |cols| {
-        let dash = || "—".to_string();
-        // Measured from the rulers' zero point (#2955).
-        row(&mut cols[0], "X:", guide_x.map(|p| fx(p - origin[0])).or_else(|| pos.map(|p| fx(p.0 as f64 - origin[0]))).unwrap_or_else(dash));
-        row(&mut cols[0], "Y:", guide_y.map(|p| fy(p - origin[1])).or_else(|| pos.map(|p| fy(p.1 as f64 - origin[1]))).unwrap_or_else(dash));
-        row(&mut cols[1], "W:", sel.map_or_else(dash, |r| fx(r.width() as f64)));
-        row(&mut cols[1], "H:", sel.map_or_else(dash, |r| fy(r.height() as f64)));
+    ui.horizontal(|ui| {
+        let x_coord = guide_x.map(|p| fx(p - origin[0])).or_else(|| pos.map(|p| fx(p.0 as f64 - origin[0]))).unwrap_or_else(dash);
+        let y_coord = guide_y.map(|p| fy(p - origin[1])).or_else(|| pos.map(|p| fy(p.1 as f64 - origin[1]))).unwrap_or_else(dash);
+
+        ui.label(RichText::new(format!("Cursor: X: {x_coord} Y: {y_coord}")));
     });
-    widgets::hairline(ui);
-    ui.label(
-        RichText::new(crate::i18n::fmt(tl!("Doc: {w} × {h} px"), &[("w", &size.width.to_string()), ("h", &size.height.to_string())]))
-            .color(t.text_dim)
-            .size(11.5),
-    );
+
+    ui.horizontal(|ui| {
+        if let Some(s) = sel {
+            let width = s.width();
+            let height = s.height();
+
+            ui.label(RichText::new(format!("Selection: W: {width:?} H: {height:?}")));
+        }
+        else {
+            ui.label(RichText::new(format!("Selection: Nothing Selected")));
+        }
+    });
+
+    if let Some(doc) = app.session.active() {
+        // show doc opened date
+        let date_opened = doc.opened_time;
+        let now = Utc::now();
+
+        // saturating_sub prevents overflowing and panicking
+        let session_time_total = now.time().sub(date_opened.time()).num_seconds();
+
+        let empty_str = "".to_string();
+
+        let sec = session_time_total % 60;
+        let mins = session_time_total / 60;
+        let min = mins % 60;
+        let hour = mins / 60;
+
+        let min_str = if min > 0 { format!("{:02}:", mins) } else { empty_str.clone() };
+        let hour_str = if hour > 0 { format!("{:?}:", hour) } else { empty_str };
+
+        ui.horizontal(|ui| {
+            ui.label(RichText::new(format!("Session Time: {hour_str}{min_str}{sec:02}")));
+        });
+    }
+
     // Color Sampler points (#1046): each under its number, with its position in the current ruler
     // unit and the same RGB/CMYK readout as the pointer (one composite pixel each).
     let samplers = sampler_readouts(app);
