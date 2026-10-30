@@ -57,7 +57,7 @@ impl Fixture {
         let LayerContent::Smart(sm) = &mut doc.layer_mut(layer).unwrap().content else { panic!("smart object") };
         sm.smart_filters[0].params = path_params(lookup, &self.outside(if lookup { "white.cube" } else { "white.png" }));
         let bytes = photocraft_format::save_to_bytes(&doc, &Default::default()).unwrap();
-        std::fs::write(self.root().join("stored.pcraft"), bytes).unwrap();
+        std::fs::write(self.root().join("stored.crab"), bytes).unwrap();
         (doc, layer)
     }
 }
@@ -133,7 +133,7 @@ fn loaded_filters_are_checked_after_merging_even_when_the_edit_contains_no_path(
         let f = Fixture::new();
         let (_, layer) = f.saved_filter(lookup);
         let mut h = f.headless();
-        h.open(Path::new("stored.pcraft")).unwrap();
+        h.open(Path::new("stored.crab")).unwrap();
         let doc = h.session.active().unwrap().doc.clone();
         assert_denied(h.session.execute("layer.smartFilter.setParams", json!({"layer": layer.0, "params": {"horizontal": 10, "dither": false}})));
         assert!(Arc::ptr_eq(&doc, &h.session.active().unwrap().doc));
@@ -154,7 +154,7 @@ fn loaded_filters_cannot_read_on_rerender_or_reuse_a_trusted_cached_stage() {
                 assert!(smart_cmds::refresh(&mut trusted, layer).unwrap());
             }
             let mut h = f.headless();
-            h.open(Path::new("stored.pcraft")).unwrap();
+            h.open(Path::new("stored.crab")).unwrap();
             let before = h.session.active().unwrap().doc.clone();
             assert_denied(h.session.execute("layer.smartFilter.setVisible", json!({"layer": layer.0, "visible": true})));
             assert!(Arc::ptr_eq(&before, &h.session.active().unwrap().doc));
@@ -188,7 +188,7 @@ fn transferring_stored_filters_cannot_read_outside_files() {
         let f = Fixture::new();
         let (_, from) = f.saved_filter(lookup);
         let mut h = f.headless();
-        h.open(Path::new("stored.pcraft")).unwrap();
+        h.open(Path::new("stored.crab")).unwrap();
         let to = h.handle("doc.place", json!({"path": "stripes.png"})).unwrap()["layer"].as_u64().unwrap();
         let before = h.session.active().unwrap().doc.clone();
         for copy in [false, true] {
@@ -226,7 +226,7 @@ fn a_refresh_outside_command_execution_surfaces_the_denial_instead_of_rendering_
         let f = Fixture::new();
         let (doc, layer) = f.saved_filter(lookup);
         let mut h = f.headless();
-        h.open(Path::new("stored.pcraft")).unwrap();
+        h.open(Path::new("stored.crab")).unwrap();
         let before = h.session.active().unwrap().doc.clone();
         // Session::edit is the outside-execute mutation path (an edit closure the UI or a
         // linked-file change runs); the stored filter must be denied there too.

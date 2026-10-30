@@ -180,7 +180,7 @@ parity for the area and are already contained in the dimension rows above.
 | Automation, actions, batch, scripting | 45% | 120–200 | CLI/MCP/control channel ahead of Photoshop; Actions panel and recording not document-independent (AUTO-219-1/2); `.atn` load/save since 2026-10-12 (112 events mapped, the rest kept verbatim); compound layer properties export as separate Set events with rename last (#8304, 2026-10-21; independent Photoshop replay pending); no ExtendScript/UXP |
 | File I/O | 60% | 300–500 | See [file-format-parity.md](file-format-parity.md) |
 | Print, export, Save for Web | 50% | 60–100 | JPEG Options without Matte, progressive Scans or size preview (FILE-215-19), no Photoshop PDF, no separations, Save for Web settings not remembered |
-| Video / timeline, data-driven graphics | 30% | 100–200 | Menu items live; frame model persists in `.pcraft`; no PSD video-layer mapping |
+| Video / timeline, data-driven graphics | 30% | 100–200 | Menu items live; frame model persists in `.crab`; no PSD video-layer mapping |
 | Workspace, panels, preferences | 40% | 150–250 | 46 of 149 prefs do nothing; no floating/OS-window panel groups; Libraries, Comments, Contextual Task Bar missing |
 | AI / generative | 10% | 300–600 | See the dimension row |
 
@@ -282,7 +282,7 @@ just presence.
 | Filters (incl. Filter Gallery ×47, Liquify, blurs, render) | ~88% | Gallery looks are approximations; no Neural Filters |
 | Type / text engine, character & paragraph styles, glyphs | ~90% | Vertical type laid out and rendered (#199; no mojikumi or upright-Roman option yet); OpenType alternates thin |
 | Color management (ICC v2/v4, intents, soft-proof) | ~90% | Own pure-Rust CMS; no Adobe CMYK profiles (synthetic) |
-| File I/O: PSD, native .pcraft, flats (png/jpg/tiff/webp/exr/…) | ~85% | PSD oracle ~65% pixel-exact; most structure round-trips |
+| File I/O: PSD, native .crab, flats (png/jpg/tiff/webp/exr/…) | ~85% | PSD oracle ~65% pixel-exact; most structure round-trips |
 | Transform, warp, puppet, perspective, liquify | ~88% | No Face-Aware Liquify (needs a landmark model) |
 | Automation: CLI, MCP, headless server, control channel | ~95% | Ahead of Photoshop here (see below) |
 | Image modes (RGB/Gray/CMYK/Lab/Indexed/Duotone/Multichannel) | ~85% | Multichannel display-only; no ink-plate model |
@@ -440,7 +440,7 @@ filled bar. This extends UI reachability and does not claim Photoshop-authored s
 | PSD fidelity (rendering) | Corpus oracle 115/170 (68%): 30 differ, 26 have no usable reference, 1 import error. 2026-10-07: io corpus 146/170, psd-tools corpus 236/309 (was 229: Advanced Blending knockouts), Photoshop oracles 132/258 | medium | Push to 170/170 under way (effects/strokes, multi-instance effects, 16/32-bit and colour modes, references for skipped files). |
 | PSD round trip | 169/169 re-import identically; every adjustment layer and blend mode round-trips | high (within corpus) | Floors in `crates/io/tests/it/corpus.rs`; raise, never lower. Corpora: `cargo xtask corpus --all` (ours: https://github.com/storytold/photocraft-corpus). |
 | OpenRaster read/write | 2026-10-09: 34 Krita 5.2.9-authored `.ora` files (27 blend modes, groups, pass-through, offsets, opacity, visibility, masks, 16-bit, gray) render within 3/255 of Krita's merged image (30) or differ for known reasons (4: Krita's lighter/darker-colour tie-break, Hard Mix at exactly 1, a linear-light 16-bit document); Krita re-opens our exports and renders them identically to its originals (33/34; Soft Light is written as `svg:soft-light`) | medium (one authoring app) | MyPaint and GIMP files untested. Masks are applied to pixels and layer styles dropped on save (reported). See [OpenRaster](ora.md). |
-| Paint.NET import | 2026-10-09: 14/14 local PDN3 textures preserve editable layers exactly through `.pcraft` and render within 2.142/255 of full-size previews; a supplied 5.x document (1280×720, 11 layers) passes editing/history/native saves and matches its thumbnail within 0.418/255 mean; all 14 blend modes exercised synthetically | medium (limited corpus) | Import only; metadata omitted. More current-version files and full-size exports needed. See [PDN support](pdn.md). |
+| Paint.NET import | 2026-10-09: 14/14 local PDN3 textures preserve editable layers exactly through `.crab` and render within 2.142/255 of full-size previews; a supplied 5.x document (1280×720, 11 layers) passes editing/history/native saves and matches its thumbnail within 0.418/255 mean; all 14 blend modes exercised synthetically | medium (limited corpus) | Import only; metadata omitted. More current-version files and full-size exports needed. See [PDN support](pdn.md). |
 | Smart filters / text / effect shapes in PSDs | Measured on our Photoshop-authored set (https://github.com/storytold/photocraft-corpus, `corpus/photoshop`, 258 files): see the per-group floors in `crates/io/tests/it/corpus.rs` and `crates/engine/tests/it/photoshop_oracles.rs`. Smart objects and smart filters now survive PSD save and open (41 corpus files, 206 smart objects, round trip strict; Photoshop opens our exports with live filters); re-rendering Photoshop's smart filters with ours matches 5/30 (was 1/30) | low–medium | Remaining re-render gaps are filter maths (Gaussian/Motion Blur, Unsharp Mask, Emboss, Add Noise RNG) and bicubic placement. |
 | Core editing (layers, masks, selections, adjustments, filters, transforms) | Broad engine coverage; many interaction bugs fixed after 0.2.0 (adjustment dialogs, Curves, crop, Move/Transform modifiers, gesture origin) | medium | Fixes not yet user-validated. |
 | UI / UX polish | Shortcut audit 214 → 0 failures; dock, Layers rows and menus reworked; first visual-QA sweep found 14 defects (#147–#157). 2026-10-07: the keyboard-only shortcuts with no menu item (⌥[ ⌥] ⌥, ⌥. layer navigation, ⇧⌥[ ⇧⌥] to extend the selection, 1–0 for opacity and ⇧ for flow or fill, ⇧[ ⇧] hardness, ⌥⌘T to transform a copy and ⌥⇧⌘T to step and repeat), ⌥-click colour sampling with painting tools, double-click a Layers row for Layer Style, File › New from Clipboard, a centred main window and remembered Liquify settings (#352, #417, #350, #368, #419, #418). 2026-10-09: canvas zoom is physical at any display scale — 100% is one document pixel per physical display pixel, and every screen-space overlay, cursor, scrollbar, navigator and fit follows it (#1943) | low–medium | Needs recurring visual QA with realistic documents. |
@@ -512,7 +512,7 @@ parametric and four point curves, HSL, Color Grading, sharpening/noise detail, g
 post-crop vignette controls. Two revisions of one supplied Photoshop ACR 18.4 PSD preserve their
 filter descriptors without edits. The updated revision stays opaque because of active manual
 Optics and unverified vignette style; a descriptor projection verifies its supported controls.
-Synthetic 8/16/32-bit PSD → edit → `.pcraft` → PSD tests preserve the filter stack, mask and
+Synthetic 8/16/32-bit PSD → edit → `.crab` → PSD tests preserve the filter stack, mask and
 undo/redo. Unmapped Camera Raw fields/versions remain opaque; Photoshop
 acceptance of generated exports and pixel parity are still unverified. Corpus floors above are
 unchanged.
@@ -569,7 +569,7 @@ See [method, raw measurements and reproduction](five-algorithm-performance.md).
 | 2026-10-19 | minor | JPEG Options dialog landed (FILE-215-19 partial: no Matte, progressive Scans or size preview); percentages unchanged |
 | 2026-10-18 | minor | Layers: with no selection, Copy takes fill and adjustment layers whole and Paste recreates them (#2344); UI-217-23 stays partial; percentages unchanged |
 | 2026-10-16 | minor | Content-Aware Move: live result preview for every selection the command takes (TOOL-213-4 done, #6680); percentages unchanged |
-| 2026-10-15 | minor | Vector shapes: shape layers take Density and Feather (Properties › Masks), PSD and .pcraft round trip; TOOL-214-12 done (#5846); estimates unchanged |
+| 2026-10-15 | minor | Vector shapes: shape layers take Density and Feather (Properties › Masks), PSD and .crab round trip; TOOL-214-12 done (#5846); estimates unchanged |
 | 2026-10-15 | minor | Print: Functions › Bleed (`file.print` / `file.printOneCopy` `bleed`, corner crop marks on the trim line, PDF and Windows paths); the Print dialog field is still missing; percentages unchanged |
 | 2026-10-13 | minor | Vector shapes: on-canvas corner radius widgets on live rectangles (TOOL-214-12); estimates unchanged |
 | 2026-10-13 | minor | Stale "missing tool" rows corrected against main: Color Replacement (`paint.colorReplacement`), Red Eye (`paint.redEye`) and Add/Delete Anchor Point (the Pen flyout) are live toolbar tools and Frame landed, so Art History Brush is the only tool still missing; percentages unchanged |

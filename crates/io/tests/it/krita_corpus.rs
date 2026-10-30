@@ -63,9 +63,9 @@ fn run(ext: &str, tolerance: f32) {
         let name = path.file_name().unwrap().to_string_lossy().into_owned();
         let r = photocraft_io::import(&name, &bytes).unwrap_or_else(|e| panic!("{name}: {e}"));
         let (error, share, at) = max_error(&r.document, &merged(&bytes), tolerance);
-        // Saving as .pcraft keeps every imported layer exactly.
-        let native = photocraft_io::export(&r.document, "copy.pcraft", &Default::default()).unwrap();
-        assert_eq!(r.document.layers, photocraft_io::import("copy.pcraft", &native.bytes).unwrap().document.layers, "{name}");
+        // Saving as .crab keeps every imported layer exactly.
+        let native = photocraft_io::export(&r.document, "copy.crab", &Default::default()).unwrap();
+        assert_eq!(r.document.layers, photocraft_io::import("copy.crab", &native.bytes).unwrap().document.layers, "{name}");
         let known = KNOWN.iter().find(|(n, ..)| *n == name);
         eprintln!(
             "{name}: {} layers, max error {:.2}/255 {at}{}{}",

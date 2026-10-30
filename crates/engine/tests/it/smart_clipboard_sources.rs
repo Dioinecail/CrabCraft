@@ -38,7 +38,7 @@ fn source_session(doc: Document) -> (Session, LayerId) {
     (s, id)
 }
 fn roundtrip(doc: &Document, format: &str) -> Document {
-    if format == "pcraft" {
+    if format == "crab" {
         photocraft_format::load_from_bytes(&photocraft_format::save_to_bytes(doc, &Default::default()).unwrap()).unwrap()
     } else {
         let out = photocraft_io::export(doc, format, &Default::default()).unwrap();
@@ -72,7 +72,7 @@ fn clipboard_valid_psd_smart_sources_open_reopen_and_undo() {
             s.execute("layer.smartObjects.editContents", json!({"layer": pasted.0})).unwrap();
             assert_eq!(photocraft_compose::flatten(&s.active().unwrap().doc).px[0], [1.0, 0.0, 0.0, 1.0]);
             s.set_active(1);
-            for format in ["pcraft", "psd", "psb"] {
+            for format in ["crab", "psd", "psb"] {
                 let back = roundtrip(&s.active().unwrap().doc, format);
                 let (mut reopened, id) = source_session(back);
                 reopened.execute("layer.smartObjects.editContents", json!({"layer": id.0})).unwrap();
@@ -140,7 +140,7 @@ fn clipboard_converts_parent_without_losing_contents_and_disk_reopen() {
             assert_eq!(photocraft_compose::flatten(&s.active().unwrap().doc).px[0], [1.0, 0.0, 0.0, 1.0]);
             s.set_active(1);
             let dir = tempfile::tempdir().unwrap();
-            let path = dir.path().join("pasted.pcraft");
+            let path = dir.path().join("pasted.crab");
             s.execute("file.saveACopy", json!({"path": path})).unwrap();
             let mut reopened = Session::new();
             reopened.execute("file.openAs", json!({"path": path})).unwrap();
@@ -204,12 +204,12 @@ fn copy_excludes_unselected_linked_records_from_native_save() {
     s.execute("edit.copy", json!({})).unwrap();
     s.execute("file.new", json!({"width": 8, "height": 6})).unwrap();
     s.execute("edit.paste", json!({})).unwrap();
-    let back = roundtrip(&s.active().unwrap().doc, "pcraft");
+    let back = roundtrip(&s.active().unwrap().doc, "crab");
     let retained = photocraft_io::linked::find_linked_file(&back.metadata, "unselected-private-source");
     if let Some(file) = &retained {
         assert_eq!(hash(&file.bytes), hash(&private_bytes));
     }
-    assert!(retained.is_none(), "copying one selected layer must not retain another unselected smart object's embedded file in saved destination .pcraft");
+    assert!(retained.is_none(), "copying one selected layer must not retain another unselected smart object's embedded file in saved destination .crab");
     let linked: Vec<_> = back.metadata.psd_global_blocks.iter().filter(|(_, k, _)| matches!(k, b"lnk2" | b"lnk3" | b"lnkD" | b"lnkE")).collect();
     assert_eq!(linked.len(), 1);
     assert_eq!(hash(&linked[0].2), hash(&selected_record), "unidentified tail bytes must not follow the selected record");
@@ -241,7 +241,7 @@ fn copy_keeps_selected_external_alias_and_unknown_records_without_reading_their_
             let pasted = LayerId(s.execute("edit.paste", json!({})).unwrap()["layer"].as_u64().unwrap());
             let LayerContent::Smart(sm) = &s.active().unwrap().doc.layer(pasted).unwrap().content else { panic!("smart") };
             assert_eq!(sm.source, source, "source identity is retained; missing external contents aren't read during Copy");
-            let back = roundtrip(&s.active().unwrap().doc, "pcraft");
+            let back = roundtrip(&s.active().unwrap().doc, "crab");
             let linked: Vec<_> = back.metadata.psd_global_blocks.iter().filter(|(_, k, _)| matches!(k, b"lnk2" | b"lnk3" | b"lnkD" | b"lnkE")).collect();
             assert_eq!(linked.len(), 1);
             assert_eq!(linked[0].1, key);
@@ -308,7 +308,7 @@ fn repeated_same_document_subset_pastes_do_not_duplicate_embedded_files() {
         assert!(s.redo());
         assert_eq!(s.active().unwrap().doc, after);
     }
-    let back = roundtrip(&s.active().unwrap().doc, "pcraft");
+    let back = roundtrip(&s.active().unwrap().doc, "crab");
     let ids: Vec<_> = back.metadata.psd_global_blocks.iter().flat_map(|(_, _, data)| photocraft_io::linked::block_uuids(data)).collect();
     assert_eq!(ids.len(), 2, "one record per original file after native save/reopen");
 }
@@ -332,7 +332,7 @@ fn empty_source_ids_do_not_carry_unidentified_global_files() {
                 *b"lnk2",
                 Arc::new(photocraft_io::linked::encode_linked_file(&photocraft_io::linked::LinkedFile {
                     uuid: String::new(),
-                    file_name: "unidentified-private.pcraft".into(),
+                    file_name: "unidentified-private.crab".into(),
                     bytes: bytes.clone(),
                 })),
             ));
@@ -367,12 +367,12 @@ fn ambiguous_invalid_utf8_ids_do_not_replace_the_clipboard() {
         let SmartSource::Embedded { bytes, .. } = &sm.source else { panic!("embedded") };
         let mut first = photocraft_io::linked::encode_linked_file(&photocraft_io::linked::LinkedFile {
             uuid: "x".into(),
-            file_name: "selected.pcraft".into(),
+            file_name: "selected.crab".into(),
             bytes: bytes.to_vec(),
         });
         let mut second = photocraft_io::linked::encode_linked_file(&photocraft_io::linked::LinkedFile {
             uuid: "x".into(),
-            file_name: "unrelated.pcraft".into(),
+            file_name: "unrelated.crab".into(),
             bytes: private_bytes.clone(),
         });
         first[17] = 0xff;

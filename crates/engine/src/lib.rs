@@ -215,7 +215,7 @@ pub struct DocState {
     pub revision: u64,
     pub saved_revision: u64,
     /// Native save cache shared with this document's workers, released with the editing state.
-    pub pcraft_cache: photocraft_io::PcraftExportCache,
+    pub crab_cache: photocraft_io::PcraftExportCache,
     /// How much of `revision` came from view-only changes (channel eyes, targeting): pixel caches can ignore those.
     pub view_revision: u64,
     /// Area changed by the latest revision (None = assume everything changed).
@@ -239,7 +239,7 @@ pub struct DocState {
     pub floating: Option<float_cmds::Floating>,
     /// Color Sampler points (`view.colorSamplers.*`, #1046): numbered sample positions in document
     /// pixel coordinates. Per-document view state: discarded when the document closes, never saved
-    /// to `.pcraft` or PSD, and not a history step.
+    /// to `.crab` or PSD, and not a history step.
     pub color_samplers: Vec<[f64; 2]>,
     /// History panel snapshots, oldest first (`history.newSnapshot`, #2966). Kept for the
     /// session only, as in Photoshop: not history states, and not saved with the document.
@@ -281,7 +281,7 @@ impl DocState {
             source_read_only: false,
             revision: 1,
             saved_revision: 1,
-            pcraft_cache: Default::default(),
+            crab_cache: Default::default(),
             view_revision: 0,
             last_damage: None,
             coalesce: None,

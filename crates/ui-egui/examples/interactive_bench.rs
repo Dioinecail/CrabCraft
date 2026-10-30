@@ -1,6 +1,6 @@
 //! End-to-end timings of the interactive paths on a large photo (default 7360×4912 = 36 MP):
 //! open JPEG / PSD, brush dab, Gaussian Blur, adjustment layer tweak, layer move, undo,
-//! save .pcraft / .psd, export PNG / JPEG, plus the canvas refresh each edit triggers.
+//! save .crab / .psd, export PNG / JPEG, plus the canvas refresh each edit triggers.
 //!
 //! ```sh
 //! cargo run --release -p photocraft-ui-egui --example interactive_bench -- [--size 7360x4912] [--reps 5] [--json out.json] [--only text] [--cpu]
@@ -391,10 +391,10 @@ fn main() {
 
     // ---- save / export ---------------------------------------------------------------------
     let mut psd = Vec::new();
-    b.time("save .pcraft (bytes, full)", |_| {
+    b.time("save .crab (bytes, full)", |_| {
         let d = doc(&s);
         let t = Instant::now();
-        std::hint::black_box(photocraft_format::save_to_bytes(&d, &photocraft_format::SaveOptions::default()).expect("pcraft"));
+        std::hint::black_box(photocraft_format::save_to_bytes(&d, &photocraft_format::SaveOptions::default()).expect("crab"));
         ms(t)
     });
     b.time("save .psd", |_| {

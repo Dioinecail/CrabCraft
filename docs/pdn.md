@@ -12,10 +12,10 @@ separate Paint.NET variants because their edge cases differ. The blend menus sta
 layer that uses one of these six modes lists its own mode after Photoshop's, and other layers don't
 show them.
 
-PDN support is **import only**. Save opens Save As and suggests `.pcraft`, which preserves the
+PDN support is **import only**. Save opens Save As and suggests `.crab`, which preserves the
 layers and every blend mode. Exporting as `.pdn` fails with an explanatory error. PSD cannot
 represent six Paint.NET variants; exporting those as PSD reports that their blending was
-changed to Normal. Use `.pcraft` for continued editing, and PNG for a flattened rendering.
+changed to Normal. Use `.crab` for continued editing, and PNG for a flattened rendering.
 
 The reader supports PDN3's typed NRBF objects, both numeric and older blend-operation records,
 BGRA32 surfaces with padded rows, shared pixel memory, and gzip or raw numbered pixel chunks.
@@ -37,7 +37,7 @@ PDN_TEST_FILE=/path/to/layered.pdn cargo test -p photocraft-engine --test it -- 
 ```
 
 Each PDN in `PDN_TEST_DIR` needs a corresponding `.png` export with the same basename. The
-test checks pixels against that export and verifies layer preservation through `.pcraft`.
+test checks pixels against that export and verifies layer preservation through `.crab`.
 Keep real-file corpora outside the application repository.
 
 The local Paint.NET 4.0.10 corpus (14 small texture documents, 1–8 layers) also matches its

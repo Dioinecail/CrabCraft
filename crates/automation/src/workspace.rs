@@ -54,10 +54,10 @@ impl AuthorizedWorkspace {
         read_to_observed_length(&mut file, metadata.len())
     }
 
-    /// Load one `.pcraft` document in directory form — the native on-disk layout — below the
+    /// Load one `.crab` document in directory form — the native on-disk layout — below the
     /// read root. `read` serves regular files only (the zip form), so a regular file at the
     /// path is reported as `Ok(None)` for the caller to fall back to.
-    pub fn open_pcraft(&self, path: &str) -> Result<Option<photocraft_doc::Document>, AutomationError> {
+    pub fn open_crab(&self, path: &str) -> Result<Option<photocraft_doc::Document>, AutomationError> {
         let relative = request_path(path, self.read.as_ref())?;
         let root = self.read.as_ref().ok_or_else(|| AutomationError::BadRequest(format!("{DENIED}: read authority is absent")))?;
         let dir = match root.dir.open_dir(&relative) {
@@ -232,7 +232,7 @@ fn path_error(path: &str, reason: &str) -> AutomationError {
     AutomationError::BadRequest(format!("automation path rejected: {reason}: `{path}`"))
 }
 
-/// A `.pcraft` directory behind the read-root capability: bounded reads, no ambient paths.
+/// A `.crab` directory behind the read-root capability: bounded reads, no ambient paths.
 struct DirHandle {
     dir: Dir,
 }
@@ -550,42 +550,42 @@ mod tests {
     }
 
     #[test]
-    fn open_pcraft_loads_a_directory_below_the_read_root() {
-        let (inside, _, workspace) = roots("pcraft-dir");
+    fn open_crab_loads_a_directory_below_the_read_root() {
+        let (inside, _, workspace) = roots("crab-dir");
         let doc = photocraft_doc::Document::new("Native", photocraft_doc::Size::new(16, 12), photocraft_doc::ColorMode::Rgb, photocraft_doc::SampleType::U8);
-        photocraft_format::PcraftWriter::new().save_dir(&doc, &inside.join("native.pcraft"), &photocraft_format::SaveOptions::default()).unwrap();
-        let loaded = workspace.open_pcraft("native.pcraft").unwrap().expect("the directory form loads");
+        photocraft_format::PcraftWriter::new().save_dir(&doc, &inside.join("native.crab"), &photocraft_format::SaveOptions::default()).unwrap();
+        let loaded = workspace.open_crab("native.crab").unwrap().expect("the directory form loads");
         assert_eq!(loaded.name, doc.name);
         assert_eq!((loaded.size.width, loaded.size.height), (16, 12));
     }
 
     #[test]
-    fn open_pcraft_reports_zip_files_and_missing_paths_clearly() {
-        let (inside, _, workspace) = roots("pcraft-errors");
+    fn open_crab_reports_zip_files_and_missing_paths_clearly() {
+        let (inside, _, workspace) = roots("crab-errors");
         let doc = photocraft_doc::Document::new("Zipped", photocraft_doc::Size::new(4, 4), photocraft_doc::ColorMode::Rgb, photocraft_doc::SampleType::U8);
-        let zip = inside.join("zipped.pcraft");
+        let zip = inside.join("zipped.crab");
         photocraft_format::PcraftWriter::new().save_path(&doc, &zip, &photocraft_format::SaveOptions::default()).unwrap();
         assert!(zip.is_file());
-        assert!(workspace.open_pcraft("zipped.pcraft").unwrap().is_none(), "the zip form falls back to the bytes path");
-        let error = workspace.open_pcraft("missing.pcraft").unwrap_err().to_string();
+        assert!(workspace.open_crab("zipped.crab").unwrap().is_none(), "the zip form falls back to the bytes path");
+        let error = workspace.open_crab("missing.crab").unwrap_err().to_string();
         assert!(error.contains("failed"), "a missing path propagates its io error: {error}");
-        assert!(AuthorizedWorkspace::default().open_pcraft("x.pcraft").is_err(), "no read authority fails closed");
+        assert!(AuthorizedWorkspace::default().open_crab("x.crab").is_err(), "no read authority fails closed");
     }
 
     #[cfg(unix)]
     #[test]
-    fn open_pcraft_rejects_non_regular_entries_and_escaping_symlinks() {
-        let (inside, _, workspace) = roots("pcraft-nonregular");
-        let bundle = inside.join("native.pcraft");
+    fn open_crab_rejects_non_regular_entries_and_escaping_symlinks() {
+        let (inside, _, workspace) = roots("crab-nonregular");
+        let bundle = inside.join("native.crab");
         std::fs::create_dir_all(bundle.join("manifest.json")).unwrap();
-        let error = workspace.open_pcraft("native.pcraft").unwrap_err().to_string();
+        let error = workspace.open_crab("native.crab").unwrap_err().to_string();
         assert!(error.contains("not a regular file"), "a directory entry is refused, not streamed: {error}");
 
-        let (inside2, _, workspace2) = roots("pcraft-symlink");
-        let bundle2 = inside2.join("native.pcraft");
+        let (inside2, _, workspace2) = roots("crab-symlink");
+        let bundle2 = inside2.join("native.crab");
         std::fs::create_dir(&bundle2).unwrap();
         std::os::unix::fs::symlink("/dev/zero", bundle2.join("manifest.json")).unwrap();
-        assert!(workspace2.open_pcraft("native.pcraft").is_err(), "an escaping symlink entry is refused");
+        assert!(workspace2.open_crab("native.crab").is_err(), "an escaping symlink entry is refused");
     }
 
     fn temp_files(dir: &Path) -> Vec<String> {

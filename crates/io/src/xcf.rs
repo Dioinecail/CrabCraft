@@ -10,7 +10,7 @@
 //! profile), the embedded ICC profile, resolution, guides, the comment, extra channels and the
 //! saved selection; indexed images open as RGB. Text, vector and link layers open as their pixels;
 //! non-destructive layer effects, paths and floating selections are reported, not applied.
-//! Write: not supported (GIMP's own format; `.pcraft` keeps everything CrabCraft holds).
+//! Write: not supported (GIMP's own format; `.crab` keeps everything CrabCraft holds).
 //!
 //! The reader is written from the specification and from files GIMP 3.2 writes; no GIMP code.
 

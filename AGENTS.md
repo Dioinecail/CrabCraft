@@ -30,7 +30,7 @@ crates/
   tablet                     L0 standalone pen tablet input (macOS AppKit, X11 XInput2, Windows barrel button); the one isolated unsafe crate
   doc                        L1 document model (layers, masks, adjustments, effects, smart objects: pure data)
   ops paint algo text vector L2 history, brush engine, imaging algorithms, type engine, paths/shapes
-  compose gpu format         L3 CPU compositor (the oracle), wgpu compositor, .pcraft native format
+  compose gpu format         L3 CPU compositor (the oracle), wgpu compositor, .crab native format
   io plugins                 L4 document <-> PSD / flat formats; sandboxed WebAssembly plug-ins
   engine                     L5 Session + command registry (every action is a command)
   ui-egui automation         L6 egui shell (thin: all actions go through the engine); MCP server
@@ -137,7 +137,7 @@ Then append a terse entry to `log/devlog.md` (what landed, numbers, what's still
 ## 8. Keeping the native format complete
 
 `photocraft-format` deliberately fails to compile when a `photocraft-doc` struct gains a field, so
-nothing is silently dropped from `.pcraft` saves. When you add a doc field, add it to
+nothing is silently dropped from `.crab` saves. When you add a doc field, add it to
 `crates/format/src/manifest.rs` and `convert.rs` with `#[serde(default)]` so older files still load.
 If the field has a PSD equivalent, map it in `crates/io` too, and keep unknown PSD blocks verbatim.
 

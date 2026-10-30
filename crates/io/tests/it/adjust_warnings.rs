@@ -95,17 +95,17 @@ fn short_color_lookup_table_warns_on_open() {
     // A stored table shorter than size³×3 renders as the identity; opening must say so, naming
     // the layer (#1763).
     let short = Adjustment::ColorLookup { name: "t.cube".into(), size: 3, lut: Some(std::sync::Arc::new(vec![0.5; 7])), tetrahedral: false, dither: false };
-    let (doc, warnings) = reopen(short, "x.pcraft", &ExportOptions::default());
+    let (doc, warnings) = reopen(short, "x.crab", &ExportOptions::default());
     assert!(matches!(&doc.layers[0].content, LayerContent::Adjustment(Adjustment::ColorLookup { .. })), "{:?}", doc.layers[0].content);
     let w: Vec<&String> = warnings.iter().filter(|w| w.contains("Teal Look")).collect();
     assert_eq!(w.len(), 1, "{warnings:?}");
     assert!(w[0].contains("Color Lookup") && w[0].contains("7 values") && w[0].contains("81"), "{}", w[0]);
     // A table long enough for its size opens without the note.
     let ok = Adjustment::ColorLookup { name: "t.cube".into(), size: 2, lut: Some(std::sync::Arc::new(vec![0.5; 24])), tetrahedral: false, dither: false };
-    let (_, warnings) = reopen(ok, "x.pcraft", &ExportOptions::default());
+    let (_, warnings) = reopen(ok, "x.crab", &ExportOptions::default());
     assert!(warnings.iter().all(|w| !w.contains("Teal Look")), "{warnings:?}");
     // A missing table renders as the identity too.
     let none = Adjustment::ColorLookup { name: "t.cube".into(), size: 2, lut: None, tetrahedral: false, dither: false };
-    let (_, warnings) = reopen(none, "x.pcraft", &ExportOptions::default());
+    let (_, warnings) = reopen(none, "x.crab", &ExportOptions::default());
     assert!(warnings.iter().any(|w| w.contains("Teal Look") && w.contains("no usable table")), "{warnings:?}");
 }

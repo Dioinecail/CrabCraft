@@ -5,7 +5,7 @@
   <mime-type type="application/x-photocraft">
     <comment>CrabCraft document</comment>
     <icon name="ai.storyteller.photocraft"/>
-    <glob pattern="*.pcraft"/>
+    <glob pattern="*.crab"/>
   </mime-type>
   <mime-type type="image/x-psb">
     <comment>Large PSD document</comment>

@@ -33,11 +33,11 @@ fn identity(app: &PhotocraftApp) -> (String, Option<String>, u64, u64) {
 #[test]
 fn save_settings_share_only_the_open_documents_native_cache() {
     let mut app = app();
-    let first = app.save_settings().io_options().pcraft_cache.unwrap();
-    assert_eq!(first, app.session.active().unwrap().pcraft_cache);
-    assert_eq!(first, app.save_settings().io_options().pcraft_cache.unwrap());
+    let first = app.save_settings().io_options().crab_cache.unwrap();
+    assert_eq!(first, app.session.active().unwrap().crab_cache);
+    assert_eq!(first, app.save_settings().io_options().crab_cache.unwrap());
     app.run("file.new", json!({"width": 2, "height": 2})).unwrap();
-    assert_ne!(first, app.save_settings().io_options().pcraft_cache.unwrap());
+    assert_ne!(first, app.save_settings().io_options().crab_cache.unwrap());
 }
 
 #[test]

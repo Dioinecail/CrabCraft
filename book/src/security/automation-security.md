@@ -33,7 +33,7 @@ Automation is a privilege boundary because requests can cause filesystem access,
 - Engine commands are expected to reject invalid parameters without panicking.
 - Remote filesystem methods use separately granted read and write directory capabilities.
 - A save without a `path` (MCP `doc_save`, `serve` `doc.save`, the control channel's `app.save`)
-  writes back only to the document's own PSD, PSB or `.pcraft` file in its own format; any other
+  writes back only to the document's own PSD, PSB or `.crab` file in its own format; any other
   save needs an explicit `path`, so automation never flattens or converts over the file it opened.
 - Automation paths must be relative beneath the applicable root. Absolute paths, parent
   traversal, alternate separators, Windows device names, malformed components, and link escapes

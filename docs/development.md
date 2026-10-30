@@ -217,8 +217,8 @@ See `docs/control-protocol.md` for every method. Tips:
 `apps/photocraft-cli` builds the binary `photocraft-cli`:
 
 ```sh
-cargo run -p photocraft-cli -- convert in.psd out.pcraft               # any supported format -> any
-cargo run -p photocraft-cli -- info out.pcraft                          # JSON: size, mode, depth, layer tree
+cargo run -p photocraft-cli -- convert in.psd out.crab               # any supported format -> any
+cargo run -p photocraft-cli -- info out.crab                          # JSON: size, mode, depth, layer tree
 cargo run -p photocraft-cli -- run in.png --cmd layer.new.layer --params '{"name":"Ink"}' \
                                           --cmd filter.blur.gaussianBlur --params '{"radius":3}' --out out.psd
 cargo run -p photocraft-cli -- run --new '{"width":800,"height":600}' --cmd document.inspect
@@ -228,7 +228,7 @@ cargo run -p photocraft-cli -- commands --filter blur                    # the c
 
 `actions.json` holds the steps of a recorded action: `[["<id>", {…}], …]`, `[{"command": "<id>", "params": {…}}, …]` or bare ids, as a list or wrapped in `{"actions": …}` or `{"steps": …}`; a droplet file works too. It can also be an Actions set (the Actions panel's `actions.json`, `{"actions": [{"name": …, "steps": […]}, …]}`): `--action <name>` picks the action to play (optional when the set holds one), and the whole set is loaded for each file, so a step that plays another action of the set works. `batch` refuses an `--out` folder that is the `--in` folder, since the results would replace the originals, unless `--in-place` is given. `run` prints one JSON line per command result.
 
-## Native format (.pcraft)
+## Native format (.crab)
 
 `crates/format` defines the lossless native bundle. It is either a ZIP of STORE entries or a directory with the same layout:
 
@@ -241,7 +241,7 @@ Keep one `PcraftWriter` per open document: re-saving then only compresses and wr
 
 At startup the desktop lists recovery metadata, then decodes one document at a time through the existing background-job system. The window stays usable, with recovery progress and Cancel in the status bar. Cancel skips the rest of that launch's recovery queue and prevents the current result from opening; the decoder may finish in the background. Failed or cancelled loads leave their recovery files intact for a later launch. Turning off Preferences › File Handling › Recover on launch skips discovery altogether.
 
-`photocraft-io` routes `.pcraft` through this crate in `import`/`export`, detecting it by magic or by extension.
+`photocraft-io` routes `.crab` through this crate in `import`/`export`, detecting it by magic or by extension.
 
 ## MCP (agents)
 
@@ -305,7 +305,7 @@ A typical agent loop (place inputs under the configured read root and outputs un
 2. `command_list {filter:"blur"}`
 3. `command_run {id:"filter.blur.gaussianBlur", params:{radius:4}}`
 4. `doc_render_preview` to check the result
-5. `doc_save {path:"out.pcraft"}`
+5. `doc_save {path:"out.crab"}`
 
 ## Colour management
 

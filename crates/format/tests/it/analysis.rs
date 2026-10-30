@@ -1,4 +1,4 @@
-//! Image › Analysis data and notes survive a `.pcraft` round trip; old manifests default them.
+//! Image › Analysis data and notes survive a `.crab` round trip; old manifests default them.
 
 use photocraft_color::{Color, ColorMode, SampleType};
 use photocraft_doc::{CountGroup, Document, MeasurementScale, Note, Ruler, Size};

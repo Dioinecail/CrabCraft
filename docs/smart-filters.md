@@ -32,7 +32,7 @@ When a layer mask or channel is targeted, its existing adjustment semantics appl
 
 ## Storage and current limits
 
-`.pcraft` stores the complete Smart Filter stack, parameters, shared mask,
+`.crab` stores the complete Smart Filter stack, parameters, shared mask,
 visibility and per-filter blending. PSD only supports the filters mapped by
 `crates/io/src/smart_map.rs`: Invert and Smart Sharpen currently lack live PSD
 mappings. PSD export can warn and omit unmapped live filters. This interface

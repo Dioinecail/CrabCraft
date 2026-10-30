@@ -42,7 +42,7 @@ fn open_identity_reports_the_remapped_id_when_a_native_document_is_opened_twice(
     // A wholly synthetic in-memory native file retains its DocId. PNG and DNG allocate fresh
     // IDs during decode, so they cannot deterministically exercise this collision.
     let bytes = photocraft_format::PcraftWriter::new().save_zip(&original, &Default::default()).unwrap().0;
-    let result = open(&mut session, "synthetic.pcraft", bytes);
+    let result = open(&mut session, "synthetic.crab", bytes);
     let index = result["document"].as_u64().unwrap() as usize;
     let admitted = session.documents()[index].doc.id;
     assert_ne!(admitted, original.id, "the original document still owns its persisted ID");

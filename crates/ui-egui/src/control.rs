@@ -1271,11 +1271,11 @@ fn dispatch(app: &mut PhotocraftApp, ctx: &egui::Context, req: &ControlRequest) 
         }
         "app.open" => match s("path") {
             Some(path) => {
-                // Directory .pcraft (the native on-disk form) loads through a capability-scoped
+                // Directory .crab (the native on-disk form) loads through a capability-scoped
                 // source; the single-file (zip) form falls back to the bytes path, as do all
                 // other formats.
                 if path.rsplit_once('.').is_some_and(|(_, ext)| ext.eq_ignore_ascii_case(photocraft_format::EXTENSION))
-                    && let Some(open) = app.services.automation_open_pcraft.as_mut()
+                    && let Some(open) = app.services.automation_open_crab.as_mut()
                 {
                     match open(path) {
                         Ok(Some((name, doc))) => {
@@ -2662,16 +2662,16 @@ mod tests {
     }
 
     #[test]
-    fn app_open_opens_a_directory_pcraft_and_falls_back_for_the_zip_form() {
+    fn app_open_opens_a_directory_crab_and_falls_back_for_the_zip_form() {
         use photocraft_doc::Document;
         use serde_json::json;
         let services = crate::Services {
-            automation_open_pcraft: Some(Box::new(|path: &str| {
-                if path == "native.pcraft" {
+            automation_open_crab: Some(Box::new(|path: &str| {
+                if path == "native.crab" {
                     let name = path.rsplit('/').next().unwrap_or(path).to_string();
                     let doc = Document::new("Native", photocraft_doc::Size::new(16, 12), photocraft_doc::ColorMode::Rgb, photocraft_doc::SampleType::U8);
                     Ok(Some((name, doc)))
-                } else if path == "zipped.pcraft" {
+                } else if path == "zipped.crab" {
                     Ok(None) // a regular file: the bytes path reads the zip form
                 } else {
                     Err(format!("corrupt bundle: {path}"))
@@ -2681,7 +2681,7 @@ mod tests {
                 Ok((Document::new(name, photocraft_doc::Size::new(4, 4), photocraft_doc::ColorMode::Rgb, photocraft_doc::SampleType::U8), Vec::new()))
             })),
             automation_read: Some(Box::new(|path: &str| {
-                if path == "zipped.pcraft" {
+                if path == "zipped.crab" {
                     Ok((path.rsplit('/').next().unwrap_or(path).to_string(), b"zip-bytes".to_vec()))
                 } else {
                     Err(format!("no such path: {path}"))
@@ -2692,21 +2692,21 @@ mod tests {
         let mut app = PhotocraftApp::new(photocraft_engine::Session::new(), services);
         let ctx = egui::Context::default();
 
-        let r = call(&mut app, &ctx, "app.open", json!({"path": "native.pcraft"}));
-        assert_eq!(r["result"], json!({"path": "native.pcraft", "name": "native.pcraft", "warnings": []}), "{r}");
+        let r = call(&mut app, &ctx, "app.open", json!({"path": "native.crab"}));
+        assert_eq!(r["result"], json!({"path": "native.crab", "name": "native.crab", "warnings": []}), "{r}");
         assert_eq!(app.session.active().unwrap().doc.name, "Native");
-        assert_eq!(app.ui.recent_files, vec!["native.pcraft".to_string()], "the open is recorded in recent files");
+        assert_eq!(app.ui.recent_files, vec!["native.crab".to_string()], "the open is recorded in recent files");
         assert_eq!(app.session.active().unwrap().path, None, "no save-back target: the automation writer replaces files, never directories");
         let r = call(&mut app, &ctx, "app.save", json!({}));
         assert!(r["error"].as_str().unwrap().contains("pass `path`"), "an in-place save is refused up front: {r}");
 
-        // The single-file form takes the bytes path through the same `.pcraft` extension.
-        let r = call(&mut app, &ctx, "app.open", json!({"path": "zipped.pcraft"}));
-        assert_eq!(r["result"]["name"], "zipped.pcraft", "{r}");
-        assert_eq!(app.session.active().unwrap().doc.name, "zipped.pcraft", "the import served the zip form");
+        // The single-file form takes the bytes path through the same `.crab` extension.
+        let r = call(&mut app, &ctx, "app.open", json!({"path": "zipped.crab"}));
+        assert_eq!(r["result"]["name"], "zipped.crab", "{r}");
+        assert_eq!(app.session.active().unwrap().doc.name, "zipped.crab", "the import served the zip form");
 
         // A real opener error propagates instead of being masked by the fallback.
-        let r = call(&mut app, &ctx, "app.open", json!({"path": "gone.pcraft"}));
+        let r = call(&mut app, &ctx, "app.open", json!({"path": "gone.crab"}));
         assert!(r["error"].as_str().unwrap().contains("corrupt bundle"), "{r}");
     }
 
@@ -2873,7 +2873,7 @@ mod tests {
         app.session
             .edit("Nested fixture", |doc, _| {
                 let LayerContent::Smart(sm) = &mut doc.layer_mut(smart).unwrap().content else { panic!("smart fixture") };
-                sm.source = SmartSource::Embedded { file_name: "product.pcraft".into(), bytes: Arc::new(nested) };
+                sm.source = SmartSource::Embedded { file_name: "product.crab".into(), bytes: Arc::new(nested) };
                 Ok(())
             })
             .unwrap();
@@ -2911,11 +2911,11 @@ mod tests {
             Ok(())
         }));
         app.services.write = Some(Box::new(|_, _| Err("ambient writer used".into())));
-        let r = call(&mut app, &ctx, "app.save", json!({"path": "out/template.pcraft"}));
+        let r = call(&mut app, &ctx, "app.save", json!({"path": "out/template.crab"}));
         assert_eq!(r["ok"], true, "{r}");
         let written = written.borrow();
         assert_eq!(written.len(), 1);
-        assert_eq!(written[0].0, "out/template.pcraft");
+        assert_eq!(written[0].0, "out/template.crab");
         let saved = photocraft_engine::smart_cmds::decode_source(&written[0].0, &written[0].1).unwrap();
         assert_eq!(photocraft_compose::flatten(&saved).px[0], [0.0, 0.0, 1.0, 1.0]);
     }
@@ -2926,7 +2926,7 @@ mod tests {
         use std::sync::Arc;
 
         let (mut app, ctx, smart) = smart_control_app();
-        let path = std::env::temp_dir().join(format!("pc-control-smart-linked-{}.pcraft", std::process::id()));
+        let path = std::env::temp_dir().join(format!("pc-control-smart-linked-{}.crab", std::process::id()));
         let st = app.session.active().unwrap();
         let LayerContent::Smart(sm) = &st.doc.layer(smart).unwrap().content else { panic!("smart fixture") };
         let SmartSource::Embedded { bytes, .. } = &sm.source else { panic!("embedded fixture") };

@@ -1,4 +1,4 @@
-# The `.pcraft` format
+# The `.crab` format
 
 `photocraft-format` stores the native lossless document as a ZIP archive or directory bundle. Its main entries are:
 

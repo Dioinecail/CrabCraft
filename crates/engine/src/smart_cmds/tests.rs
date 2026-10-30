@@ -150,7 +150,7 @@ fn conversion_is_pixel_identical_at_every_depth() {
         assert!((l.opacity - 0.6).abs() < 1e-6, "opacity stays on the smart layer");
         let sm = active_smart(&s);
         let SmartSource::Embedded { file_name, bytes } = &sm.source else { panic!() };
-        assert!(file_name.ends_with(".pcraft"));
+        assert!(file_name.ends_with(".crab"));
         // The nested document is cropped to the content, including the off-canvas part.
         let inner = decode_source(file_name, bytes).unwrap();
         assert_eq!((inner.size.width, inner.size.height), (46, 33));
@@ -576,7 +576,7 @@ fn rasterize_and_via_copy() {
 }
 
 #[test]
-fn pcraft_round_trip_keeps_live_smart_objects() {
+fn crab_round_trip_keeps_live_smart_objects() {
     for depth in [8, 16] {
         let mut s = session(depth);
         paint(&mut s);
@@ -645,14 +645,14 @@ fn psd_placed_layer_renders_from_lnk2_data() {
 
 #[test]
 fn export_replace_and_linked_contents() {
-    let dir = std::env::temp_dir().join(format!("pcraft-smart-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("crab-smart-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let mut s = session(8);
     paint(&mut s);
     convert(&mut s);
-    let out = dir.join("contents.pcraft");
+    let out = dir.join("contents.crab");
     let r = s.execute("layer.smartObjects.exportContents", json!({"path": out.to_str().unwrap()})).unwrap();
-    assert!(photocraft_format::is_pcraft(&std::fs::read(&out).unwrap()));
+    assert!(photocraft_format::is_crab(&std::fs::read(&out).unwrap()));
     assert_eq!(r["converted"], false);
     // Another extension exports the contents in that format.
     for (ext, magic) in [("png", &b"\x89PNG"[..]), ("jpeg", &b"\xFF\xD8\xFF"[..]), ("psd", &b"8BPS"[..])] {
@@ -1025,7 +1025,7 @@ fn contents_file() -> std::path::PathBuf {
         photocraft_doc::SampleType::U8,
         photocraft_color::Color::rgb(1.0, 0.0, 0.0),
     );
-    let path = std::env::temp_dir().join(format!("pcraft-contents-{}-{}.pcraft", std::process::id(), doc.id.0));
+    let path = std::env::temp_dir().join(format!("crab-contents-{}-{}.crab", std::process::id(), doc.id.0));
     std::fs::write(&path, encode_source(&doc).unwrap()).unwrap();
     path
 }
@@ -1093,7 +1093,7 @@ fn automation_smart_contents_checks_nested_reads_at_nontrivial_placements() {
         let mut inner = Document::new("inner", Size::new(4, 4), photocraft_doc::ColorMode::Rgb, photocraft_doc::SampleType::U8);
         let source_path = if psd_uuid {
             let linked =
-                photocraft_io::linked::LinkedFile { uuid: "nested-id".into(), file_name: "source.pcraft".into(), bytes: std::fs::read(&path).unwrap() };
+                photocraft_io::linked::LinkedFile { uuid: "nested-id".into(), file_name: "source.crab".into(), bytes: std::fs::read(&path).unwrap() };
             inner.metadata.psd_global_blocks.push((*b"8BIM", *b"lnk2", Arc::new(photocraft_io::linked::encode_linked_file(&linked))));
             linked.uuid
         } else {
@@ -1108,7 +1108,7 @@ fn automation_smart_contents_checks_nested_reads_at_nontrivial_placements() {
         parent.layers.push(Layer::new(
             "outer",
             LayerContent::Smart(SmartObject::new(
-                SmartSource::Embedded { file_name: "inner.pcraft".into(), bytes: Arc::new(encode_source(&inner).unwrap()) },
+                SmartSource::Embedded { file_name: "inner.crab".into(), bytes: Arc::new(encode_source(&inner).unwrap()) },
                 Affine { m: [scale, 0.0, 0.0, scale, 0.0, 0.0] },
                 Some(cache),
             )),
@@ -1203,7 +1203,7 @@ fn inspect_reports_the_smart_source() {
 
 #[test]
 fn displace_smart_filter_reads_its_map_path_on_re_render() {
-    let dir = std::env::temp_dir().join(format!("pcraft-displace-{}", std::process::id()));
+    let dir = std::env::temp_dir().join(format!("crab-displace-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     // A white map displaces by the full scale; mid-grey would not move anything.
     let white = Document::with_background(

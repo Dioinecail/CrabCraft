@@ -8,7 +8,7 @@ The layer numbers below describe allowed dependency direction, not runtime privi
 | L0 standalone | `psd`, `codecs`, `affinity` | PSD/PSB and flat raster format parsing/encoding; bounded Affinity preview extraction |
 | L1 | `doc` | Pure-data documents, layers, masks, effects, adjustments, text, vectors, and smart objects |
 | L2 | `ops`, `paint`, `algo`, `text`, `vector` | History operations, painting, imaging algorithms, type, paths, and shapes |
-| L3 | `compose`, `gpu`, `format` | CPU composition, wgpu composition, and `.pcraft` persistence |
+| L3 | `compose`, `gpu`, `format` | CPU composition, wgpu composition, and `.crab` persistence |
 | L4 | `io` | Import/export between the document model and external formats |
 | L5 | `engine` | `Session`, command registry, validation, history integration, and inspection |
 | L6 | `ui-egui`, `automation` | egui shell, headless automation, MCP, and the live bridge |

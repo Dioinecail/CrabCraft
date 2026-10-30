@@ -48,23 +48,23 @@ mod tests {
     #[test]
     fn cached_exports_reuse_tiles_and_preserve_edits_and_save_as() {
         for depth in SampleType::ALL {
-            let mut doc = Document::new("first.pcraft", Size::new(2, 1), ColorMode::Rgb, depth);
+            let mut doc = Document::new("first.crab", Size::new(2, 1), ColorMode::Rgb, depth);
             let mut surface = Surface::new(doc.pixel_format());
             surface.write_pixel(0, 0, &[0.2, 0.4, 0.6, 1.0]);
             doc.layers.push(Layer::new("photo", LayerContent::Raster(surface)));
             let cache = PcraftExportCache::default();
-            let options = ExportOptions { pcraft_cache: Some(cache.clone()), ..Default::default() };
-            let first = export(&doc, "first.pcraft", &options).unwrap();
+            let options = ExportOptions { crab_cache: Some(cache.clone()), ..Default::default() };
+            let first = export(&doc, "first.crab", &options).unwrap();
             assert_eq!(photocraft_format::load_from_bytes(&first.bytes).unwrap(), doc);
             let (_, stats) = cache.0.lock().unwrap().save_zip(&doc, &SaveOptions::default()).unwrap();
             assert_eq!(stats.tiles_reused, stats.tiles_total);
             assert_eq!(stats.tiles_written, 0);
             doc.layers[0].surface_mut().unwrap().try_write_region(photocraft_geom::Rect::new(0, 0, 1, 1), &[0.8, 0.3, 0.1, 1.0]).unwrap();
-            let next = export(&doc, "second.pcraft", &options).unwrap();
+            let next = export(&doc, "second.crab", &options).unwrap();
             let mut expected = doc.clone();
-            expected.name = "second.pcraft".into();
+            expected.name = "second.crab".into();
             assert_eq!(photocraft_format::load_from_bytes(&next.bytes).unwrap(), expected);
-            assert_eq!(next.bytes, export(&doc, "second.pcraft", &ExportOptions::default()).unwrap().bytes);
+            assert_eq!(next.bytes, export(&doc, "second.crab", &ExportOptions::default()).unwrap().bytes);
             let weak = Arc::downgrade(&cache.0);
             drop(options);
             drop(cache);

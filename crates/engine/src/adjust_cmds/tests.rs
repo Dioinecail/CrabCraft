@@ -301,7 +301,7 @@ fn selective_color_and_color_lookup_reject_wrong_typed_params() {
 }
 
 #[test]
-fn new_kinds_round_trip_through_psd_and_pcraft() {
+fn new_kinds_round_trip_through_psd_and_crab() {
     let mut s = session(8, "rgb");
     s.execute("layer.newAdjustmentLayer.selectiveColor", json!({"reds": [10, -20, 30, -40], "method": "absolute"})).unwrap();
     s.execute("layer.newAdjustmentLayer.colorLookup", json!({"lut": "warm", "dither": true})).unwrap();

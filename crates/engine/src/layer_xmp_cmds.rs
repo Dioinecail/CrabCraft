@@ -1,6 +1,6 @@
 //! A layer's own XMP packet, as Photoshop scripts reach it through `layer.xmpMetadata.rawData`:
 //! scripts and embedding apps keep data about a layer there under their own namespaces. It is
-//! saved in PSD, PSB, layered TIFF and `.pcraft`, and copied when the layer is duplicated.
+//! saved in PSD, PSB, layered TIFF and `.crab`, and copied when the layer is duplicated.
 
 use std::sync::Arc;
 

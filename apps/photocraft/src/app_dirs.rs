@@ -188,7 +188,7 @@ static KEPT_LOCKS: std::sync::Mutex<Vec<std::fs::File>> = std::sync::Mutex::new(
 /// The move itself, under the migration lock. First, what a process that ended mid-move left is
 /// tidied: originals it set aside are put back, copies it staged are removed. An empty `legacy`
 /// is then just removed. Otherwise the whole folder moves if `dir` doesn't exist yet; when both
-/// exist, each autosave (`<key>.pcraft` bundle and `<key>.json` sidecar, see
+/// exist, each autosave (`<key>.crab` bundle and `<key>.json` sidecar, see
 /// `photocraft_format::autosave`) moves as a whole, bundle first, unless `dir` already has either
 /// part, and one that stays is left in `legacy` untouched. Every move is a [`move_path`].
 fn adopt_locked(legacy: &Path, dir: &Path) -> PathBuf {
@@ -242,9 +242,9 @@ fn adopt_locked(legacy: &Path, dir: &Path) -> PathBuf {
 fn move_entries(from: &Path, to: &Path) {
     let Ok(entries) = std::fs::read_dir(from) else { return };
     let names: Vec<String> = entries.flatten().filter_map(|e| e.file_name().to_str().map(str::to_owned)).collect();
-    let keys: std::collections::BTreeSet<&str> = names.iter().filter_map(|n| n.strip_suffix(".pcraft").or_else(|| n.strip_suffix(".json"))).collect();
+    let keys: std::collections::BTreeSet<&str> = names.iter().filter_map(|n| n.strip_suffix(".crab").or_else(|| n.strip_suffix(".json"))).collect();
     for key in keys {
-        let parts = [format!("{key}.pcraft"), format!("{key}.json")];
+        let parts = [format!("{key}.crab"), format!("{key}.json")];
         if parts.iter().any(|p| std::fs::symlink_metadata(to.join(p)).is_ok()) {
             continue;
         }
@@ -670,8 +670,8 @@ mod tests {
 
     /// An autosave bundle and its sidecar, as `format::Autosaver` writes them.
     fn autosave(dir: &Path, key: &str) {
-        std::fs::create_dir_all(dir.join(format!("{key}.pcraft"))).unwrap();
-        std::fs::write(dir.join(format!("{key}.pcraft")).join("manifest.json"), key).unwrap();
+        std::fs::create_dir_all(dir.join(format!("{key}.crab"))).unwrap();
+        std::fs::write(dir.join(format!("{key}.crab")).join("manifest.json"), key).unwrap();
         std::fs::write(dir.join(format!("{key}.json")), key).unwrap();
     }
 
@@ -683,7 +683,7 @@ mod tests {
         autosave(&legacy, "a");
         assert_eq!(adopt_legacy_recovery(&legacy, &dir), dir);
         assert!(!legacy.exists(), "the old folder is gone");
-        assert_eq!(std::fs::read_to_string(dir.join("a.pcraft").join("manifest.json")).unwrap(), "a");
+        assert_eq!(std::fs::read_to_string(dir.join("a.crab").join("manifest.json")).unwrap(), "a");
         assert!(dir.join("a.json").is_file());
         let _ = std::fs::remove_dir_all(&root);
     }
@@ -702,10 +702,10 @@ mod tests {
         std::fs::write(dir.join("both.json"), "newer").unwrap();
         assert_eq!(adopt_legacy_recovery(&legacy, &dir), dir);
         assert!(dir.join(temp_file).is_file() && !legacy.join(temp_file).exists());
-        assert!(dir.join("old.pcraft").is_dir() && dir.join("old.json").is_file(), "a whole autosave moves");
+        assert!(dir.join("old.crab").is_dir() && dir.join("old.json").is_file(), "a whole autosave moves");
         assert_eq!(std::fs::read_to_string(dir.join("both.json")).unwrap(), "newer", "never overwritten");
-        assert!(!dir.join("both.pcraft").exists(), "a clashing autosave isn't split");
-        assert!(legacy.join("both.pcraft").is_dir() && legacy.join("both.json").is_file(), "it stays behind whole");
+        assert!(!dir.join("both.crab").exists(), "a clashing autosave isn't split");
+        assert!(legacy.join("both.crab").is_dir() && legacy.join("both.json").is_file(), "it stays behind whole");
         let _ = std::fs::remove_dir_all(&root);
     }
 
@@ -741,15 +741,15 @@ mod tests {
         let root = temp("recovery-copy");
         let legacy = root.join("roaming").join("Recovery");
         autosave(&legacy, "a");
-        std::fs::create_dir_all(legacy.join("a.pcraft").join("tiles")).unwrap();
-        std::fs::write(legacy.join("a.pcraft").join("tiles").join("t0.zst"), b"tile").unwrap();
+        std::fs::create_dir_all(legacy.join("a.crab").join("tiles")).unwrap();
+        std::fs::write(legacy.join("a.crab").join("tiles").join("t0.zst"), b"tile").unwrap();
         let dir = root.join("local").join("Recovery");
         std::fs::create_dir_all(root.join("local")).unwrap();
         move_across(&legacy, &dir).unwrap();
         assert!(!legacy.exists(), "the original is removed after the copy");
         assert_eq!(side_leftovers(&root.join("roaming")), 0, "nothing is left held aside");
-        assert_eq!(std::fs::read_to_string(dir.join("a.pcraft").join("manifest.json")).unwrap(), "a");
-        assert_eq!(std::fs::read(dir.join("a.pcraft").join("tiles").join("t0.zst")).unwrap(), b"tile");
+        assert_eq!(std::fs::read_to_string(dir.join("a.crab").join("manifest.json")).unwrap(), "a");
+        assert_eq!(std::fs::read(dir.join("a.crab").join("tiles").join("t0.zst")).unwrap(), b"tile");
         assert_eq!(std::fs::read_to_string(dir.join("a.json")).unwrap(), "a");
         // One file on its own, as the per-autosave moves do.
         move_across(&dir.join("a.json"), &root.join("a.json")).unwrap();
@@ -764,7 +764,7 @@ mod tests {
         let legacy = root.join("Recovery");
         autosave(&legacy, "a");
         // Deeper than any bundle: the copy gives up part way.
-        let mut deep = legacy.join("a.pcraft");
+        let mut deep = legacy.join("a.crab");
         for _ in 0..=MAX_COPY_DEPTH {
             deep = deep.join("d");
         }

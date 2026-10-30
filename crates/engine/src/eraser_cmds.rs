@@ -170,7 +170,7 @@ fn toggle_eraser_mode(session: &mut Session, _parameters: &Value) -> Result<Valu
 }
 
 /// The active layer must hold pixels (the erasers don't work on type, shapes, smart objects…).
-fn is_eraser_mode_enabled(s: &Session) -> std::result::Result<(), String> {
+fn is_eraser_mode_enabled(_s: &Session) -> std::result::Result<(), String> {
     Ok(())
 }
 

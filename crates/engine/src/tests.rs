@@ -664,7 +664,7 @@ fn fill_layers_and_colors() {
 
 #[test]
 fn gradient_fill_layer_angles_are_finite_and_normalised() {
-    // `angle` 1e39 overflowed f32 to infinity: the render went NaN and .pcraft refused to save.
+    // `angle` 1e39 overflowed f32 to infinity: the render went NaN and .crab refused to save.
     let mut s = session_with_doc();
     let angle = |s: &Session| {
         let st = s.active().unwrap();

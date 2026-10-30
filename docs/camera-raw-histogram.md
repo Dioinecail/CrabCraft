@@ -42,7 +42,7 @@ corresponding version pair is also recognized; other versions remain opaque.
 
 Imported filters keep their original descriptor in `params.__cameraRawPsd`. Unchanged settings,
 including the exact stored exposure double, are preserved; editing patches only changed mapped
-fields. The template survives `.pcraft`, undo and reopening the Camera Raw dialog. Descriptors
+fields. The template survives `.crab`, undo and reopening the Camera Raw dialog. Descriptors
 with unrecognized processing fields remain `psd.unsupportedFilter`: their data survives a PSD
 save, but their settings cannot be edited or re-rendered by CrabCraft. Non-default CrabCraft
 settings without a verified PSD mapping cause the existing export warning and omission of that
@@ -53,7 +53,7 @@ post-crop vignette style (`PCVS`, still unverified) and highlights, RAW Kelvin w
 masks and HDR still need mapping and/or rendering support. Observed neutral-only controls are
 retained in the template; non-neutral values keep the filter opaque. In the updated fixture,
 Distortion −28, Lens Vignetting 28 and `PCVS=1` keep the entire filter opaque, while all settings
-survive PSD and `.pcraft` saves. Its supported controls are also checked as a descriptor-only
+survive PSD and `.crab` saves. Its supported controls are also checked as a descriptor-only
 projection with those three fields removed; that projection does not replace the source filter.
 
 Matching settings does not

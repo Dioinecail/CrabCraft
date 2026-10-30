@@ -169,9 +169,9 @@ async fn agent_completes_ten_extended_tasks() {
     run(&c, "select.deselect", json!({})).await;
     run(&c, "select.allLayers", json!({})).await;
     run(&c, "layer.groupLayers", json!({"name": "Set"})).await;
-    tool(&c, "doc_save", json!({"path": "grouped.pcraft"})).await;
+    tool(&c, "doc_save", json!({"path": "grouped.crab"})).await;
     tool(&c, "doc_close", json!({})).await;
-    tool(&c, "doc_open", json!({"path": "grouped.pcraft"})).await;
+    tool(&c, "doc_open", json!({"path": "grouped.crab"})).await;
     let doc = inspect(&c).await;
     assert_eq!(top_layer(&doc)["kind"], "Group", "task 30: {doc}");
     assert_eq!(top_layer(&doc)["name"], "Set", "task 30: {doc}");

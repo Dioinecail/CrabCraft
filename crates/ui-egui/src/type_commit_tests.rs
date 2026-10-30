@@ -50,7 +50,7 @@ fn keys(app: PhotocraftApp, events: Vec<egui::Event>) -> PhotocraftApp {
 fn typing_after_a_document_switch_never_edits_the_other_document() {
     let mut app = new_app();
     let id = app.run("type.create", json!({"text": "Bee", "size": 24, "x": 20, "y": 80})).unwrap()["layer"].as_u64().map(LayerId).unwrap();
-    // A second document with the same layer ids, as when one .pcraft is opened twice (its saved
+    // A second document with the same layer ids, as when one .crab is opened twice (its saved
     // ids are kept; only the document id is made unique).
     let copy = (*app.session.active().unwrap().doc).clone();
     app.session.add_document(copy, None);

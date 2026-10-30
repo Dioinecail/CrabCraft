@@ -2238,7 +2238,7 @@ mod open_recent_tests {
             ..Default::default()
         };
         let mut app = PhotocraftApp::new(photocraft_engine::Session::new(), services);
-        let path = std::env::temp_dir().join("photocraft_recent_test.pcraft");
+        let path = std::env::temp_dir().join("photocraft_recent_test.crab");
         std::fs::write(&path, b"x").unwrap();
         let p = path.to_string_lossy().to_string();
         let ctx = egui::Context::default();

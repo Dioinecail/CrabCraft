@@ -461,7 +461,7 @@ fn stack_modes_render_from_the_nested_layers() {
     }
     s.execute("layer.smartObjects.stackMode.none", json!({})).unwrap();
     assert!(at(&s, 3, 3)[0] > 0.9);
-    // The stack mode survives .pcraft.
+    // The stack mode survives .crab.
     s.execute("layer.smartObjects.stackMode.mean", json!({})).unwrap();
     let bytes = photocraft_format::save_to_bytes(doc(&s), &Default::default()).unwrap();
     let back = photocraft_format::load_from_bytes(&bytes).unwrap();
@@ -521,7 +521,7 @@ fn reveal_in_finder_dry_run_and_enabled() {
 fn reveal_follows_linked_paths_like_the_link_and_passes_paths_as_paths() {
     let mut s = session(8, "rgb");
     let folder = std::env::temp_dir().join("pics");
-    s.active_mut().unwrap().path = Some(folder.join("doc.pcraft").to_string_lossy().into_owned());
+    s.active_mut().unwrap().path = Some(folder.join("doc.crab").to_string_lossy().into_owned());
     let mut link = |path: &str| {
         s.edit("linked", |doc, active| {
             let so = photocraft_doc::SmartObject::new(SmartSource::Linked { path: path.into() }, photocraft_geom::Affine::IDENTITY, None);

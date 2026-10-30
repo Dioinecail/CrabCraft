@@ -365,7 +365,7 @@ fn a_still_gif_is_one_frame_at_the_default_rate() {
 
 /// Interpret Footage and New Video Layer from File reject an fps that isn't a finite number in
 /// `(0, MAX_FPS]` and keep the layer as it was (#5657). 1e39 used to become an infinite rate the
-/// next `.pcraft` save refused.
+/// next `.crab` save refused.
 #[test]
 fn an_invalid_frame_rate_is_an_error_and_changes_nothing() {
     let mut s = session();

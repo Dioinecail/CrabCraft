@@ -1,4 +1,4 @@
-//! `.pcraft` is lossless for f64: every coordinate reloads bit-for-bit.
+//! `.crab` is lossless for f64: every coordinate reloads bit-for-bit.
 
 use photocraft_color::{ColorMode, SampleType};
 use photocraft_doc::{Document, Layer, LayerContent, Size};

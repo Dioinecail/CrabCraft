@@ -1165,7 +1165,7 @@ pub struct BoxResize {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TextEdit {
     pub layer: u64,
-    /// Id of the document being edited (layer ids can repeat across documents, e.g. one .pcraft
+    /// Id of the document being edited (layer ids can repeat across documents, e.g. one .crab
     /// opened twice). `None`: the active document.
     #[serde(default)]
     pub document: Option<u64>,

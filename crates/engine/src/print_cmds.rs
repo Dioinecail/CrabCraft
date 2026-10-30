@@ -1130,9 +1130,9 @@ fn package(s: &mut Session, p: &Value) -> Result<Value> {
     // The native format keeps external links; our PSD writer has no `lnkE` (external linked
     // file) support yet, so a PSD package would embed or flatten them.
     let ext = match p.get("format").and_then(Value::as_str) {
-        Some(f @ ("psd" | "psb" | "pcraft")) => f.to_string(),
-        Some(f) => return Err(bad(cmd, format!("unknown package format `{f}` (pcraft|psd|psb)"))),
-        None => "pcraft".into(),
+        Some(f @ ("psd" | "psb" | "crab")) => f.to_string(),
+        Some(f) => return Err(bad(cmd, format!("unknown package format `{f}` (crab|psd|psb)"))),
+        None => "crab".into(),
     };
     let folder = join(&dir, &crate::file_cmds::sanitize(&name));
     let links_dir = join(&folder, "Links");
@@ -1325,7 +1325,7 @@ pub fn specs() -> Vec<CommandSpec> {
             "Package…",
             &["File"],
             None,
-            r##"{"dir":folder,"format":"pcraft|psd|psb"="pcraft"} → {folder, document, links, missing} (copies the document and its linked files into <dir>/<name>/, relinked to Links/)"##,
+            r##"{"dir":folder,"format":"crab|psd|psb"="crab"} → {folder, document, links, missing} (copies the document and its linked files into <dir>/<name>/, relinked to Links/)"##,
             native_doc,
             package
         ),

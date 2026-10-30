@@ -20,7 +20,7 @@ What exists on `main` today. The numbered sections below are the original design
 - **Rendering:** CPU compositor (`compose`, the oracle) and wgpu compositor (`gpu`, ≤ 1/255 of the
   CPU); colour through our own ICC engine (`cms`), GPU display conversion through matrix/shaper stages or a 3D LUT fallback.
 - **Files:** own PSD/PSB crate (`psd`), flat codecs (`codecs`), camera raw (`raw`), HEIF (`heif`),
-  Affinity (`affinity`), document mapping (`io`), native `.pcraft` (`format`, atomic saves).
+  Affinity (`affinity`), document mapping (`io`), native `.crab` (`format`, atomic saves).
   Coverage: [`file-format-parity.md`](file-format-parity.md).
 - **Not built (yet) from the plan:** the `ml` crate (no ML runtime; see gap G15), plug-in ABI v2.
 - **Deviations from the plan below:** `photocraft-tablet` is the one crate allowed `unsafe`
@@ -130,7 +130,7 @@ photocraft/
 │  ├─ heif/                    photocraft-heif      optional HEIF/HEIC decoder (heic-rs, pure Rust); used only by codecs behind its `heif` feature (standalone)
 │  ├─ affinity/                photocraft-affinity  bounded native Affinity reader: archive, object stream, layers, vectors, text, pixels (standalone; read only)
 │  ├─ raw/                     photocraft-raw       clean-room camera RAW decode (DNG, CR2, TIFF/EP) + develop pipeline (standalone, like psd)
-│  ├─ format/                  photocraft-format    native document format (.pcraft bundle): manifest + content-addressed tiles
+│  ├─ format/                  photocraft-format    native document format (.crab bundle): manifest + content-addressed tiles
 │  ├─ io/                      photocraft-io        import/export orchestration; doc ⇄ PSD mapping; PDF/SVG import (features)
 │  │  ── intelligence ──
 │  ├─ ml/                      photocraft-ml        model registry + InferenceBackend trait (ort native / burn|candle web); SAM2, matting, depth, sky
@@ -392,7 +392,7 @@ psd/src/
      placed-layer data (`SoLd`: file id, transform quad, warp), the smart filter stack
      (`filterFX`: modelled filters become their CrabCraft command and params; any other filter
      stays verbatim and is listed as not editable) and the filter mask (global `FEid`). Export
-     writes `PlLd` + `SoLd`, embeds the source in `lnk2` (a `.pcraft` source becomes a PSB of the
+     writes `PlLd` + `SoLd`, embeds the source in `lnk2` (a `.crab` source becomes a PSB of the
      nested document, written by our own PSD writer) and a filter cache with the unfiltered
      pixels and the mask in `FEid`; unedited imported smart objects stay byte-identical.
   7. Vector masks and shape layers.
@@ -409,13 +409,13 @@ psd/src/
 
 ## 9. Native file format (`photocraft-format`)
 
-- **Format:** a `.pcraft` file is a zip (store mode) or directory bundle.
+- **Format:** a `.crab` file is a zip (store mode) or directory bundle.
   - `manifest.json`: a versioned document tree with serde, including `format_version` and migrations.
   - `tiles/<blake3>.zst`: content-addressed tiles, zstd-compressed.
   - `thumb.png` and `composite/` mips for quick look and previews.
 - **Saving is incremental.** Tiles are content-addressed, so a save writes only new tiles plus the manifest, and garbage-collects unreferenced ones.
 - **Autosave and crash recovery** reuse the same writer into a recovery directory, reading from a snapshot on a background thread.
-- **PSD is the interchange format,** and `.pcraft` is the lossless native one.
+- **PSD is the interchange format,** and `.crab` is the lossless native one.
 
 ---
 
@@ -566,7 +566,7 @@ Each phase ends with a demoable build and green CI on all targets. Phases 8–10
 | Phase | Scope | Done when |
 |---|---|---|
 | **0. Skeleton** (1–2 wk) | workspace, all crates stubbed, layering check, CI matrix incl. wasm, testkit, xtask | `cargo xtask ci` green on 3 OS + wasm |
-| **1. Viewer** | raster doc, tiles, codecs (png/jpeg/tiff/webp), viewport pan/zoom/rotate on GPU + CPU fallback, `.pcraft` save/open, CLI `convert` | open a 100 MP JPEG, pan at refresh rate, save/reopen losslessly |
+| **1. Viewer** | raster doc, tiles, codecs (png/jpeg/tiff/webp), viewport pan/zoom/rotate on GPU + CPU fallback, `.crab` save/open, CLI `convert` | open a 100 MP JPEG, pan at refresh rate, save/reopen losslessly |
 | **2. Layers** | layer tree, all 27 blend modes, opacity/fill, masks, groups, clipping; planner + CPU/GPU compositors + parity tests; history; **PSD read** fidelity 1–3 | composite-oracle suite ≥ 95% within tolerance on the corpus |
 | **3. Paint and select** | platform tablet input, brush engine + presets, eraser, marquee/lasso/wand, move, free transform, crop | draw with pen pressure at <1 frame latency; selection-restricted painting |
 | **4. Adjust and filter** | adjustment layers (first 10), first 20 filters with schema-generated dialogs + live preview; **PSD write**; actions recording | PSD open → edit → save opens correctly in Photoshop/Photopea |

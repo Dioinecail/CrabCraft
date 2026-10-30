@@ -12,4 +12,4 @@ Platform packaging and signing details are maintained in the existing [release d
 
 ## Trusting input files
 
-Treat PSD, PSB, `.pcraft`, raster images, profiles, LUTs, patterns, and embedded document content as potentially malicious. Review [Secure file handling](../security/secure-file-handling.md) before using unknown files in privileged or sensitive environments.
+Treat PSD, PSB, `.crab`, raster images, profiles, LUTs, patterns, and embedded document content as potentially malicious. Review [Secure file handling](../security/secure-file-handling.md) before using unknown files in privileged or sensitive environments.

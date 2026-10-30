@@ -1,6 +1,6 @@
 //! # photocraft-format
 //!
-//! The native, lossless `.pcraft` document bundle (architecture §9).
+//! The native, lossless `.crab` document bundle (architecture §9).
 //!
 //! ```text
 //! manifest.json            versioned document tree (see [`manifest`])
@@ -50,19 +50,19 @@ pub use read::read_file;
 pub use store::{ByteSource, DEFAULT_REVERIFY_BUDGET, PcraftWriter, SaveStats, read_entry};
 
 /// File extension of the native format.
-pub const EXTENSION: &str = "pcraft";
+pub const EXTENSION: &str = "crab";
 
 #[derive(Debug, thiserror::Error)]
 pub enum FormatError {
-    #[error("corrupt .pcraft bundle: {0}")]
+    #[error("corrupt .crab bundle: {0}")]
     Corrupt(String),
-    #[error("unsupported .pcraft feature: {0}")]
+    #[error("unsupported .crab feature: {0}")]
     Unsupported(String),
     #[error("bundle written by a newer version (format {found}, this build reads up to {supported})")]
     TooNew { found: u32, supported: u32 },
     #[error("limit exceeded: {0}")]
     LimitExceeded(String),
-    #[error("`{path}` is NaN or infinite, which a .pcraft manifest cannot hold; reset that value and save again")]
+    #[error("`{path}` is NaN or infinite, which a .crab manifest cannot hold; reset that value and save again")]
     NonFinite { path: String },
     #[error("I/O: {0}")]
     Io(#[from] std::io::Error),
@@ -133,7 +133,7 @@ impl Default for LoadOptions {
 /// `true` when ZIP bytes contain a `manifest.json` entry.
 ///
 /// Bundles written here place the manifest first; re-zipped bundles may reorder entries.
-pub fn is_pcraft(bytes: &[u8]) -> bool {
+pub fn is_crab(bytes: &[u8]) -> bool {
     if !bytes.starts_with(b"PK\x03\x04") {
         return false;
     }

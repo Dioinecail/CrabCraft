@@ -62,7 +62,7 @@ fn failed_bundle_publication_retains_old_objects_and_same_writer_retry_is_durabl
     static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
     for stage in [FailAt::Tiles, FailAt::Blobs, FailAt::Manifest] {
         let id = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        let dir = std::env::temp_dir().join(format!("pcraft-durability-{}-{id}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("crab-durability-{}-{id}", std::process::id()));
         std::fs::create_dir(&dir).unwrap();
         let dir = std::fs::canonicalize(dir).unwrap();
         let mut old = Document::new("old", Size::new(1, 1), ColorMode::Rgb, SampleType::U8);

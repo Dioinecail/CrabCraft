@@ -10,7 +10,7 @@
 //!   `artboardBackgroundType` (1 white, 2 black, 3 transparent, 4 other).
 //!
 //! Both are re-emitted verbatim while they still decode to the document's state, and are
-//! regenerated otherwise (comp appearance is not written to PSD; `.pcraft` keeps it).
+//! regenerated otherwise (comp appearance is not written to PSD; `.crab` keeps it).
 
 use std::collections::HashMap;
 
@@ -292,7 +292,7 @@ fn setting_value(ids: &[u32], st: Option<&CompLayerState>, here: Option<(i32, i3
         if let Some(v) = st.visible {
             s = s.with("enab", Value::Boolean(v));
         }
-        // A position whose offset from the layer does not fit an `i32` (e.g. from a `.pcraft`
+        // A position whose offset from the layer does not fit an `i32` (e.g. from a `.crab`
         // file) is left out rather than wrapped: the comp then records no position (#1017).
         if let (Some((x, y)), Some((hx, hy))) = (st.position, here)
             && let (Some(dx), Some(dy)) = (x.checked_sub(hx), y.checked_sub(hy))

@@ -12,7 +12,7 @@ CrabCraft opens native Affinity documents: `.af` files from Affinity 3 and `.afd
 - vector and pixel masks, opacity, visibility, locks, names and blend modes are kept.
 
 Artboards are recognized from both the legacy flag and current Affinity 3 artboard properties.
-They keep their names, bounds and editable children when saved as `.pcraft` or PSD; moving an
+They keep their names, bounds and editable children when saved as `.crab` or PSD; moving an
 artboard moves its children together. Nested boards become masked groups, and rotated or curved
 boards currently use their bounding rectangle.
 
@@ -23,7 +23,7 @@ ellipses), master pages, and CMYK or Lab colour (converted to RGB without the do
 Nothing is dropped without a warning.
 
 CrabCraft can't write Affinity files. An opened Affinity document has no save path: Save asks for
-a new file (`.pcraft`, PSD, PNG…) and never writes over the Affinity file.
+a new file (`.crab`, PSD, PNG…) and never writes over the Affinity file.
 
 If the native data can't be read (a damaged file, or a layout CrabCraft doesn't know), CrabCraft
 opens the small PNG preview Affinity stores in the file instead, as a single pixel layer named

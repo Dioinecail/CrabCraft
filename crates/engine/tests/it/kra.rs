@@ -48,6 +48,6 @@ fn krita_documents_open_read_only_and_stay_editable() {
     assert!(photocraft_io::export(doc, "x.kra", &Default::default()).is_err());
     let ora = photocraft_io::export(doc, "x.ora", &Default::default()).unwrap();
     assert_eq!(photocraft_io::import("x.ora", &ora.bytes).unwrap().document.layers.len(), doc.layers.len());
-    let native = photocraft_io::export(doc, "x.pcraft", &Default::default()).unwrap();
-    assert_eq!(photocraft_io::import("x.pcraft", &native.bytes).unwrap().document.layers, doc.layers);
+    let native = photocraft_io::export(doc, "x.crab", &Default::default()).unwrap();
+    assert_eq!(photocraft_io::import("x.crab", &native.bytes).unwrap().document.layers, doc.layers);
 }

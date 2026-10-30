@@ -45,7 +45,7 @@ fn layer_xmp_round_trips_through_every_layered_format_and_depth() {
     let tiff = ExportOptions { tiff_layers: true, ..Default::default() };
     for depth in SampleType::ALL {
         let doc = sample(depth);
-        for (path, opts) in [("x.psd", &ExportOptions::default()), ("x.psb", &psb), ("x.tif", &tiff), ("x.pcraft", &ExportOptions::default())] {
+        for (path, opts) in [("x.psd", &ExportOptions::default()), ("x.psb", &psb), ("x.tif", &tiff), ("x.crab", &ExportOptions::default())] {
             let bytes = export(&doc, path, opts).unwrap().bytes;
             let back = import(path, &bytes).unwrap().document;
             assert_eq!(xmps(&back), xmps(&doc), "{path} {depth:?}");

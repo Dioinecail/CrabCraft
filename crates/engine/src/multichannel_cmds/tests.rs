@@ -212,7 +212,7 @@ fn psd_stores_ink_as_dark() {
 }
 
 #[test]
-fn pcraft_round_trip() {
+fn crab_round_trip() {
     let mut s = session("rgb", 16);
     s.execute("image.mode.multichannel", json!({})).unwrap();
     let d = doc(&s).clone();

@@ -253,13 +253,13 @@ fn layer_slice_outsets_saturate_when_a_layer_moves_near_coordinate_limits() {
 }
 
 #[test]
-fn slices_round_trip_through_psd_and_pcraft() {
+fn slices_round_trip_through_psd_and_crab() {
     let mut s = session(8);
     add_square(&mut s, Rect::new(50, 40, 70, 60));
     s.execute("layer.newLayerBasedSlice", json!({})).unwrap();
     s.execute("slice.new", json!({"rect": [5, 5, 30, 20], "name": "hero", "url": "https://example.org", "alt": "Hero", "target": "_blank"})).unwrap();
     let d = doc(&s).clone();
-    for ext in ["psd", "pcraft"] {
+    for ext in ["psd", "crab"] {
         let bytes = photocraft_io::export(&d, &format!("x.{ext}"), &Default::default()).unwrap().bytes;
         let back = photocraft_io::import(&format!("x.{ext}"), &bytes).unwrap().document;
         assert_eq!(back.slices.list.len(), 2, "{ext}");

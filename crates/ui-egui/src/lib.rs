@@ -368,7 +368,7 @@ pub struct ExportSettings {
     /// resolved against ([`photocraft_io::ExportOptions::document_path`]).
     pub document_path: Option<std::path::PathBuf>,
     /// Native save cache owned by the open document; exports without one remain one-shot.
-    pub pcraft_cache: Option<photocraft_io::PcraftExportCache>,
+    pub crab_cache: Option<photocraft_io::PcraftExportCache>,
 }
 
 impl Default for ExportSettings {
@@ -387,7 +387,7 @@ impl Default for ExportSettings {
             embed_icc: true,
             embed_metadata: true,
             document_path: None,
-            pcraft_cache: None,
+            crab_cache: None,
         }
     }
 }
@@ -414,7 +414,7 @@ impl ExportSettings {
         opts.image_previews = self.image_previews;
         opts.psd_maximize_compatibility = self.psd_maximize_compatibility;
         opts.document_path = self.document_path.clone();
-        opts.pcraft_cache = self.pcraft_cache.clone();
+        opts.crab_cache = self.crab_cache.clone();
         opts
     }
 }
@@ -480,7 +480,7 @@ pub(crate) enum SaveKind {
 pub type AutomationReadFn = Box<dyn FnMut(&str) -> Result<(String, Vec<u8>), String>>;
 /// Write bytes through the desktop control session's authorized write root.
 pub type AutomationWriteFn = Box<dyn FnMut(&str, &[u8]) -> Result<(), String>>;
-/// Load a directory-form `.pcraft` through the authorized read root, returning its display
+/// Load a directory-form `.crab` through the authorized read root, returning its display
 /// name (the file name) and the loaded document. `Ok(None)` marks a regular file: the
 /// caller falls back to the bytes path for the zip form.
 pub type AutomationOpenPcraftFn = Box<dyn FnMut(&str) -> Result<Option<(String, Document)>, String>>;
@@ -584,7 +584,7 @@ pub struct Services {
     /// using `file_dialog` and `write` with the user's authority.
     pub automation_read: Option<AutomationReadFn>,
     pub automation_write: Option<AutomationWriteFn>,
-    pub automation_open_pcraft: Option<AutomationOpenPcraftFn>,
+    pub automation_open_crab: Option<AutomationOpenPcraftFn>,
     pub automation_command: Option<AutomationCommandFn>,
     /// Same policy as [`Self::automation_command`], as a function pointer the engine calls for
     /// each step of `actions.play`. Installed on the session only while a control request or
@@ -1723,7 +1723,7 @@ impl PhotocraftApp {
             p => {
                 let source = p.as_deref().unwrap_or(&st.doc.name);
                 let ext = match photocraft_engine::file_cmds::extension(source).as_deref() {
-                    Some("pdn") => "pcraft",
+                    Some("pdn") => "crab",
                     Some("kra" | "krz") => "ora",
                     _ => "psd",
                 };
@@ -1857,7 +1857,7 @@ impl PhotocraftApp {
                     && photocraft_engine::file_cmds::extension(p).is_some_and(|e| photocraft_codecs::from_extension(&e).is_some_and(|f| f.caps().write))
             };
             let path = st.path.clone().filter(|p| photocraft_engine::file_cmds::holds_at(&st.doc, p) || flat_own(p)).ok_or(
-                "Save writes back only to the document's own PSD, PSB, .pcraft or OpenRaster file (OpenRaster only when it holds everything), or to its own flat file while the document is a single plain layer",
+                "Save writes back only to the document's own PSD, PSB, .crab or OpenRaster file (OpenRaster only when it holds everything), or to its own flat file while the document is a single plain layer",
             )?;
             return self.save_in_place(path, choices);
         }
@@ -1892,7 +1892,7 @@ impl PhotocraftApp {
             settings.webp_lossless = e.webp_lossless.unwrap_or(settings.webp_lossless);
             settings.webp_quality = e.webp_quality.map(|q| q.min(100));
             settings.document_path = st.path.as_deref().map(std::path::PathBuf::from);
-            settings.pcraft_cache = Some(st.pcraft_cache.clone());
+            settings.crab_cache = Some(st.crab_cache.clone());
         }
         settings
     }
@@ -2121,7 +2121,7 @@ impl PhotocraftApp {
             let state = self.session.active().ok_or("no document")?;
             // As File › Save: without `path` only a layered file is written back (#416).
             path.or_else(|| state.path.clone().filter(|p| photocraft_engine::file_cmds::holds_at(&state.doc, p))).ok_or(
-                "pass `path`: a save without one writes back only to the document's own PSD, PSB, .pcraft or OpenRaster file, and to OpenRaster only when it holds everything (adjustment layers, styles and masks don't fit)",
+                "pass `path`: a save without one writes back only to the document's own PSD, PSB, .crab or OpenRaster file, and to OpenRaster only when it holds everything (adjustment layers, styles and masks don't fit)",
             )?
         };
         let reply = |path: &str, warnings: &[String]| json!({"path": path, "warnings": warnings});

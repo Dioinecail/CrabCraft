@@ -16,7 +16,7 @@ photocraft-cli: headless CrabCraft
 
 USAGE:
   photocraft-cli convert <in> <out> [--format <ext>] [--quality <1-100>] [--in-place] [--tiff-layers] [--tiff-compression <none|lzw|zip>] [--tga-bits <24|32>] [--dpx-bits <8|10|12|16>] [--dds-compression <none|bc1|bc2|bc3>] [--dds-mipmaps] [--jpeg-format <baseline|optimized|progressive>]
-      Convert between formats (.pcraft, .psd, .png, .jpg, .tif, .webp, .exr, …).
+      Convert between formats (.crab, .psd, .png, .jpg, .tif, .webp, .exr, …).
       An <out> that is the <in> file is refused, as the result would replace the original;
       --in-place allows it.
       TIFF output is flat unless --tiff-layers keeps the layers (Photoshop layer data);
@@ -508,7 +508,7 @@ fn same_dir(a: &Path, b: &Path) -> bool {
 
 fn is_input(p: &Path) -> bool {
     let known = |e: &str| {
-        matches!(e, "pcraft" | "psd" | "psb" | "pdn" | "ora" | "kra" | "krz" | "af" | "afdesign" | "afphoto" | "afpub")
+        matches!(e, "crab" | "psd" | "psb" | "pdn" | "ora" | "kra" | "krz" | "af" | "afdesign" | "afphoto" | "afpub")
             || photocraft_codecs::from_extension(e).is_some_and(|f| photocraft_codecs::caps(f).read)
     };
     p.is_file() && p.extension().is_some_and(|e| known(&e.to_string_lossy().to_ascii_lowercase()))
@@ -700,7 +700,7 @@ mod missing_font_warning_tests {
         let family = "DefinitelyMissingCrabCraftTypeface1251";
         let folder = std::env::temp_dir().join(format!("photocraft-cli-font-warnings-{}", std::process::id()));
         std::fs::create_dir_all(&folder).unwrap();
-        let native = folder.join("missing.pcraft");
+        let native = folder.join("missing.crab");
         let png = folder.join("missing.png");
         let native_str = native.to_string_lossy().to_string();
         let png_str = png.to_string_lossy().to_string();
@@ -751,7 +751,7 @@ mod missing_font_warning_tests {
         let folder = std::env::temp_dir().join(format!("photocraft-cli-ora-{}", std::process::id()));
         std::fs::create_dir_all(&folder).unwrap();
         let path = |name: &str| folder.join(name).to_string_lossy().to_string();
-        let (native, ora, png) = (path("layers.pcraft"), path("layers.ora"), path("back.png"));
+        let (native, ora, png) = (path("layers.crab"), path("layers.ora"), path("back.png"));
         let (code, _, stderr) = invoke(&["run", "--new", r#"{"width":16,"height":12}"#, "--cmd", "layer.new.layer", "--out", &native]);
         assert_eq!(code, 0, "{stderr}");
         let (code, _, stderr) = invoke(&["convert", &native, &ora]);
@@ -775,7 +775,7 @@ mod missing_font_warning_tests {
     fn no_type_layers_do_not_produce_missing_font_warnings() {
         let folder = std::env::temp_dir().join(format!("photocraft-cli-no-font-warning-{}", std::process::id()));
         std::fs::create_dir_all(&folder).unwrap();
-        let native = folder.join("blank.pcraft");
+        let native = folder.join("blank.crab");
         let png = folder.join("blank.png");
         let native_str = native.to_string_lossy().to_string();
         let png_str = png.to_string_lossy().to_string();

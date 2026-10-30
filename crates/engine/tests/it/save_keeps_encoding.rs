@@ -1,6 +1,6 @@
 //! #2399: a save writes a JPEG or WebP back the way it was opened. A JPEG keeps the quality
 //! estimated from its quantisation tables, a lossy WebP stays lossy and a lossless one lossless,
-//! unless the save asks for a quality; the remembered settings survive a .pcraft round trip.
+//! unless the save asks for a quality; the remembered settings survive a .crab round trip.
 
 use photocraft_codecs::{ChannelLayout, EncodeOptions, Format, Image, SampleType, WebpEncoding, jpeg_quality, webp_encoding};
 use photocraft_engine::Session;
@@ -77,7 +77,7 @@ fn a_new_document_and_a_png_save_at_the_defaults() {
 }
 
 #[test]
-fn the_remembered_encoding_survives_pcraft() {
+fn the_remembered_encoding_survives_crab() {
     let src = photocraft_codecs::encode(&photo(), Format::Jpeg, &EncodeOptions { jpeg_quality: 70, ..Default::default() }).unwrap();
     let mut s = Session::new();
     open_bytes_as(&mut s, "in.jpg", &src, None, None).unwrap();

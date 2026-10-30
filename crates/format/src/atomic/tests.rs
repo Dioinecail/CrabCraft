@@ -90,14 +90,14 @@ const NO_RETRY: RenameRetry = RenameRetry { attempts: 0, first_delay_ms: 0 };
 #[test]
 fn a_failed_publication_flush_is_reported_and_can_be_retried() {
     let d = TempDir::new("publication-flush");
-    let p = d.0.join("document.pcraft");
+    let p = d.0.join("document.crab");
     std::fs::write(&p, ORIGINAL).unwrap();
     let fs = Faulty { fail_sync_dir: true, ..Default::default() };
 
     let error = atomic_write_with(&fs, NO_RETRY, &p, b"new document").unwrap_err();
     assert_eq!(fs.synced.get(), 1, "{error}");
     assert_eq!(error.kind(), io::ErrorKind::Other);
-    assert!(error.to_string().contains("document.pcraft"), "{error}");
+    assert!(error.to_string().contains("document.crab"), "{error}");
     assert!(error.to_string().contains("may not survive"), "{error}");
     assert!(!error.to_string().contains(UNCHANGED), "the replacement already happened: {error}");
     assert_eq!(std::fs::read(&p).unwrap(), b"new document");

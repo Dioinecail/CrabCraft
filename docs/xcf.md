@@ -4,7 +4,7 @@ CrabCraft opens GIMP's native `.xcf` files (and `.xcf.gz`) with their layers, re
 Open, recent files, drops, the CLI (`convert`, `info`, `batch`) and automation (`doc.open`, MCP)
 use the same reader in `photocraft-io` (`crates/io/src/xcf.rs`). A file is recognised by its
 `gimp xcf ` signature, so an XCF with another extension still opens as one. Save suggests
-`.pcraft`, which keeps everything CrabCraft holds; exporting as `.xcf` fails with a message.
+`.crab`, which keeps everything CrabCraft holds; exporting as `.xcf` fails with a message.
 
 ## What is kept
 

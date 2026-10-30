@@ -139,7 +139,7 @@ mod tests {
 
     #[test]
     fn exr_parts_lists_parts_groups_and_views() {
-        let dir = std::env::temp_dir().join(format!("pcraft-exr-parts-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("crab-exr-parts-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("aov.exr");
         write_multipart(&path);
@@ -154,7 +154,7 @@ mod tests {
 
     #[test]
     fn open_exr_parts_imports_the_chosen_part_as_a_layer() {
-        let dir = std::env::temp_dir().join(format!("pcraft-exr-open-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("crab-exr-open-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("aov.exr");
         write_multipart(&path);
@@ -177,7 +177,7 @@ mod tests {
     /// File Handling › "Open color-less EXR as ACEScg" applies to Open EXR Parts too.
     #[test]
     fn open_exr_parts_honours_the_aces_cg_preference() {
-        let dir = std::env::temp_dir().join(format!("pcraft-exr-aces-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("crab-exr-aces-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("aov.exr");
         write_multipart(&path);
@@ -195,7 +195,7 @@ mod tests {
 
     #[test]
     fn open_exr_parts_refuses_an_empty_selection_and_unknown_names() {
-        let dir = std::env::temp_dir().join(format!("pcraft-exr-empty-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("crab-exr-empty-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("aov.exr");
         write_multipart(&path);
@@ -209,7 +209,7 @@ mod tests {
 
     #[test]
     fn channel_groups_import_from_their_own_channels() {
-        let dir = std::env::temp_dir().join(format!("pcraft-exr-groups-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("crab-exr-groups-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("grouped.exr");
         write_grouped(&path);
@@ -249,7 +249,7 @@ mod tests {
     #[test]
     fn an_unnamed_part_opens_by_the_name_the_listing_gives_it() {
         // #4210: the listing names an unnamed part "part 0"; feeding that name back must open it.
-        let dir = std::env::temp_dir().join(format!("pcraft-exr-unnamed-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("crab-exr-unnamed-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("unnamed.exr");
         write_unnamed_grouped(&path);
@@ -272,7 +272,7 @@ mod tests {
 
     #[test]
     fn precomp_sums_the_light_path_set_and_refuses_an_incomplete_one() {
-        let dir = std::env::temp_dir().join(format!("pcraft-exr-precomp-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("crab-exr-precomp-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("grouped.exr");
         write_grouped(&path);

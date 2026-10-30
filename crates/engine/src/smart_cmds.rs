@@ -16,11 +16,11 @@
 //! The placed stage and the result after each filter are cached too (`stack_cache`), so a
 //! re-render starts from the deepest stage it shares with an earlier one.
 //!
-//! Converting a layer embeds it as an in-memory `.pcraft` bundle of a nested document (exactly
+//! Converting a layer embeds it as an in-memory `.crab` bundle of a nested document (exactly
 //! lossless, layered, any depth/model). PSD placed layers keep their source in the preserved
 //! global `lnk2` block (found by uuid), and keep Photoshop's rendering until something changes,
 //! so an unedited PSD still round-trips byte for byte. PSD export (`photocraft_io::smart_map`)
-//! writes every smart object back as one: its source embedded in `lnk2` (a `.pcraft` source as a
+//! writes every smart object back as one: its source embedded in `lnk2` (a `.crab` source as a
 //! PSB), its smart filters in `filterFX` and its filter mask in `FEid`.
 
 use std::sync::{Arc, Mutex};
@@ -63,12 +63,12 @@ fn bad(cmd: &str, msg: impl Into<String>) -> EngineError {
 
 // ---------- source encoding / decoding ----------
 
-/// Encodes a document as embedded smart-object contents: an in-memory `.pcraft` bundle.
+/// Encodes a document as embedded smart-object contents: an in-memory `.crab` bundle.
 pub fn encode_source(doc: &Document) -> Result<Vec<u8>> {
     photocraft_format::save_to_bytes(doc, &Default::default()).map_err(|e| other(format!("can't encode smart object contents: {e}")))
 }
 
-/// Decodes smart-object contents (a `.pcraft` bundle, PSD/PSB, or any flat image format).
+/// Decodes smart-object contents (a `.crab` bundle, PSD/PSB, or any flat image format).
 pub fn decode_source(file_name: &str, bytes: &[u8]) -> Result<Document> {
     crate::file_cmds::import(file_name, bytes).map_err(|e| other(format!("can't read smart object contents \"{file_name}\": {e}")))
 }
@@ -790,7 +790,7 @@ pub fn layer_to_smart(doc: &Document, l: &Layer) -> Result<Layer> {
 /// same as the layers inside a pass-through group). The smart layer is visible, opaque and Normal.
 pub fn layers_to_smart(doc: &Document, name: &str, layers: Vec<Layer>) -> Result<Layer> {
     let canvas = doc.bounds();
-    let mut sub = Document::new(format!("{name}.pcraft"), doc.size, doc.mode, doc.depth);
+    let mut sub = Document::new(format!("{name}.crab"), doc.size, doc.mode, doc.depth);
     sub.resolution_dpi = doc.resolution_dpi;
     sub.icc_profile = doc.icc_profile.clone();
     sub.global_light = doc.global_light;
@@ -968,7 +968,7 @@ pub fn contents_of(doc: &Document, id: LayerId) -> Result<(String, Arc<Vec<u8>>)
 }
 
 /// Writes the smart object's file as it is. To a path with another extension (a `.png` for
-/// `.psb` or `.pcraft` contents) the contents are opened and exported in that format instead.
+/// `.psb` or `.crab` contents) the contents are opened and exported in that format instead.
 fn export_contents(s: &mut Session, p: &Value) -> Result<Value> {
     let path = path_param("layer.smartObjects.exportContents", p)?;
     let id = layer_param(s, p)?;
@@ -1040,7 +1040,7 @@ pub fn commit_child(s: &mut Session, index: usize) -> Result<bool> {
                 SmartSource::Linked { .. } => child.name.as_str(),
             };
             let stem = name.rsplit_once('.').map_or(name, |(stem, _)| stem);
-            sm.source = SmartSource::Embedded { file_name: format!("{stem}.pcraft"), bytes: bytes.clone() };
+            sm.source = SmartSource::Embedded { file_name: format!("{stem}.crab"), bytes: bytes.clone() };
             detach_psd(doc.layer_mut(id).ok_or(EngineError::NoLayer(id))?);
             refresh_or_fail(doc, id)?;
         }

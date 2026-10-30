@@ -89,7 +89,7 @@
       <key>UTTypeTagSpecification</key>
       <dict>
         <key>public.filename-extension</key>
-        <array><string>pcraft</string></array>
+        <array><string>crab</string></array>
         <key>public.mime-type</key>
         <array><string>application/x-photocraft</string></array>
       </dict>

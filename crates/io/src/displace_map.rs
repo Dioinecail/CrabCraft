@@ -11,7 +11,7 @@
 //! ```
 //!
 //! The whole `filterFX` item (with the map) is kept verbatim in the params as a template
-//! ([`TEMPLATE_KEY`]), so the filter re-renders, survives `.pcraft` and is written back to PSD
+//! ([`TEMPLATE_KEY`]), so the filter re-renders, survives `.crab` and is written back to PSD
 //! with only the editable settings replaced. Anything else (another mode, a missing or truncated
 //! map, unknown enum values) stays an opaque [`super::UNSUPPORTED_FILTER`].
 
@@ -39,7 +39,7 @@ const MODE_TWO_PLANES: u16 = 3;
 /// 8K × 8K: far beyond the observed document-sized maps, and bounds the f32 map we build.
 const MAX_MAP_PIXELS: usize = 1 << 26;
 /// 4K × 4K: the largest map CrabCraft embeds itself. Params hold it as hex, about 4 bytes per
-/// pixel, copied with every history state and written into `.pcraft`'s manifest, so a few of the
+/// pixel, copied with every history state and written into `.crab`'s manifest, so a few of the
 /// largest readable maps would make a file the reader refuses.
 const MAX_EMBED_PIXELS: usize = 1 << 24;
 /// The template is the item plus the map; a little room for the rest of the descriptor.
@@ -163,7 +163,7 @@ pub(super) fn export_item(params: &J) -> Result<Descriptor, String> {
 /// `filter.distort.displace` params with `map` embedded the way Photoshop embeds a Displace
 /// smart filter's map: a `filterFX` item ([`TEMPLATE_KEY`]) holding it as two 8-bit planes. A
 /// smart filter re-renders from its params alone, so a map read from a file or an open document
-/// must travel with them (#7423); embedded, it also saves to `.pcraft` and PSD like an imported
+/// must travel with them (#7423); embedded, it also saves to `.crab` and PSD like an imported
 /// one. `map`'s first channel is the horizontal map and its second the vertical one (the first
 /// again for one or two channels), as the filter reads them. `mapPath`, `mapDocument` and
 /// `mapLayer` are dropped: `map` was already read from them (from that layer, when one was

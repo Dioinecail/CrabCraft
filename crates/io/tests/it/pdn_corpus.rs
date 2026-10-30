@@ -26,8 +26,8 @@ fn real_pdn_layers_and_native_saves() {
     for path in &paths {
         let doc = photocraft_io::import(&path.to_string_lossy(), &std::fs::read(path).unwrap()).unwrap_or_else(|e| panic!("{}: {e}", path.display())).document;
         let flat = photocraft_compose::flatten(&doc);
-        let native = photocraft_io::export(&doc, "copy.pcraft", &Default::default()).unwrap();
-        let back = photocraft_io::import("copy.pcraft", &native.bytes).unwrap().document;
+        let native = photocraft_io::export(&doc, "copy.crab", &Default::default()).unwrap();
+        let back = photocraft_io::import("copy.crab", &native.bytes).unwrap().document;
         assert_eq!(doc.layers, back.layers, "{}", path.display());
         assert_eq!(flat.px, photocraft_compose::flatten(&back).px);
         let png = path.with_extension("png");

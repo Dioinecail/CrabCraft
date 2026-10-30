@@ -17,7 +17,7 @@ On Windows, CrabCraft starts Intel graphics on DirectX 12. If CrabCraft closed w
 ### Windows
 
 1. Use CrabCraft 0.7.0 or later. Older builds do not have the steps below.
-2. Start CrabCraft again. Double-clicking its icon or a `.pcraft` file works. CrabCraft notes that the last start did not finish and uses the next safer graphics mode this time:
+2. Start CrabCraft again. Double-clicking its icon or a `.crab` file works. CrabCraft notes that the last start did not finish and uses the next safer graphics mode this time:
    - A start on Vulkan is followed by one on DirectX 12.
    - A start on DirectX 12 is followed by one on the CPU. The CPU mode does not depend on the graphics driver.
 3. If it started, nothing more to do. CrabCraft remembers the mode that worked. You can see or reset it under **Edit › Preferences › Performance…** (on macOS, **CrabCraft › Settings › Performance…**).

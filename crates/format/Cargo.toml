@@ -1,6 +1,6 @@
 [package]
 name = "photocraft-format"
-description = "Native .pcraft document bundle: manifest + content-addressed zstd tiles"
+description = "Native .crab document bundle: manifest + content-addressed zstd tiles"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

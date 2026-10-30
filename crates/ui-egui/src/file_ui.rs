@@ -1490,7 +1490,7 @@ mod tests {
         }
         #[cfg(not(target_os = "macos"))]
         assert_eq!(fallback, ".");
-        app.session.active_mut().unwrap().path = Some("/tmp/photocraft/drawing.pcraft".into());
+        app.session.active_mut().unwrap().path = Some("/tmp/photocraft/drawing.crab".into());
         assert_eq!(droplet_default_dir(&app), "/tmp/photocraft");
     }
 

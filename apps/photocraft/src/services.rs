@@ -18,7 +18,7 @@ mod recovery_tests;
 /// Photoshop brushes (.abr), gradients (.grd), swatches (.aco, .act, .ase) and keyboard shortcut sets
 /// (.kys), which go to the preset libraries and Edit › Keyboard Shortcuts.
 const OPEN_EXTS: &[&str] = &[
-    "pcraft", "pdn", "ora", "xcf", "xcfgz", "gz", "kra", "krz", "psd", "psb", "psdt", "png", "jpg", "jpeg", "tif", "tiff", "webp", "gif", "bmp", "tga", "ico",
+    "crab", "pdn", "ora", "xcf", "xcfgz", "gz", "kra", "krz", "psd", "psb", "psdt", "png", "jpg", "jpeg", "tif", "tiff", "webp", "gif", "bmp", "tga", "ico",
     "qoi", "exr", "hdr", "pbm", "pgm", "ppm", "pam", "pfm", "pcx", "dds", "xpm", "fits", "fit", "fts", "dpx", "cin", "dcm", "dicom", "dc3", "iff", "lbm",
     "ilbm", "heic", "heif", "hif", "dng", "cr2", "cr3", "nef", "nrw", "arw", "pef", "orf", "rw2", "raf", "abr", "grd", "svg", "svgz", "aco", "act", "ase",
     "kys", "af", "afdesign", "afphoto", "afpub",
@@ -40,7 +40,7 @@ fn open_filter_extensions(extensions: &[&str]) -> Vec<String> {
 /// [`OPEN_EXTS`]. An explicit SVG filter also keeps vector artwork discoverable when a native
 /// picker defaults to another filter.
 const OPEN_FILTERS: &[(&str, &[&str])] = &[
-    ("CrabCraft", &["pcraft"]),
+    ("CrabCraft", &["crab"]),
     ("Photoshop", &["psd", "psb", "psdt"]),
     ("Affinity", &["af", "afdesign", "afphoto", "afpub"]),
     ("Krita", &["kra", "krz"]),
@@ -82,12 +82,12 @@ fn open_filters() -> Vec<(&'static str, Vec<String>)> {
 }
 
 /// File › Save As formats: (filter name, extensions). The filter matching the suggested name's
-/// extension comes first, so a .pcraft document saves as .pcraft by default and everything else
+/// extension comes first, so a .crab document saves as .crab by default and everything else
 /// keeps defaulting to PSD.
 const SAVE_FILTERS: &[(&str, &[&str])] = &[
     ("PSD Document", &["psd", "psb"]),
     ("PDF", &["pdf"]),
-    ("CrabCraft", &["pcraft"]),
+    ("CrabCraft", &["crab"]),
     ("OpenRaster", &["ora"]),
     ("PNG", &["png"]),
     ("JPEG", &["jpg"]),
@@ -435,7 +435,7 @@ fn with_store<R>(store: &SharedRecovery, f: impl FnOnce(&mut RecoveryStore) -> R
     Ok(f(slot.as_mut().ok_or("no config directory")?))
 }
 
-/// Crash recovery: background incremental .pcraft autosaves into `dir` (`None`: no config
+/// Crash recovery: background incremental .crab autosaves into `dir` (`None`: no config
 /// directory, so autosaves fail and nothing is recovered). Recovered documents keep their entries
 /// until a newer autosave replaces them or they're saved or closed (see [`RecoveryStore`]).
 fn recovery_services(dir: Option<PathBuf>) -> Services {
@@ -573,10 +573,10 @@ pub fn native(automation: Option<photocraft_automation::AuthorizedWorkspace>) ->
     let automation_write = automation.clone().map(|workspace| {
         Box::new(move |path: &str, bytes: &[u8]| workspace.write(path, bytes).map_err(|error| error.to_string())) as photocraft_ui_egui::AutomationWriteFn
     });
-    let automation_open_pcraft = automation.clone().map(|workspace| {
+    let automation_open_crab = automation.clone().map(|workspace| {
         Box::new(move |path: &str| {
             let name = Path::new(path).file_name().and_then(|name| name.to_str()).unwrap_or(path).to_string();
-            let opened = crate::crash_guard::guard("Open", || workspace.open_pcraft(path).map_err(|e| e.to_string()))?;
+            let opened = crate::crash_guard::guard("Open", || workspace.open_crab(path).map_err(|e| e.to_string()))?;
             Ok(opened.map(|doc| (name, doc)))
         }) as photocraft_ui_egui::AutomationOpenPcraftFn
     });
@@ -613,7 +613,7 @@ pub fn native(automation: Option<photocraft_automation::AuthorizedWorkspace>) ->
         same_file: Some(Box::new(|a: &str, b: &str| same_entry(Path::new(a), Path::new(b), same_file))),
         automation_read,
         automation_write,
-        automation_open_pcraft,
+        automation_open_crab,
         automation_save,
         automation_command,
         automation_authorize,
@@ -767,14 +767,14 @@ mod tests {
             // (the PSD type untouched, or PNG picked and .jpg typed).
             ("/pics/art.png", opened, &psd, "/pics/art.png"),
             ("/pics/art.jpg", opened, &png, "/pics/art.jpg"),
-            ("/pics/art.pcraft", opened, &png, "/pics/art.pcraft"),
+            ("/pics/art.crab", opened, &png, "/pics/art.crab"),
             // Already the type's: kept, including its other extensions.
             ("/pics/art.png", opened, &png, "/pics/art.png"),
             ("/pics/art.PNG", opened, &png, "/pics/art.PNG"),
             ("/pics/big.psb", opened, &psd, "/pics/big.psb"),
-            // The dialog opened on a .pcraft: that is the extension the type replaces.
-            ("/pics/art.pcraft", Some("art.pcraft"), &png, "/pics/art.png"),
-            ("/pics/art.psd", Some("art.pcraft"), &png, "/pics/art.psd"),
+            // The dialog opened on a .crab: that is the extension the type replaces.
+            ("/pics/art.crab", Some("art.crab"), &png, "/pics/art.png"),
+            ("/pics/art.psd", Some("art.crab"), &png, "/pics/art.psd"),
         ];
         for (typed, opened, chosen, want) in cases {
             assert_eq!(with_chosen_type(Path::new(typed), opened, chosen), PathBuf::from(want), "{typed} (opened {opened:?})");
@@ -849,7 +849,7 @@ mod tests {
             }
             text.next().is_none()
         }
-        assert_eq!(open_filter_extensions(&["cr2", "pcraft"]), ["[cC][rR]2", "[pP][cC][rR][aA][fF][tT]"]);
+        assert_eq!(open_filter_extensions(&["cr2", "crab"]), ["[cC][rR]2", "[pP][cC][rR][aA][fF][tT]"]);
         let globs = open_filter_extensions(OPEN_EXTS);
         assert_eq!(globs.len(), OPEN_EXTS.len());
         for (ext, glob) in OPEN_EXTS.iter().zip(&globs) {
@@ -895,7 +895,7 @@ mod tests {
     #[test]
     fn open_filters_keep_literal_extensions_on_windows_and_macos() {
         assert_eq!(open_filter_extensions(OPEN_EXTS), OPEN_EXTS);
-        assert_eq!(open_filter_extensions(&["pcraft"]), ["pcraft"]);
+        assert_eq!(open_filter_extensions(&["crab"]), ["crab"]);
         assert_eq!(open_filters().into_iter().find(|(name, _)| *name == "SVG").map(|(_, exts)| exts), Some(vec!["svg".to_string(), "svgz".to_string()]));
         assert_eq!(
             open_filters().into_iter().find(|(name, _)| *name == "Photoshop").map(|(_, exts)| exts),
@@ -956,7 +956,7 @@ mod tests {
         // Save As, Save a Copy.
         // Files in a format Save As can't write, like .dng, should suggest .psd instead.
         let _ = invoke(&mut app, "file.saveAs");
-        for name in ["cat.pcraft", "cat.jpeg", "cat.gif", "cat.bmp", "cat.dng"] {
+        for name in ["cat.crab", "cat.jpeg", "cat.gif", "cat.bmp", "cat.dng"] {
             app.session.active_mut().unwrap().path = Some(name.into());
             let _ = invoke(&mut app, "file.saveAs");
         }
@@ -983,7 +983,7 @@ mod tests {
         // The extension each save above should suggest, in order.
         let want = [
             "psd",                       // Save As untitled
-            "pcraft jpeg gif bmp psd",   // Save As opened .pcraft .jpeg .gif .bmp .dng
+            "crab jpeg gif bmp psd",   // Save As opened .crab .jpeg .gif .bmp .dng
             "psd",                       // Save a Copy
             "png jpg webp tif tga",      // Export As
             "png jpg gif webp",          // Quick Export
@@ -1003,7 +1003,7 @@ mod tests {
     #[test]
     fn save_as_offers_only_writable_formats_including_ico() {
         // Layered formats, and PDF, are written by `photocraft-io`, not a codec.
-        let layered = ["psd", "psb", "pcraft", "ora", "pdf"];
+        let layered = ["psd", "psb", "crab", "ora", "pdf"];
         for (name, exts) in SAVE_FILTERS {
             for ext in exts.iter().filter(|e| !layered.contains(e)) {
                 let format = photocraft_codecs::from_extension(ext).unwrap_or_else(|| panic!("{name}: .{ext} is no known format"));
@@ -1035,7 +1035,7 @@ mod tests {
         for (suggested, name, first) in [
             ("/pics/image.psd", "image", "psd"),
             ("/pics/image.psb", "image", "psb"),
-            ("/pics/image.pcraft", "image", "pcraft"),
+            ("/pics/image.crab", "image", "crab"),
             ("/pics/sky.fit", "sky", "fit"),
             ("cat.jpeg", "cat", "jpeg"),
             ("swatches.aco", "swatches", "aco"),

@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn relative_paths_are_taken_from_the_document_folder() {
-        let doc = std::env::temp_dir().join("art").join("poster.pcraft");
+        let doc = std::env::temp_dir().join("art").join("poster.crab");
         assert_eq!(resolve("logo.png", Some(&doc)), Ok(std::env::temp_dir().join("art").join("logo.png")));
         assert_eq!(resolve("logo.png", None), Err(NotFollowed::NoDocumentFolder));
         assert_eq!(resolve(r"\\192.0.2.1\share\x.png", Some(&doc)), Err(NotFollowed::Refused(Refused::Network)));

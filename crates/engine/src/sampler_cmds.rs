@@ -2,7 +2,7 @@
 //! the Info panel, so a fixed position can be compared instead of chasing the live pointer.
 //!
 //! Points are per-document view state ([`crate::DocState::color_samplers`]): they belong to their
-//! document, are discarded when it closes, and are not saved to `.pcraft` or PSD. Placing, moving
+//! document, are discarded when it closes, and are not saved to `.crab` or PSD. Placing, moving
 //! and removing them changes no pixels and adds no History step, so they are not journaled. Each
 //! point reads one composite pixel (no averaging); its values match the Info panel's pointer
 //! readout (RGB 0–255 and colour-managed CMYK percentages, as in the Color Picker).

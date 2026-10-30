@@ -33,7 +33,7 @@ fn identity_app() -> (PhotocraftApp, RawOpen, Control) {
     session.execute("file.new", json!({"width": 8, "height": 6})).unwrap();
     session.execute("layer.new.layer", json!({})).unwrap();
     session.execute("edit.fill", json!({"color": "#336699"})).unwrap();
-    session.active_mut().unwrap().path = Some("accepted-control.pcraft".into());
+    session.active_mut().unwrap().path = Some("accepted-control.crab".into());
     let state = session.active().unwrap();
     let control = Control {
         doc: state.doc.clone(),

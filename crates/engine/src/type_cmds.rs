@@ -108,7 +108,7 @@ pub fn check_kerning(p: &Value) -> std::result::Result<(), String> {
 }
 
 /// Validates text metrics (size, tracking, leading, baseline shift, scales) that can otherwise
-/// exceed the rasterizer's supported range or overflow `f32`, which a .pcraft manifest cannot hold,
+/// exceed the rasterizer's supported range or overflow `f32`, which a .crab manifest cannot hold,
 /// and the superscript/subscript `baseline`, so a typo is an error rather than a reset to Normal.
 pub fn check_size_tracking(p: &Value) -> std::result::Result<(), String> {
     if let Some(v) = p.get("size") {

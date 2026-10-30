@@ -5,7 +5,7 @@
 //! - the **library** ([`PatternLibrary`], on the [`Session`]): built-in procedural patterns plus
 //!   defined and imported ones. Library edits are app state, not document history.
 //! - the **document** ([`photocraft_doc::Document::patterns`]): the patterns its layers use
-//!   (saved in PSD `Patt` blocks and `.pcraft`). Commands that apply a pattern copy it into the
+//!   (saved in PSD `Patt` blocks and `.crab`). Commands that apply a pattern copy it into the
 //!   document in the same history step, so a document always renders on its own.
 //!
 //! Patterns are referenced by `"pattern": id | name` (document first, then library).
@@ -552,7 +552,7 @@ mod tests {
 
     #[test]
     fn pattern_placement_rejects_non_finite_angle_and_phase() {
-        // 1e39 overflowed f32 to infinity: a NaN render, and a fill layer .pcraft refused to save.
+        // 1e39 overflowed f32 to infinity: a NaN render, and a fill layer .crab refused to save.
         let mut s = session(8);
         let n = s.active().unwrap().doc.layers.len();
         for cmd in ["layer.newFillLayer.pattern", "edit.fill", "paint.bucket"] {

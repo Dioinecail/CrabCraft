@@ -23,7 +23,7 @@
 - [Raster formats](formats/raster-formats.md)
 - [SVG](formats/svg.md)
 - [Affinity documents](formats/affinity.md)
-- [The `.pcraft` format](formats/pcraft.md)
+- [The `.crab` format](formats/crab.md)
 
 # Automation
 

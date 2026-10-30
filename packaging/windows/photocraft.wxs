@@ -10,7 +10,7 @@
   Per-machine install with a setup wizard that names the version: Welcome, install folder
   (Program Files\CrabCraft by default, remembered for upgrades), Ready, a progress page, and a
   Finish page with a ticked "Launch CrabCraft" box. Installs a Start Menu shortcut, makes
-  CrabCraft the owner of `.pcraft`, and offers it under "Open with" for PSD/PSB and the image
+  CrabCraft the owner of `.crab`, and offers it under "Open with" for PSD/PSB and the image
   formats it reads (without taking over the user's default app for them), plus photocraft-cli.
   `msiexec /qn` still installs silently.
 -->
@@ -88,9 +88,9 @@
               Icon="PhotocraftIcon.exe" IconIndex="0" />
         </File>
 
-        <!-- .pcraft: CrabCraft's own format; CrabCraft is its default app. -->
+        <!-- .crab: CrabCraft's own format; CrabCraft is its default app. -->
         <ProgId Id="Photocraft.Document" Description="CrabCraft Document" Icon="PhotocraftExe" IconIndex="0">
-          <Extension Id="pcraft" ContentType="application/x-photocraft">
+          <Extension Id="crab" ContentType="application/x-photocraft">
             <Verb Id="open" Command="Open" TargetFile="PhotocraftExe" Argument="&quot;%1&quot;" />
           </Extension>
         </ProgId>
@@ -123,7 +123,7 @@
         <!-- "Open with" app list and the Run dialog (Win+R "photocraft"). -->
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\photocraft.exe" Name="FriendlyAppName" Value="CrabCraft" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\photocraft.exe\shell\open\command" Value="&quot;[#PhotocraftExe]&quot; &quot;%1&quot;" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\Applications\photocraft.exe\SupportedTypes" Name=".pcraft" Value="" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\Applications\photocraft.exe\SupportedTypes" Name=".crab" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\photocraft.exe\SupportedTypes" Name=".psd" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\photocraft.exe\SupportedTypes" Name=".psb" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\photocraft.exe\SupportedTypes" Name=".pdn" Value="" Type="string" />

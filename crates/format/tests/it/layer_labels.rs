@@ -2,7 +2,7 @@ use photocraft_color::{ColorMode, SampleType};
 use photocraft_doc::{Document, LabelColor, Layer, Size};
 
 #[test]
-fn layer_labels_pcraft_roundtrip_all_colors_and_depths() {
+fn layer_labels_crab_roundtrip_all_colors_and_depths() {
     for depth in SampleType::ALL {
         let mut doc = Document::new("Labels", Size::new(2, 2), ColorMode::Rgb, depth);
         for color in LabelColor::ALL {

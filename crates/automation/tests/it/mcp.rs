@@ -136,8 +136,8 @@ async fn headless_edit_render_save_roundtrip() {
     let decoded = photocraft_codecs::decode(&png).unwrap();
     assert_eq!(decoded.dimensions(), (32, 24));
 
-    let r = json_of(&call(&client, "doc_save", json!({"path": "agent.pcraft"})).await);
-    assert_eq!(r["path"], "agent.pcraft");
+    let r = json_of(&call(&client, "doc_save", json!({"path": "agent.crab"})).await);
+    assert_eq!(r["path"], "agent.crab");
     let png_path = dir.join("agent.png");
     json_of(&call(&client, "doc_export", json!({"path": "agent.png"})).await);
     let jpg_path = dir.join("agent.jpg");
@@ -146,7 +146,7 @@ async fn headless_edit_render_save_roundtrip() {
     assert!(std::fs::metadata(&jpg_path).unwrap().len() > 100);
 
     // Re-open the native file: identical layer tree.
-    let o = json_of(&call(&client, "doc_open", json!({"path": "agent.pcraft"})).await);
+    let o = json_of(&call(&client, "doc_open", json!({"path": "agent.crab"})).await);
     assert_eq!(o["index"], 1);
     let doc2 = json_of(&call(&client, "doc_inspect", json!({"index": 1})).await);
     assert_eq!(doc2["layers"].as_array().unwrap().len(), 2);
@@ -354,7 +354,7 @@ async fn bridge_doc_save_rejects_headless_only_options_instead_of_saving_with_de
         json!({"path": "out.jpg", "quality": 50}),
         json!({"path": "out.png", "format": "png"}),
         json!({"path": "out.tif", "tiffLayers": true}),
-        json!({"path": "out.pcraft", "index": 0}),
+        json!({"path": "out.crab", "index": 0}),
     ] {
         let r = call(&client, "doc_save", params.clone()).await;
         assert_eq!(r.is_error, Some(true), "{params}: {:?}", text(&r));
@@ -363,7 +363,7 @@ async fn bridge_doc_save_rejects_headless_only_options_instead_of_saving_with_de
 }
 
 /// #946: like headless mode, a bridged `doc_save` without `path` reaches the app's `app.save`,
-/// which writes back to the document's own PSD, PSB or .pcraft file or refuses with its own error.
+/// which writes back to the document's own PSD, PSB or .crab file or refuses with its own error.
 #[tokio::test(flavor = "multi_thread")]
 async fn bridge_doc_save_without_path_forwards_app_save_for_write_back() {
     let (addr, app) = fake_app().await;
@@ -572,8 +572,8 @@ async fn affinity_preview_warns_and_requires_a_new_save_path() {
         assert!(text(&native).contains("Affinity export"));
         assert_eq!(std::fs::read(dir.join(name)).unwrap(), bytes);
     }
-    json_of(&call(&client, "doc_save", json!({"path": "copy.pcraft"})).await);
-    assert_eq!(json_of(&call(&client, "doc_save", json!({})).await)["path"], "copy.pcraft");
+    json_of(&call(&client, "doc_save", json!({"path": "copy.crab"})).await);
+    assert_eq!(json_of(&call(&client, "doc_save", json!({})).await)["path"], "copy.crab");
     assert_eq!(std::fs::read(dir.join("source.af")).unwrap(), bytes);
     client.cancel().await.unwrap();
     cleanup(&dir);
@@ -614,10 +614,10 @@ async fn save_without_path_never_flattens_over_the_opened_file() {
     assert_eq!(json_of(&call(&client, "doc_save", json!({})).await)["path"], "layered.psd");
     assert!(photocraft_io::is_psd(&std::fs::read(dir.join("layered.psd")).unwrap()));
 
-    // Once saved as .pcraft, a flat-born document saves in place there.
+    // Once saved as .crab, a flat-born document saves in place there.
     json_of(&call(&client, "doc_select", json!({"index": 0})).await);
-    json_of(&call(&client, "doc_save", json!({"path": "work.pcraft"})).await);
-    assert_eq!(json_of(&call(&client, "doc_save", json!({})).await)["path"], "work.pcraft");
+    json_of(&call(&client, "doc_save", json!({"path": "work.crab"})).await);
+    assert_eq!(json_of(&call(&client, "doc_save", json!({})).await)["path"], "work.crab");
     assert_eq!(std::fs::read(dir.join("seed.png")).unwrap(), png);
 
     // A template opens untitled, without its path.
@@ -815,9 +815,9 @@ async fn smart_object_commands_refuse_real_linked_files_without_changing_the_ses
     let state = session.active_mut().unwrap();
     let LayerContent::Smart(smart) = &mut std::sync::Arc::make_mut(&mut state.doc).layers[0].content else { panic!("smart object") };
     smart.source = SmartSource::Linked { path: dir.join("external.png").to_string_lossy().into_owned() };
-    std::fs::write(dir.join("parent.pcraft"), photocraft_engine::smart_cmds::encode_source(&state.doc).unwrap()).unwrap();
+    std::fs::write(dir.join("parent.crab"), photocraft_engine::smart_cmds::encode_source(&state.doc).unwrap()).unwrap();
     let client = connect(headless_in(&dir)).await;
-    json_of(&call(&client, "doc_open", json!({"path": "parent.pcraft"})).await);
+    json_of(&call(&client, "doc_open", json!({"path": "parent.crab"})).await);
     let before = json_of(&call(&client, "doc_inspect", json!({})).await);
     for id in ["layer.smartObjects.editContents", "layer.smartObjects.convertToLayers"] {
         let response = call(&client, "command_run", json!({"id": id, "params": {"layer": layer}})).await;

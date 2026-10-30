@@ -515,7 +515,7 @@ impl Ex {
             for mode in modes.into_iter().flatten() {
                 if !mode.has_psd_equivalent() {
                     self.warnings.push(format!(
-                        "layer \"{}\", {}: {} has no PSD equivalent and was written as Normal; save as .pcraft to preserve it",
+                        "layer \"{}\", {}: {} has no PSD equivalent and was written as Normal; save as .crab to preserve it",
                         l.name,
                         effect.label(),
                         mode.label()
@@ -542,7 +542,7 @@ impl Ex {
         }
         if !l.blend.has_psd_equivalent() {
             self.warnings.push(format!(
-                "layer \"{}\": {} has no PSD equivalent and was written as Normal; save as .pcraft to preserve it",
+                "layer \"{}\": {} has no PSD equivalent and was written as Normal; save as .crab to preserve it",
                 l.name,
                 l.blend.label()
             ));
@@ -933,7 +933,7 @@ impl Ex {
     }
 
     /// The `lnk2` file a smart object's source is written as: a preserved embedded file, or a new
-    /// one (a `.pcraft` source becomes a PSB of the nested document; image files are embedded as
+    /// one (a `.crab` source becomes a PSB of the nested document; image files are embedded as
     /// they are; a linked file is read and embedded).
     fn smart_source(&mut self, sm: &photocraft_doc::SmartObject, template: Option<&crate::smart_map::Placed>) -> Result<Source, String> {
         use photocraft_doc::SmartSource;
@@ -1029,7 +1029,7 @@ impl Ex {
         c
     }
 
-    /// Adds `bytes` as an embedded file (converted to PSB when it is a `.pcraft` bundle), once
+    /// Adds `bytes` as an embedded file (converted to PSB when it is a `.crab` bundle), once
     /// per contents identity and bytes. Equal bytes in independent objects stay independent.
     fn embed(&mut self, contents_id: SmartContentsId, file_name: &str, bytes: &[u8]) -> Result<Source, String> {
         let key = (contents_id, *blake3::hash(bytes).as_bytes());
@@ -1042,7 +1042,7 @@ impl Ex {
     }
 
     fn convert_source(&mut self, contents_id: SmartContentsId, file_name: &str, bytes: &[u8]) -> Result<Source, String> {
-        let (name, data, size, dpi, nested) = if photocraft_format::is_pcraft(bytes) {
+        let (name, data, size, dpi, nested) = if photocraft_format::is_crab(bytes) {
             if self.smart.depth >= MAX_NESTING {
                 return Err(format!("smart objects nest more than {MAX_NESTING} deep"));
             }

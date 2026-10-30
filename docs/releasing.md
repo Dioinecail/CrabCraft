@@ -77,7 +77,7 @@ in `ci.yml`. Rules: `../craftrules/standards/fonts.md`; build option: `docs/deve
 
 - `Info.plist` is generated from `Info.plist.in`. The bundle id is `ai.storyteller.photocraft`.
   The plist sets `LSMinimumSystemVersion` 11.0, `NSHighResolutionCapable`, and document types:
-  `.pcraft` (Owner), plus PSD/PSB and the image formats CrabCraft reads (Alternate, so it never
+  `.crab` (Owner), plus PSD/PSB and the image formats CrabCraft reads (Alternate, so it never
   takes over Preview's defaults). The icon is `assets/app-icon/photocraft.icns`.
 - **Signing** goes inside-out with the hardened runtime and a secure timestamp. The executable
   is signed first, then the bundle. There's no `--deep` on the final signature. The
@@ -137,7 +137,7 @@ goes in `CARGO_TARGET_<TRIPLE>_RUSTFLAGS`, so host build scripts aren't affected
 - Release builds use the GUI subsystem, so Start Menu launches don't open a console window.
   The CLI stays console subsystem 3 so its output reaches the terminal.
 - `photocraft.wxs` (WiX v5) is a per-machine install into Program Files with an advertised
-  Start Menu shortcut. CrabCraft becomes the default app for `.pcraft` and is listed under
+  Start Menu shortcut. CrabCraft becomes the default app for `.crab` and is listed under
   "Open with" for PSD/PSB and image files. It also registers App Paths (Win+R `photocraft`).
   The MSI version is the numeric `X.Y.Z`, because MSI has no pre-release field. Same-version
   upgrades are allowed so that release candidates replace each other.
@@ -175,7 +175,7 @@ Locally on Windows: `dotnet tool install -g wix --version 5.0.2`,
 
 `packaging/linux/package.sh` stages one FHS tree and makes every format from it. The tree
 holds both binaries, `ai.storyteller.photocraft.desktop`, hicolor icons from 16 px to 512 px
-plus a scalable SVG, AppStream metainfo, and a shared-mime-info file for `.pcraft`, `.psb` and
+plus a scalable SVG, AppStream metainfo, and a shared-mime-info file for `.crab`, `.psb` and
 `.qoi`.
 
 Why these formats:

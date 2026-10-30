@@ -1,5 +1,5 @@
 //! Layer comps (resource 1065 + per-layer `cmls`) and artboards (`artb`) through PSD and
-//! `.pcraft`: byte-exact while unchanged, regenerated after edits.
+//! `.crab`: byte-exact while unchanged, regenerated after edits.
 
 #[cfg(feature = "corpus")]
 use std::path::PathBuf;
@@ -205,7 +205,7 @@ fn synthetic_psd_roundtrip_all_depths() {
 }
 
 #[test]
-fn synthetic_pcraft_roundtrip_keeps_everything() {
+fn synthetic_crab_roundtrip_keeps_everything() {
     let mut d = synthetic(SampleType::U16);
     d.last_document_state = Some(LayerComp {
         id: 0,
@@ -244,8 +244,8 @@ fn synthetic_pcraft_roundtrip_keeps_everything() {
     }
 
     let png = export(&d, "x.png", &ExportOptions::default()).unwrap().bytes;
-    assert!(import("pcraft", &png).is_ok());
-    assert!(matches!(import("broken.pcraft", b"not a native bundle"), Err(photocraft_io::IoError::Pcraft(_))));
+    assert!(import("crab", &png).is_ok());
+    assert!(matches!(import("broken.crab", b"not a native bundle"), Err(photocraft_io::IoError::Pcraft(_))));
 }
 
 /// A layer at (4, 4) whose preserved `shmd` block offsets it by `(dx, 0)` in comp 1, plus the

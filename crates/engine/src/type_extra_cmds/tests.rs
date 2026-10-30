@@ -392,13 +392,13 @@ fn guessed_family_layer(s: &mut Session, text: &str, ps: Option<&str>) -> (Layer
 #[test]
 fn installed_postscript_face_is_not_missing_or_replaced() {
     // Opening a PSD corrects the label when the face is installed; a run set by command, or one
-    // reopened from .pcraft after its face was installed, keeps it.
+    // reopened from .crab after its face was installed, keeps it.
     let mut s = session(8);
     let (id, created) = guessed_family_layer(&mut s, "test", Some("Inter-SemiBold"));
     let bytes = photocraft_format::save_to_bytes(&s.active().unwrap().doc, &Default::default()).unwrap();
-    let reopened = photocraft_io::import("reopened.pcraft", &bytes).unwrap().document;
+    let reopened = photocraft_io::import("reopened.crab", &bytes).unwrap().document;
     let LayerContent::Text(t) = &reopened.layer(id).unwrap().content else { panic!("text") };
-    assert_eq!(t.char_runs()[0].style.font_family, "Imported Wrong Family", ".pcraft open keeps the stored label");
+    assert_eq!(t.char_runs()[0].style.font_family, "Imported Wrong Family", ".crab open keeps the stored label");
     let on_open = missing_font_warnings(&reopened);
     s.add_document(reopened, None);
     let replaced = s.execute("type.replaceAllMissingFonts", json!({})).unwrap()["replaced"].clone();

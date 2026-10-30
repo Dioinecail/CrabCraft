@@ -150,11 +150,11 @@ pub struct NewParams {
 pub struct SaveParams {
     /// Target beneath the configured automation write root: relative (forward slashes) or absolute.
     /// The extension selects the format. Omit to write back to the document's own file, which
-    /// works only for a PSD, PSB or .pcraft file kept in its own format; any other save needs
+    /// works only for a PSD, PSB or .crab file kept in its own format; any other save needs
     /// `path`, so a flattened or converted copy never replaces the opened file.
     #[serde(default)]
     pub path: Option<String>,
-    /// Format override as an extension (pcraft, psd, png, jpg, tif, webp, exr, …).
+    /// Format override as an extension (crab, psd, png, jpg, tif, webp, exr, …).
     #[serde(default)]
     pub format: Option<String>,
     /// JPEG or WebP quality 1..100. A WebP saved with a quality is lossy; without one it is lossless.
@@ -734,8 +734,8 @@ impl PhotocraftMcp {
         self.run_command("file.new".into(), Value::Object(params), true).await
     }
 
-    #[tool(description = "Save the document. `.pcraft` is the lossless native format (incremental); other extensions \
-        (psd, png, jpg, tif, webp, exr, …) export. Without `path` only a PSD, PSB or .pcraft document is written back to its own         file. Returns warnings about anything the format cannot hold.")]
+    #[tool(description = "Save the document. `.crab` is the lossless native format (incremental); other extensions \
+        (psd, png, jpg, tif, webp, exr, …) export. Without `path` only a PSD, PSB or .crab document is written back to its own         file. Returns warnings about anything the format cannot hold.")]
     async fn doc_save(&self, Parameters(p): Parameters<SaveParams>) -> Result<CallToolResult, McpError> {
         self.save_impl(p).await
     }

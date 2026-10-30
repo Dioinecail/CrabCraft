@@ -1298,8 +1298,8 @@ mod tests {
         assert_eq!(fmt(tr(ru, "Exported {path} ({size})"), &[("path", "/tmp/a.png"), ("size", "12 KB")]), "Экспортировано: /tmp/a.png (12 KB)");
         assert_eq!(fmt(tr(ru, "Data Set: {name}  ({index}/{total})"), &[("name", "Set 1"), ("index", "1"), ("total", "2")]), "Набор данных: Set 1  (1/2)");
         // Document and layer names stay verbatim.
-        let text = fmt(tr(ru, "Saved {path}; image assets: {n} in {dir}"), &[("path", "/tmp/a.pcraft"), ("n", "3"), ("dir", "/tmp/assets")]);
-        assert!(text.contains("/tmp/a.pcraft") && text.contains("/tmp/assets"), "{text}");
+        let text = fmt(tr(ru, "Saved {path}; image assets: {n} in {dir}"), &[("path", "/tmp/a.crab"), ("n", "3"), ("dir", "/tmp/assets")]);
+        assert!(text.contains("/tmp/a.crab") && text.contains("/tmp/assets"), "{text}");
     }
 
     /// Every `tl!("literal")` in the shell has an entry in each language that claims complete menus

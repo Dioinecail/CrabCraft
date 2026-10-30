@@ -27,7 +27,7 @@ XL are missing (gap G10). Remaining: 300–500 h including PSD fidelity.
 | TIFF | R/W | yes | yes | 8/16/32f, Gray/RGB/CMYK, BigTIFF, every IFD, banded parallel decode; layered TIFF both byte orders, including Photoshop mixed-order type blocks (#4758); LZW/ZIP for scripted saves by `tiffCompression`; undecodable type keeps saved pixels (FILE-215-7: extra alpha channels not written) |
 | JPEG | R/W | yes | yes | 8-bit Gray/RGB/CMYK, ICC/EXIF/XMP; Save keeps the opened file's quality (estimated from its quantisation tables, #2399); File › Save, Save As and Save a Copy ask JPEG Options: Quality 0–12, starting at the opened file's quality or else the Export preference, and Baseline ("Standard") / Baseline Optimized / Progressive; scripts pass `quality`/`jpegFormat`, the CLI `--jpeg-format` (FILE-215-19). Baseline Optimized fits the Huffman tables only at 4:4:4 (Gray, CMYK) or progressive: RGB is written 4:2:0, which zune-jpeg 0.5.15 decodes wrongly with fitted tables, as in Save for Web. No Matte, progressive Scans (3–5) or size preview |
 | PNG | R/W | yes | yes | 8/16-bit, ICC/text; APNG first frame only; alpha channels on open (#2225); palette PNGs open in Indexed Color mode with their transparent entry (#4804); Save keeps a stereo PNG's `sTER` pairing (#6063) |
-| GIF | R/W | yes | yes | File › Open keeps the first frame; New Video Layer from File and Video Frames to Layers take every frame, with the timeline rate from the delays (#572). Per-frame delays and keeping the frames in `.pcraft` are not done |
+| GIF | R/W | yes | yes | File › Open keeps the first frame; New Video Layer from File and Video Frames to Layers take every frame, with the timeline rate from the delays (#572). Per-frame delays and keeping the frames in `.crab` are not done |
 | BMP | R/W | yes | yes | 8-bit; palette BMPs open in Indexed Color mode and Indexed Color documents save as palette BMPs (no transparency) |
 | WebP | R/W | yes | yes | Lossless and our own lossy VP8 encoder; ICC/EXIF/XMP; Save keeps an opened file lossy (at its quality) or lossless (#2399). File › Open keeps an animation's first frame; New Video Layer from File and Video Frames to Layers take every frame, with the timeline rate from the durations (#1198) |
 | AVIF | R/W | no (#463) | optional feature, off by default | |
@@ -85,7 +85,7 @@ D5100 colour profile. Counts and the G14 estimate are unchanged.
 
 | Format | Read | Write | Notes |
 |---|---|---|---|
-| `.pcraft` (native) | yes | yes | Incremental, autosave, crash recovery, atomic save |
+| `.crab` (native) | yes | yes | Incremental, autosave, crash recovery, atomic save |
 | Affinity `.af`, `.afphoto`, `.afdesign`, `.afpub` | yes | no | See below |
 | Paint.NET `.pdn` | yes | no | [pdn.md](pdn.md) |
 | OpenRaster `.ora` | yes | yes | [ora.md](ora.md) |
@@ -108,7 +108,7 @@ written files, so `.af` export stays unsupported.
 
 2026-10-10: current `.af` artboard properties (`phrp`/`aprp`) are recognized alongside the
 legacy flag, including converted curve boards. Synthetic two-board regressions check separate
-bounds, overflow clipping, `.pcraft`/PSD board and pixel round trips, and moving one board with its
+bounds, overflow clipping, `.crab`/PSD board and pixel round trips, and moving one board with its
 children through undo/redo. Nested boards remain masked groups; rotated/curved board outlines
 still import at their bounding rectangle.
 
