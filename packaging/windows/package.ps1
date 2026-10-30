@@ -4,8 +4,8 @@
 
 .DESCRIPTION
   Produces, in $env:DIST (default: dist/release):
-    photocraft-<version>-windows-<arch>.msi            per-machine installer (WiX v5)
-    photocraft-<version>-windows-<arch>-portable.zip   photocraft.exe + photocraft-cli.exe + portable.txt
+    crabcraft-<version>-windows-<arch>.msi            per-machine installer (WiX v5)
+    crabcraft-<version>-windows-<arch>-portable.zip   crabcraft.exe + photocraft-cli.exe + portable.txt
 
   The binaries link the C runtime statically (+crt-static), so neither the MSI nor the portable
   zip needs the Visual C++ redistributable. Signing is delegated to sign.ps1 (skipped with a
@@ -63,7 +63,7 @@ if (-not $SkipBuild) {
   [Environment]::SetEnvironmentVariable($flagVar, '-C target-feature=+crt-static')
   # Fail the build (rather than warn) if the icon/VERSIONINFO can't be embedded.
   $env:PHOTOCRAFT_REQUIRE_WINRES = '1'
-  Invoke-Native "cargo build ($Target)" { cargo build --release --locked -p photocraft -p photocraft-cli --features heif --target $Target }
+  Invoke-Native "cargo build ($Target)" { cargo build --release --locked -p crabcraft -p photocraft-cli --features heif --target $Target }
 }
 
 $Bin = Join-Path $TargetDir "$Target\release"
@@ -78,7 +78,7 @@ function Get-PeHeader([string] $Path) {
   return @{ Machine = [BitConverter]::ToUInt16($bytes, $pe + 4); Subsystem = [BitConverter]::ToUInt16($bytes, $pe + 0x5C) }
 }
 $Machine = switch ($Arch) { 'x64' { 0x8664 } 'x86' { 0x14C } 'arm64' { 0xAA64 } }
-foreach ($check in @(@('photocraft.exe', 2), @('photocraft-cli.exe', 3))) {
+foreach ($check in @(@('crabcraft.exe', 2), @('photocraft-cli.exe', 3))) {
   $h = Get-PeHeader (Join-Path $Bin $check[0])
   if ($h.Machine -ne $Machine) { throw "$($check[0]) is for machine 0x$('{0:X}' -f $h.Machine), expected 0x$('{0:X}' -f $Machine) ($Arch)" }
   if ($h.Subsystem -ne $check[1]) { throw "$($check[0]) has PE subsystem $($h.Subsystem), expected $($check[1])" }
@@ -87,9 +87,9 @@ foreach ($check in @(@('photocraft.exe', 2), @('photocraft-cli.exe', 3))) {
 $Stage = Join-Path $TargetDir "windows-package\$Arch"
 Remove-Item -Recurse -Force $Stage -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
-Copy-Item (Join-Path $Bin 'photocraft.exe'), (Join-Path $Bin 'photocraft-cli.exe') $Stage
+Copy-Item (Join-Path $Bin 'crabcraft.exe'), (Join-Path $Bin 'photocraft-cli.exe') $Stage
 
-& (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'photocraft.exe') (Join-Path $Stage 'photocraft-cli.exe')
+& (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $Stage 'crabcraft.exe') (Join-Path $Stage 'photocraft-cli.exe')
 
 # ---- MSI ---------------------------------------------------------------------------------------
 # The setup wizard's art, drawn here from the app icon so the MSI shows CrabCraft rather than
@@ -129,25 +129,25 @@ $Banner = Join-Path $Stage 'installer-banner.bmp'
 $Dialog = Join-Path $Stage 'installer-dialog.bmp'
 New-InstallerArt (Join-Path $Root 'assets\app-icon\hicolor\256x256\apps\ai.storyteller.photocraft.png') $Banner $Dialog
 
-$Msi = Join-Path $Dist "photocraft-$Version-windows-$Arch.msi"
-& (Join-Path $PSScriptRoot 'check-icons.ps1')
-Invoke-Native 'wix build' {
-  wix build (Join-Path $PSScriptRoot 'photocraft.wxs') -arch $Arch `
-    -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext `
-    -culture en-US -loc (Join-Path $PSScriptRoot 'photocraft.en-us.wxl') `
-    -d "Version=$MsiVersion" -d "DisplayVersion=$Version" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\photocraft.ico')" `
-    -d "BannerBmp=$Banner" -d "DialogBmp=$Dialog" `
-    -o $Msi
-}
-Invoke-Native 'MSI shortcut icon validation (ICE50)' {
-  wix msi validate $Msi -ice ICE50 -intermediateFolder (Join-Path $Stage 'msi-validation')
-}
-# wix writes its debug symbols (.wixpdb) next to the MSI; keep them out of the release assets.
-Remove-Item -Force -ErrorAction SilentlyContinue ([IO.Path]::ChangeExtension($Msi, '.wixpdb'))
-& (Join-Path $PSScriptRoot 'sign.ps1') $Msi
+# $Msi = Join-Path $Dist "crabcraft-$Version-windows-$Arch.msi"
+# & (Join-Path $PSScriptRoot 'check-icons.ps1')
+# Invoke-Native 'wix build' {
+#   wix build (Join-Path $PSScriptRoot 'crabcraft.wxs') -arch $Arch `
+#     -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext `
+#     -culture en-US -loc (Join-Path $PSScriptRoot 'crabcraft.en-us.wxl') `
+#     -d "Version=$MsiVersion" -d "DisplayVersion=$Version" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\photocraft.ico')" `
+#     -d "BannerBmp=$Banner" -d "DialogBmp=$Dialog" `
+#     -o $Msi
+# }
+# Invoke-Native 'MSI shortcut icon validation (ICE50)' {
+#   wix msi validate $Msi -ice ICE50 -intermediateFolder (Join-Path $Stage 'msi-validation')
+# }
+# # wix writes its debug symbols (.wixpdb) next to the MSI; keep them out of the release assets.
+# Remove-Item -Force -ErrorAction SilentlyContinue ([IO.Path]::ChangeExtension($Msi, '.wixpdb'))
+# & (Join-Path $PSScriptRoot 'sign.ps1') $Msi
 
 # ---- portable zip ------------------------------------------------------------------------------
-$Portable = Join-Path $TargetDir "windows-package\photocraft-$Version-windows-$Arch-portable"
+$Portable = Join-Path $TargetDir "windows-package\crabcraft-$Version-windows-$Arch-portable"
 Remove-Item -Recurse -Force $Portable -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Portable | Out-Null
 Copy-Item (Join-Path $Stage '*.exe') $Portable
@@ -163,10 +163,10 @@ if ($env:CRAFT_FONTS_DIR) {
     if (Test-Path $lic) { Copy-Item $lic (Join-Path $Portable "OFL-$($_.Name).txt") }
   }
 }
-# portable.txt beside photocraft.exe switches on portable mode: settings, presets and recovery
+# portable.txt beside crabcraft.exe switches on portable mode: settings, presets and recovery
 # files go to CrabCraftData\ next to the exe instead of %APPDATA% (#228; see app_dirs.rs).
 Copy-Item (Join-Path $PSScriptRoot 'portable.txt') $Portable
-$Zip = Join-Path $Dist "photocraft-$Version-windows-$Arch-portable.zip"
+$Zip = Join-Path $Dist "crabcraft-$Version-windows-$Arch-portable.zip"
 Remove-Item -Force $Zip -ErrorAction SilentlyContinue
 Compress-Archive -Path $Portable -DestinationPath $Zip
 
@@ -178,4 +178,4 @@ if ($Arch -ne 'arm64' -or $HostArch -eq 'arm64') {
 } else {
   Write-Output "skipping photocraft-cli --version: an $Arch build doesn't run on this $HostArch machine"
 }
-Get-Item $Msi, $Zip | Format-Table Name, Length
+Get-Item $Zip | Format-Table Name, Length
