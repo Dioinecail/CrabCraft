@@ -732,6 +732,7 @@ fn doc_pixels_equal(a: &Document, b: &Document) -> bool {
         variables: _,
         timeline: _,
         file_encoding: _,
+        total_work_time: _,
     } = a;
     *size == b.size
         && resolution_dpi.to_bits() == b.resolution_dpi.to_bits()
@@ -834,6 +835,7 @@ pub fn selection_only_change(a: &Document, b: &Document) -> bool {
         variables,
         timeline,
         file_encoding,
+        total_work_time,
     } = a;
     // The ignored fields above are the pixel ones `pixels_equal_with` already compares.
     pixels_equal_with(a, b, video_frames_equal)

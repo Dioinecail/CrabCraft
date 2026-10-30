@@ -920,6 +920,7 @@ pub struct Document {
     /// How the document's lossy file was encoded (its JPEG quality, WebP lossy or lossless,
     /// PNG stereo pairing), so a save writes it back the same way rather than at fixed defaults.
     pub file_encoding: FileEncoding,
+    pub total_work_time: u64,
 }
 
 /// The encoder settings a document's file was opened or saved with: what File › Save and the
@@ -988,6 +989,7 @@ impl Document {
             variables: Variables::default(),
             timeline: None,
             file_encoding: FileEncoding::default(),
+            total_work_time: 0,
         }
     }
 

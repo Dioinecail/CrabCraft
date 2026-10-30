@@ -4,7 +4,7 @@ members = ["crates/*", "apps/*", "xtask"]
 default-members = ["crates/*", "apps/photocraft", "apps/photocraft-cli", "xtask"]
 
 [workspace.package]
-version = "0.12.0"
+version = "0.2.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 rust-version = "1.95"
@@ -82,14 +82,6 @@ opt-level = 3
 # CARGO_PROFILE_DEV_DEBUG (and no debuginfo at all for the Windows tests). To inspect locals in a
 # debugger, build with CARGO_PROFILE_DEV_DEBUG=true.
 debug = "line-tables-only"
-
-# Test builds compile ui-egui without optimization: its library and unit tests were the biggest
-# test-build units after engine's (12.6 of ~63 compile minutes on the Windows CI runner), and its
-# tests run no heavier pixel code of their own (that lives in the crates that stay optimized).
-# Measured on CI: Windows build 18.9 -> 15.4 min, test run 10.0 -> 10.5. `cargo run` and
-# `cargo build` use the dev profile and are unaffected.
-[profile.test.package.photocraft-ui-egui]
-opt-level = 0
 
 [profile.release]
 lto = "thin"

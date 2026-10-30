@@ -33,6 +33,3 @@ x11rb = { version = "=0.13.2", default-features = false, features = ["xinput"] }
 objc2-app-kit = { version = "=0.3.2", default-features = false, features = ["std", "block2", "NSEvent", "NSGraphicsContext", "objc2-core-graphics", "NSApplication", "NSResponder"] }
 objc2-core-graphics = { version = "=0.3.2", default-features = false, features = ["std", "CGEvent", "CGEventTypes"] }
 
-[[test]]
-name = "monitor_macos"
-harness = false

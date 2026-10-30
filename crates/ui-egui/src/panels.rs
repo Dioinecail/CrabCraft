@@ -2031,11 +2031,13 @@ fn info_panel(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
 
     if let Some(doc) = app.session.active() {
         // show doc opened date
+        let total_work = doc.doc.total_work_time;
+
         let date_opened = doc.opened_time;
         let now = Utc::now();
 
         // saturating_sub prevents overflowing and panicking
-        let session_time_total = now.time().sub(date_opened.time()).num_seconds();
+        let session_time_total = now.time().sub(date_opened.time()).num_seconds() + (total_work as i64);
 
         let empty_str = "".to_string();
 

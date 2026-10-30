@@ -855,10 +855,10 @@ impl PcraftWriter {
     pub fn save_zip(&mut self, doc: &Document, opts: &SaveOptions) -> Result<(Vec<u8>, SaveStats)> {
         let p = self.prepare(doc, opts)?;
         let mut stats = p.stats;
-        let mut z = ZipWriter::new();
-        z.add(MANIFEST, &p.manifest)?;
+        let mut zip = ZipWriter::new();
+        zip.add(MANIFEST, &p.manifest)?;
         for (name, data) in &p.previews {
-            z.add(name, data)?;
+            zip.add(name, data)?;
         }
         let mut next = HashMap::with_capacity(p.objects.len());
         let mut cached_bytes = 0usize;
@@ -881,14 +881,14 @@ impl PcraftWriter {
                     (None, fresh.remove(path).unwrap_or_else(|| Arc::new(obj.compressed())))
                 }
             };
-            z.add(path, &data)?;
+            zip.add(path, &data)?;
             if data.capacity() <= self.compressed_budget.saturating_sub(cached_bytes) {
                 cached_bytes += data.capacity();
                 next.insert(key.unwrap_or_else(|| path.clone()), data);
             }
         }
         self.compressed = next;
-        Ok((z.finish()?, stats))
+        Ok((zip.finish()?, stats))
     }
 
     /// Save into a directory bundle: reuses only valid existing objects,

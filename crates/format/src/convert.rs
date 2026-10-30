@@ -265,6 +265,7 @@ pub(crate) fn doc_m(d: &Document, sink: &mut dyn Sink) -> DocM {
         notes: d.notes.clone(),
         text_styles: d.text_styles.clone(),
         slices: d.slices.clone(),
+        total_work_time: d.total_work_time
     }
 }
 
@@ -665,7 +666,8 @@ impl Loader<'_> {
             measurement: m.measurement.clone(),
             notes: m.notes.clone(),
             text_styles: m.text_styles.clone(),
-            slices,
+            slices: slices,
+            total_work_time: m.total_work_time,
         })
     }
 
