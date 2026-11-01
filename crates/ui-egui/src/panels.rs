@@ -2046,7 +2046,7 @@ fn info_panel(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         let min = mins % 60;
         let hour = mins / 60;
 
-        let min_str = if min > 0 { format!("{:02}:", mins) } else { empty_str.clone() };
+        let min_str = if min > 0 { format!("{:02}:", min) } else { empty_str.clone() };
         let hour_str = if hour > 0 { format!("{:?}:", hour) } else { empty_str };
 
         ui.horizontal(|ui| {
