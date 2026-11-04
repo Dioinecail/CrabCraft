@@ -1725,7 +1725,7 @@ impl PhotocraftApp {
                 let ext = match photocraft_engine::file_cmds::extension(source).as_deref() {
                     Some("pdn") => "crab",
                     Some("kra" | "krz") => "ora",
-                    _ => "psd",
+                    _ => "crab",
                 };
                 std::path::Path::new(source).with_extension(ext).to_string_lossy().into_owned()
             }
