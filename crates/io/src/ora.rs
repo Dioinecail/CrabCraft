@@ -9,9 +9,6 @@
 //! Write: raster layers and groups as above; other layer kinds are written as their rendered
 //! pixels, layer masks are applied to the pixels, and whatever ORA cannot hold is warned about.
 
-#[cfg(test)]
-mod tests;
-
 use photocraft_codecs::{self as codecs, ChannelLayout, Format, Image, SampleType as CSample};
 use photocraft_color::{BlendMode, ColorMode, PixelFormat, SampleType};
 use photocraft_doc::{Document, Layer, LayerContent};

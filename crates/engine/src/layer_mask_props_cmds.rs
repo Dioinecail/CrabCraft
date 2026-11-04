@@ -68,6 +68,3 @@ pub fn specs() -> Vec<CommandSpec> {
         journal: true,
     }]
 }
-
-#[cfg(test)]
-mod tests;

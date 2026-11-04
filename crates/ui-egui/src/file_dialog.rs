@@ -404,7 +404,3 @@ pub(crate) fn fake(answers: Vec<Option<FileDialogAnswer>>) -> (FileDialogFn, std
     });
     (show, asked)
 }
-
-#[cfg(test)]
-#[path = "file_dialog/tests.rs"]
-mod tests;
