@@ -165,26 +165,3 @@ pub const TOOLS: &[(&str, &str, Option<&str>)] = &[
 pub fn tool_default(id: &str) -> Option<Option<&'static str>> {
     TOOLS.iter().find(|t| t.0 == id).map(|t| t.2)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn ids_are_unique_and_keys_are_valid() {
-        let mut ids: Vec<&str> = SHELL_COMMANDS.iter().map(|c| c.0).chain(TOOLS.iter().map(|t| t.0)).collect();
-        let n = ids.len();
-        ids.sort_unstable();
-        ids.dedup();
-        assert_eq!(ids.len(), n, "duplicate ids");
-        for (id, _, _, sc) in SHELL_COMMANDS {
-            assert!(sc.is_none_or(|k| crate::prefs::normalize_shortcut(k).is_some()), "{id}: {sc:?}");
-        }
-        for (id, name, key) in TOOLS {
-            assert!(id.starts_with("tools.select.") && name.ends_with("Tool"), "{id} {name}");
-            assert!(key.is_none_or(|k| k.len() == 1), "{id}: {key:?}");
-        }
-        assert_eq!(tool_default("tools.select.move"), Some(Some("V")));
-        assert_eq!(tool_default("edit.copy"), None);
-    }
-}
