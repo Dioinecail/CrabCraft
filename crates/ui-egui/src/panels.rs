@@ -1987,102 +1987,127 @@ fn info_panel(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
 
     let dash = || "—".to_string();
 
-    ui.horizontal(|ui| {
-        let q = |v: f32| (v.clamp(0.0, 1.0) * 255.0).round() as i32;
+    // ui.horizontal(|ui| {
+    //     let q = |v: f32| (v.clamp(0.0, 1.0) * 255.0).round() as i32;
 
-        let r = rgba.map_or_else(dash, |c| q(c[0]).to_string());
-        let g = rgba.map_or_else(dash, |c| q(c[1]).to_string());
-        let b = rgba.map_or_else(dash, |c| q(c[2]).to_string());
+    //     let r = rgba.map_or_else(dash, |c| q(c[0]).to_string());
+    //     let g = rgba.map_or_else(dash, |c| q(c[1]).to_string());
+    //     let b = rgba.map_or_else(dash, |c| q(c[2]).to_string());
 
-        ui.label(RichText::new(format!("RGB: {r} {g} {b}")));
-    });
+    //     ui.label(RichText::new(format!("RGB: {r} {g} {b}")));
+    // });
 
-    ui.horizontal(|ui| {
+    // ui.horizontal(|ui| {
 
-        let cmyk =
-            rgba.map(|c| photocraft_color::convert::with_cmyk_space(cmyk_space.as_ref(), || photocraft_engine::sampler_cmds::device_cmyk(c[0], c[1], c[2])));
+    //     let cmyk =
+    //         rgba.map(|c| photocraft_color::convert::with_cmyk_space(cmyk_space.as_ref(), || photocraft_engine::sampler_cmds::device_cmyk(c[0], c[1], c[2])));
 
-        let c1 = cmyk.map_or_else(dash, |cm| cm[0].to_string());
-        let m1 = cmyk.map_or_else(dash, |cm| cm[1].to_string());
-        let y1 = cmyk.map_or_else(dash, |cm| cm[2].to_string());
-        let k1 = cmyk.map_or_else(dash, |cm| cm[3].to_string());
+    //     let c1 = cmyk.map_or_else(dash, |cm| cm[0].to_string());
+    //     let m1 = cmyk.map_or_else(dash, |cm| cm[1].to_string());
+    //     let y1 = cmyk.map_or_else(dash, |cm| cm[2].to_string());
+    //     let k1 = cmyk.map_or_else(dash, |cm| cm[3].to_string());
 
-        ui.label(RichText::new(format!("CMYK: {c1}% {m1}% {y1}% {k1}%")));
-    });
+    //     ui.label(RichText::new(format!("CMYK: {c1}% {m1}% {y1}% {k1}%")));
+    // });
 
-    ui.horizontal(|ui| {
-        let x_coord = guide_x.map(|p| fx(p - origin[0])).or_else(|| pos.map(|p| fx(p.0 as f64 - origin[0]))).unwrap_or_else(dash);
-        let y_coord = guide_y.map(|p| fy(p - origin[1])).or_else(|| pos.map(|p| fy(p.1 as f64 - origin[1]))).unwrap_or_else(dash);
+    // ui.horizontal(|ui| {
+    //     let x_coord = guide_x.map(|p| fx(p - origin[0])).or_else(|| pos.map(|p| fx(p.0 as f64 - origin[0]))).unwrap_or_else(dash);
+    //     let y_coord = guide_y.map(|p| fy(p - origin[1])).or_else(|| pos.map(|p| fy(p.1 as f64 - origin[1]))).unwrap_or_else(dash);
 
-        ui.label(RichText::new(format!("Cursor: X: {x_coord} Y: {y_coord}")));
-    });
+    //     ui.label(RichText::new(format!("Cursor: X: {x_coord} Y: {y_coord}")));
+    // });
 
-    ui.horizontal(|ui| {
-        if let Some(s) = sel {
-            let width = s.width();
-            let height = s.height();
+    // ui.horizontal(|ui| {
+    //     if let Some(s) = sel {
+    //         let width = s.width();
+    //         let height = s.height();
 
-            ui.label(RichText::new(format!("Selection: W: {width:?} H: {height:?}")));
+    //         ui.label(RichText::new(format!("Selection: W: {width:?} H: {height:?}")));
+    //     }
+    //     else {
+    //         ui.label(RichText::new(format!("Selection: Nothing Selected")));
+    //     }
+    // });
+
+    if let Some(doc_state) = app.session.active() {
+
+        {
+            // show doc saved date
+            let total_work = doc_state.doc.total_work_time;
+
+            let date_saved = doc_state.saved_time;
+            let now = Utc::now();
+
+            // saturating_sub prevents overflowing and panicking
+            let session_time_total = now.time().sub(date_saved.time()).num_seconds() + (total_work as i64);
+
+            let empty_str = "".to_string();
+
+            let sec = session_time_total % 60;
+            let mins = session_time_total / 60;
+            let min = mins % 60;
+            let hour = mins / 60;
+
+            let min_str = if min > 0 { format!("{:02}:", min) } else { empty_str.clone() };
+            let hour_str = if hour > 0 { format!("{:?}:", hour) } else { empty_str };
+
+            ui.horizontal(|ui| {
+                ui.label(RichText::new(format!("Total Time: {hour_str}{min_str}{sec:02}")));
+            });
         }
-        else {
-            ui.label(RichText::new(format!("Selection: Nothing Selected")));
+
+        {
+            let date_opened = doc_state.opened_time;
+            let now = Utc::now();
+
+            // saturating_sub prevents overflowing and panicking
+            let session_time_total = now.time().sub(date_opened.time()).num_seconds();
+
+            let empty_str = "".to_string();
+
+            let sec = session_time_total % 60;
+            let mins = session_time_total / 60;
+            let min = mins % 60;
+            let hour = mins / 60;
+
+            let min_str = if min > 0 { format!("{:02}:", min) } else { empty_str.clone() };
+            let hour_str = if hour > 0 { format!("{:?}:", hour) } else { empty_str };
+
+            ui.horizontal(|ui| {
+                ui.label(RichText::new(format!("Session Time: {hour_str}{min_str}{sec:02}")));
+            });
         }
-    });
-
-    if let Some(doc) = app.session.active() {
-        // show doc opened date
-        let total_work = doc.doc.total_work_time;
-
-        let date_opened = doc.opened_time;
-        let now = Utc::now();
-
-        // saturating_sub prevents overflowing and panicking
-        let session_time_total = now.time().sub(date_opened.time()).num_seconds() + (total_work as i64);
-
-        let empty_str = "".to_string();
-
-        let sec = session_time_total % 60;
-        let mins = session_time_total / 60;
-        let min = mins % 60;
-        let hour = mins / 60;
-
-        let min_str = if min > 0 { format!("{:02}:", min) } else { empty_str.clone() };
-        let hour_str = if hour > 0 { format!("{:?}:", hour) } else { empty_str };
-
-        ui.horizontal(|ui| {
-            ui.label(RichText::new(format!("Session Time: {hour_str}{min_str}{sec:02}")));
-        });
     }
 
     // Color Sampler points (#1046): each under its number, with its position in the current ruler
     // unit and the same RGB/CMYK readout as the pointer (one composite pixel each).
-    let samplers = sampler_readouts(app);
-    if !samplers.is_empty() {
-        widgets::hairline(ui);
-        let cell = |ui: &mut egui::Ui, s: String| {
-            ui.label(RichText::new(s).font(mono.clone()).color(t.text));
-        };
-        for s in samplers.iter() {
-            let n = s["number"].as_i64().unwrap_or(0);
-            let at = s["position"]
-                .as_array()
-                .map_or((0.0, 0.0), |a| (a.first().and_then(Value::as_f64).unwrap_or(0.0), a.get(1).and_then(Value::as_f64).unwrap_or(0.0)));
-            let num = |v: &Value, i: usize| v.get(i).and_then(Value::as_i64).map_or_else(|| "—".to_string(), |n| n.to_string());
-            let (rgb, cmyk) = (&s["rgb"], &s["cmyk"]);
-            ui.horizontal(|ui| {
-                ui.add_sized([24.0, 16.0], egui::Label::new(RichText::new(format!("#{n}")).color(t.text_dim).size(11.5)));
-                cell(ui, format!("X: {}  Y: {}", fx(at.0), fy(at.1)));
-            });
-            ui.horizontal(|ui| {
-                ui.add_sized([24.0, 16.0], egui::Label::new(RichText::new("").size(11.5)));
-                cell(ui, format!("R:{} G:{} B:{}", num(rgb, 0), num(rgb, 1), num(rgb, 2)));
-            });
-            ui.horizontal(|ui| {
-                ui.add_sized([24.0, 16.0], egui::Label::new(RichText::new("").size(11.5)));
-                cell(ui, format!("C:{}% M:{}% Y:{}% K:{}%", num(cmyk, 0), num(cmyk, 1), num(cmyk, 2), num(cmyk, 3)));
-            });
-        }
-    }
+    // let samplers = sampler_readouts(app);
+    // if !samplers.is_empty() {
+    //     widgets::hairline(ui);
+    //     let cell = |ui: &mut egui::Ui, s: String| {
+    //         ui.label(RichText::new(s).font(mono.clone()).color(t.text));
+    //     };
+    //     for s in samplers.iter() {
+    //         let n = s["number"].as_i64().unwrap_or(0);
+    //         let at = s["position"]
+    //             .as_array()
+    //             .map_or((0.0, 0.0), |a| (a.first().and_then(Value::as_f64).unwrap_or(0.0), a.get(1).and_then(Value::as_f64).unwrap_or(0.0)));
+    //         let num = |v: &Value, i: usize| v.get(i).and_then(Value::as_i64).map_or_else(|| "—".to_string(), |n| n.to_string());
+    //         let (rgb, cmyk) = (&s["rgb"], &s["cmyk"]);
+    //         ui.horizontal(|ui| {
+    //             ui.add_sized([24.0, 16.0], egui::Label::new(RichText::new(format!("#{n}")).color(t.text_dim).size(11.5)));
+    //             cell(ui, format!("X: {}  Y: {}", fx(at.0), fy(at.1)));
+    //         });
+    //         ui.horizontal(|ui| {
+    //             ui.add_sized([24.0, 16.0], egui::Label::new(RichText::new("").size(11.5)));
+    //             cell(ui, format!("R:{} G:{} B:{}", num(rgb, 0), num(rgb, 1), num(rgb, 2)));
+    //         });
+    //         ui.horizontal(|ui| {
+    //             ui.add_sized([24.0, 16.0], egui::Label::new(RichText::new("").size(11.5)));
+    //             cell(ui, format!("C:{}% M:{}% Y:{}% K:{}%", num(cmyk, 0), num(cmyk, 1), num(cmyk, 2), num(cmyk, 3)));
+    //         });
+    //     }
+    // }
 }
 
 /// The Info panel's Color Sampler readouts and the (document, revision) they were composited for.

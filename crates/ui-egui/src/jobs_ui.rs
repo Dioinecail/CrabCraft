@@ -23,6 +23,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use std::sync::mpsc::Sender;
 
+use chrono::Utc;
 use egui::{Color32, Rect, RichText, Sense, Stroke, vec2};
 use photocraft_doc::DocId;
 use photocraft_engine::jobs::{JobCtx, JobEvent, JobId, JobInfo, JobOutcome, OPEN_JOB, OpenSource, Started};
@@ -268,11 +269,24 @@ pub fn start_save(
     save: SaveFileFn,
     automation: bool,
 ) -> Result<Option<(String, Vec<String>)>, String> {
+
+    println!("[jobs_ui.start_save]");
+
+    let state_mut = app.session.active_mut();
+
+    match state_mut {
+        Some(state_mut_ok) => {
+            state_mut_ok.update_total_work_time();
+        },
+        None => { }
+    }
+
     let st = app.session.active().ok_or("no document")?;
     if let Some(j) = app.session.job_on(st.doc.id) {
         // The engine's wording for a command refused while a job runs.
         return Err(format!("“{}” is still running on this document; wait for it to finish or cancel it (Esc)", j.label));
     }
+
     let name = crate::file_open::display_name(&path);
     // One writer per file: an older snapshot must not land after a newer one.
     if app.jobs.saves.iter().any(|s| s.path == path) {

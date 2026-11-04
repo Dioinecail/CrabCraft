@@ -140,6 +140,7 @@ pub mod web_cmds;
 mod wia_cmds;
 
 use std::sync::Arc;
+use std::ops::{Sub};
 
 use photocraft_doc::{Document, LayerId};
 use photocraft_ops::{History, LayerTarget};
@@ -249,7 +250,8 @@ pub struct DocState {
     /// The snapshot set as the History Brush's source (`history.setSource {snapshot}`); `None`:
     /// the source is a state, kept by the history ([`photocraft_ops::History::brush_source`]).
     pub(crate) source_snapshot: Option<u64>,
-    pub opened_time: chrono::DateTime<Utc>
+    pub opened_time: chrono::DateTime<Utc>,
+    pub saved_time: chrono::DateTime<Utc>
 }
 
 impl DocState {
@@ -295,7 +297,8 @@ impl DocState {
             snapshots: Vec::new(),
             next_snapshot: 1,
             source_snapshot: None,
-            opened_time: Utc::now()
+            opened_time: Utc::now(),
+            saved_time: Utc::now()
         }
     }
     /// The selected layers in bottom-to-top document order, always including the active layer.
@@ -330,6 +333,26 @@ impl DocState {
     /// The targeted layers, as history stores them with each state.
     fn layer_target(&self) -> LayerTarget {
         LayerTarget { active: self.active_layer, selected: self.selected_layers.clone() }
+    }
+
+    pub fn update_total_work_time(&mut self) {
+        
+        let total_work = self.doc.total_work_time;
+
+        let date_last_save = self.saved_time;
+        let now = Utc::now();
+
+        // saturating_sub prevents overflowing and panicking
+        let session_time_total = now.time().sub(date_last_save.time()).num_seconds() as u64 + total_work;
+
+        let before = self.doc.clone();
+
+        let mut new_doc = (*before).clone();
+
+        new_doc.total_work_time = session_time_total;
+
+        self.doc = Arc::new(new_doc);
+        self.saved_time = Utc::now();
     }
 }
 
