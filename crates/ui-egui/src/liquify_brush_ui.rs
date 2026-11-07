@@ -32,21 +32,6 @@ use crate::state::Tool;
 /// Preview keys of Liquify Brush drags: `BASE + n`, one per dab shown (see `canvas::display_doc`).
 const BASE: u64 = 1 << 43;
 
-/// The Liquify tools the options bar offers. `lassoMask` paints a polygon (it freezes the mask
-/// along a lasso), and the three global tools need no brush: both stay Liquify-dialog tools.
-const BRUSHES: [LiquifyTool; 10] = [
-    LiquifyTool::ForwardWarp,
-    LiquifyTool::Reconstruct,
-    LiquifyTool::Smooth,
-    LiquifyTool::TwirlCw,
-    LiquifyTool::TwirlCcw,
-    LiquifyTool::Pucker,
-    LiquifyTool::Bloat,
-    LiquifyTool::PushLeft,
-    LiquifyTool::Freeze,
-    LiquifyTool::Thaw,
-];
-
 /// One drag's runtime state: the layer captured at the press, the field its dabs have edited,
 /// and the preview pixels the canvas composite shows.
 pub(crate) struct LiquifyBrushPreview {
@@ -59,8 +44,6 @@ pub(crate) struct LiquifyBrushPreview {
     source: Surface,
     /// The selection at the press: what the commit mixes its result by as well.
     selection: Option<Surface>,
-    /// The field's extent (the document's canvas).
-    canvas: Rect,
     /// Field resolution (px per node), also passed to the commit's `meshSize`.
     cell: f64,
     field: LiquifyField,
@@ -85,10 +68,9 @@ struct Target {
     revision: u64,
 }
 
-/// The pointer events of the Liquify Brush: a press on the active layer starts a stroke, its
-/// moves keep dabbing (a held stationary tool dabs by the canvas's held-stroke repeat), releasing
-/// commits. Returns true for the events it takes. `⌥` at the press uses the tool's opposite, as
-/// the Liquify dialog does (the twirls reverse, Pucker and Bloat swap).
+/// The pointer events of the Liquify Brush: a press on the active layer starts a stroke (the
+/// default Forward Warp tool), its moves keep dabbing, releasing commits. Returns true for the
+/// events it takes.
 pub fn pointer(app: &mut PhotocraftApp, ev: ToolEvent, mods: Modifiers) -> bool {
     match ev {
         ToolEvent::Down { x, y, pressure } => {
@@ -155,14 +137,18 @@ fn start(app: &mut PhotocraftApp, p: [f64; 3], mods: Modifiers) -> bool {
         }
     };
     let o = &app.ui.tool_options;
+
+    // Default behaviour only: the tool stays the Forward Warp the options bar starts with.
     let (tool, size, density, pressure, rate) = (
-        if mods.alt { crate::liquify_ui::alt_tool(o.liquify_tool) } else { o.liquify_tool },
-        f64::from(o.liquify_size.clamp(1.0, 15000.0)),
+        LiquifyTool::ForwardWarp,
+        // f64::from(o.liquify_size.clamp(1.0, 15000.0)),
+        // TODO: figure out how to get current preset here and take values from it
+        f64::from(app.session.tools.brush.size),
         f64::from(o.liquify_density.clamp(0.0, 100.0)),
         f64::from(o.liquify_pressure.clamp(0.0, 100.0)),
         f64::from(o.liquify_rate.clamp(0.0, 100.0)),
     );
-    let mut stroke = LiquifyStroke { tool, size, density, pressure, rate, points: vec![p.to_vec()], amount: None };
+    let stroke = LiquifyStroke { tool, size, density, pressure, rate, points: vec![p.to_vec()], amount: None };
     let cell = auto_cell(target.canvas);
     let mut field = LiquifyField::new(target.canvas, cell);
     let t0 = crate::gpu_canvas::now_ms();
@@ -178,7 +164,6 @@ fn start(app: &mut PhotocraftApp, p: [f64; 3], mods: Modifiers) -> bool {
         smart: target.smart,
         source: target.source,
         selection: target.selection,
-        canvas: target.canvas,
         cell,
         field,
         cur: Some((stroke, p)),
@@ -311,12 +296,6 @@ pub(crate) fn is_preview_key(key: u64) -> bool {
     key > BASE && key < BASE << 1
 }
 
-/// A held pointer keeps dabbing while a stationary tool's stroke is open (the canvas repeats the
-/// held point and keeps repainting, as the airbrush does).
-pub(crate) fn wants_time(app: &PhotocraftApp) -> bool {
-    app.liquify_brush.as_ref().is_some_and(|p| p.cur.as_ref().is_some_and(|(s, _)| s.tool.is_stationary()))
-}
-
 /// The drag belongs to its document and its tool: a tool change or the active document changing
 /// drops the preview, so the canvas recomposites the committed document on its own.
 pub(crate) fn cancel_stale(app: &mut PhotocraftApp) {
@@ -330,21 +309,13 @@ pub(crate) fn cancel_stale(app: &mut PhotocraftApp) {
     }
 }
 
-/// Options bar for the Liquify Brush (Tool, brush Size, and the Liquify dialog's Density,
-/// Pressure and Rate, %). Returns false for other tools.
+/// Options bar for the Liquify Brush (the brush Size and the Liquify dialog's Density, Pressure
+/// and Rate, %; the tool is the default Forward Warp). Returns false for other tools.
 pub fn options_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui, tool: Tool) -> bool {
     if tool != Tool::LiquifyBrush {
         return false;
     }
     let o = &mut app.ui.tool_options;
-    // A remembered `lassoMask` or a global tool is no brush here: the first brush it is.
-    if !BRUSHES.contains(&o.liquify_tool) {
-        o.liquify_tool = LiquifyTool::default();
-    }
-    opt(ui, "Tool:");
-    let options: Vec<(LiquifyTool, String)> = BRUSHES.iter().map(|t| (*t, t.label().to_string())).collect();
-    let entries: Vec<(LiquifyTool, &str)> = options.iter().map(|(t, l)| (*t, l.as_str())).collect();
-    crate::widgets::dropdown_literal(ui, "liquify-brush-tool", &mut o.liquify_tool, &entries, 130.0);
     opt(ui, "Size:");
     crate::widgets::value_field(ui, &mut o.liquify_size, 1.0..=15000.0, "px", 62.0);
     opt(ui, "Density:");

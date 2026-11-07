@@ -1047,6 +1047,7 @@ pub fn options_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                     || crate::slice_ui::options_bar(app, ui, tool)
                     || crate::frame_tool::options_bar(app, ui, tool)
                     || crate::artboard_tool::options_bar(app, ui, tool)
+                    || crate::liquify_brush_ui::options_bar(app, ui, tool)
                 {
                     return;
                 }

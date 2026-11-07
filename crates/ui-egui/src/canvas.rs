@@ -984,7 +984,6 @@ const HOLD_REPEAT_MS: f64 = 16.0;
 /// smoothing catching up)? Only then does a held pointer repeat its point and keep repainting.
 fn stroke_wants_time(app: &PhotocraftApp) -> bool {
     app.live_stroke.as_ref().is_some_and(|l| l.stroke.wants_time())
-        || app.drag.as_ref().is_some_and(|d| d.tool == Tool::LiquifyBrush) && crate::liquify_brush_ui::wants_time(app)
 }
 
 /// Time of sample `k` of the `n` samples a frame delivered, spread evenly after `base` (the
@@ -1522,7 +1521,7 @@ const NAVIGATOR_SETTLE_MS: f64 = 200.0;
 /// of document `idx` and catches up on release: each step of the drag is a new preview, and a
 /// thumbnail composite of the whole document per step makes painting lag on large images.
 fn navigator_waits_for_drag(app: &PhotocraftApp, idx: usize) -> bool {
-    crate::move_ui::showing(app) || crate::patch_preview::showing(app) || crate::cam_preview::showing(app) || live_stroke(app, idx).is_some()
+    crate::move_ui::showing(app) || crate::patch_preview::showing(app) || crate::cam_preview::showing(app) || crate::liquify_brush_ui::showing(app) || live_stroke(app, idx).is_some()
 }
 
 /// The Navigator panel's image of document `idx`. With the CPU canvas that is the canvas texture
@@ -1896,6 +1895,13 @@ pub(crate) fn damage_since(app: &PhotocraftApp, idx: usize, seen: (u64, u64), no
     if seen.0 == now.0
         && let Some(st) = app.session.documents().get(idx)
         && let Some(r) = crate::patch_preview::damage(app, st.doc.id, now.0, seen.1 ^ display_key, now.1)
+    {
+        return Some(if r.is_empty() { r } else { r.inflate(effect_reach(&st.doc.layers)) });
+    }
+    // Between a Liquify Brush drag's previews: the areas its dabs warped.
+    if seen.0 == now.0
+        && let Some(st) = app.session.documents().get(idx)
+        && let Some(r) = crate::liquify_brush_ui::damage(app, st.doc.id, now.0, seen.1 ^ display_key, now.1)
     {
         return Some(if r.is_empty() { r } else { r.inflate(effect_reach(&st.doc.layers)) });
     }
@@ -4812,6 +4818,14 @@ pub fn canvas_view(app: &mut PhotocraftApp, ui: &mut egui::Ui, idx: usize, rect:
                     }
                     egui::CursorIcon::None
                 }
+                // The Liquify Brush: the Liquify dialog's brush outline (two strokes, dark
+                // outside light in), no cursor icon beneath it.
+                Tool::LiquifyBrush => {
+                    let r = (app.session.tools.brush.size * 0.5 * xf.zoom).max(1.0);
+                    painter.circle_stroke(p, r, Stroke::new(1.5, Color32::BLACK));
+                    painter.circle_stroke(p, r, Stroke::new(0.75, Color32::WHITE));
+                    egui::CursorIcon::None
+                }
                 _ => egui::CursorIcon::Crosshair,
             };
             let icon = visible_crosshair(icon, &painter, p, cfg!(not(target_arch = "wasm32")));
@@ -5945,6 +5959,11 @@ pub fn tool_event(app: &mut PhotocraftApp, ev: ToolEvent, mods: egui::Modifiers)
     }
     // Magnetic Lasso: fastening points and the border following the pointer.
     if crate::magnetic_lasso_ui::pointer(app, ev, mods) {
+        return;
+    }
+    // The Liquify Brush's stroke: dabs the field and shows the warp (before the generic tools,
+    // which would otherwise wait for a recognised drag).
+    if crate::liquify_brush_ui::pointer(app, ev, mods) {
         return;
     }
     let tool = event_tool(app, mods);
