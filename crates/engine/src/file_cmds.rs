@@ -216,7 +216,7 @@ pub fn untitled_name(base: &str, taken: impl Fn(&str) -> bool) -> String {
 /// The name a document opened from `path` gets when `path` is a template: the first "Untitled-N"
 /// no open document has.
 pub fn template_name(s: &Session, path: &str) -> Option<String> {
-    is_template(path).then(|| untitled_name("Untitled", |n| s.documents().iter().any(|d| d.doc.name == n)))
+    is_template(path).then(|| untitled_name("Artwork", |n| s.documents().iter().any(|d| d.doc.name == n)))
 }
 
 pub(crate) fn stem(path: &str) -> String {

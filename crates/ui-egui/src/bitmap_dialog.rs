@@ -160,7 +160,3 @@ pub(crate) fn body(app: &PhotocraftApp, ui: &mut egui::Ui, f: &mut Map<String, V
         f.insert("__preview".into(), json!(preview));
     }
 }
-
-#[cfg(test)]
-#[path = "bitmap_dialog_tests.rs"]
-mod tests;

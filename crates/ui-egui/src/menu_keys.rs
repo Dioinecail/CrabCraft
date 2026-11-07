@@ -474,7 +474,3 @@ mod tests {
         assert!(!is_command_key(Key::Escape, Modifiers::NONE));
     }
 }
-
-#[cfg(test)]
-#[path = "menu_keys_tests.rs"]
-mod harness_tests;

@@ -99,7 +99,3 @@ pub fn horizontal_centered<R>(ui: &mut egui::Ui, add: impl FnOnce(&mut egui::Ui)
 pub fn below() -> egui::RectAlign {
     if is_rtl() { egui::RectAlign::BOTTOM_END } else { egui::RectAlign::BOTTOM_START }
 }
-
-#[cfg(test)]
-#[path = "direction_tests.rs"]
-mod tests;

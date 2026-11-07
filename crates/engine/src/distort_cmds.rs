@@ -12,7 +12,7 @@
 
 use std::cell::RefCell;
 
-use photocraft_algo::liquify::{LiquifyField, LiquifyStroke, apply_liquify, auto_cell};
+use photocraft_algo::liquify::{LiquifyField, LiquifyStroke, apply_liquify, apply_liquify_region, auto_cell};
 use photocraft_algo::perspective::{PerspectiveMap, Plane, Straighten, straighten};
 use photocraft_algo::puppet::{PuppetDensity, PuppetMode, PuppetPin, PuppetWarp, puppet_warp, puppet_warp_with_mask};
 use photocraft_algo::transform::Interp;
@@ -118,12 +118,21 @@ fn interp(p: &Value) -> Interp {
 fn mix_by_selection(old: &Surface, new: &Surface, sel: &Surface) -> Surface {
     let area = old.content_bounds().union(&new.content_bounds());
     let mut out = new.clone();
+    mix_by_selection_into(old, &mut out, sel, area);
+    out.prune();
+    out
+}
+
+/// [`mix_by_selection`] written into `out` (which holds the new pixels) over `area`, without
+/// copying the whole surface: inside `area` the selection's coverage decides between `old` and
+/// what is already in `out`; the rest of `out` is left alone.
+pub fn mix_by_selection_into(old: &Surface, out: &mut Surface, sel: &Surface, area: Rect) {
     if area.is_empty() {
-        return out;
+        return;
     }
     let fmt = old.format();
     let n = fmt.channels();
-    let (o, w) = (old.read_region(area), new.read_region(area));
+    let (o, w) = (old.read_region(area), out.read_region(area));
     let mut r = vec![0.0f32; o.len()];
     let aw = area.width() as usize;
     for (i, ((op, np), rp)) in o.chunks_exact(n).zip(w.chunks_exact(n)).zip(r.chunks_exact_mut(n)).enumerate() {
@@ -143,14 +152,36 @@ fn mix_by_selection(old: &Surface, new: &Surface, sel: &Surface) -> Surface {
         }
     }
     out.write_region(area, &r);
-    out.prune();
-    out
 }
 
 /// Liquifies a surface over `canvas` (the field's extent).
 pub fn liquify_surface(surf: &Surface, strokes: &[LiquifyStroke], cell: f64, canvas: Rect) -> Surface {
     let field = LiquifyField::from_strokes(canvas, cell, strokes);
     apply_liquify(surf, &field)
+}
+
+/// The Liquify result over `src`: the resampled surface, mixed back by the selection when there
+/// is one. What [`LIQUIFY`] puts in a layer — and what the Liquify Brush preview shows.
+pub fn liquify_result(src: &Surface, field: &LiquifyField, sel: Option<&Surface>) -> Surface {
+    let out = apply_liquify(src, field);
+    match sel {
+        Some(sel) => mix_by_selection(src, &out, sel),
+        None => out,
+    }
+}
+
+/// Re-renders `region` of `out` for the Liquify Brush preview: the field's tiles intersecting
+/// `region` are resampled from the original `src` with the current `field` — exactly what the
+/// commit's [`apply_liquify`] computes, tile for tile — and then mixed back by the selection
+/// where there is one. Only touched tiles are written; with no selection the region's pixels
+/// after this are bit for bit the commit's, and out tiles the update never touches are left
+/// with their previous, still-correct content.
+pub fn liquify_preview_region(src: &Surface, out: &mut Surface, field: &LiquifyField, sel: Option<&Surface>, region: Rect) {
+    apply_liquify_region(src, field, out, region);
+    if let Some(sel) = sel {
+        let area = region.intersect(&src.content_bounds().union(&out.content_bounds()));
+        mix_by_selection_into(src, out, sel, area);
+    }
 }
 
 /// Puppet-warps a surface's content; `None` when the result would span more than
@@ -287,13 +318,7 @@ fn liquify(s: &mut Session, p: &Value) -> Result<Value> {
         "Liquify",
         p,
         false,
-        &|surf, sel, _| {
-            let out = apply_liquify(surf, &field);
-            Ok(match sel {
-                Some(sel) => mix_by_selection(surf, &out, sel),
-                None => out,
-            })
-        },
+        &|surf, sel, _| Ok(liquify_result(surf, &field, sel)),
         None,
     )?;
     let mut r = r;

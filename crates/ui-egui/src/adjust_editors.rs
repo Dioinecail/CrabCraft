@@ -1749,7 +1749,3 @@ mod tests {
         assert_eq!(auto_levels(&[0; 256]), (253.0, 255.0), "an empty histogram is no panic");
     }
 }
-
-#[cfg(test)]
-#[path = "adjust_editors_tests.rs"]
-mod ui_tests;

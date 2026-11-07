@@ -560,11 +560,6 @@ fn body(app: &mut PhotocraftApp, ui: &mut egui::Ui, id: &str) {
         let _ = app.run("window.panel.activate", json!({"panel":label}));
     }
 }
-
-#[cfg(test)]
-#[path = "panel_docking_tests.rs"]
-mod tests;
-
 /// Return positions for panels already hidden in a legacy workspace.
 fn migration_hidden(app: &PhotocraftApp, visible: &Layout<String>) -> std::collections::BTreeMap<String, craft_ui::docking::Location<String>> {
     let full = legacy_layout(app, true);

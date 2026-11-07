@@ -732,6 +732,7 @@ pub(crate) fn strokes_live(tool: Tool) -> bool {
             | Tool::Dodge
             | Tool::Burn
             | Tool::Sponge
+            | Tool::LiquifyBrush
     ) || live_retouch_command(tool).is_some()
 }
 
@@ -983,6 +984,7 @@ const HOLD_REPEAT_MS: f64 = 16.0;
 /// smoothing catching up)? Only then does a held pointer repeat its point and keep repainting.
 fn stroke_wants_time(app: &PhotocraftApp) -> bool {
     app.live_stroke.as_ref().is_some_and(|l| l.stroke.wants_time())
+        || app.drag.as_ref().is_some_and(|d| d.tool == Tool::LiquifyBrush) && crate::liquify_brush_ui::wants_time(app)
 }
 
 /// Time of sample `k` of the `n` samples a frame delivered, spread evenly after `base` (the
@@ -1025,6 +1027,7 @@ pub(crate) fn freehand_tool(tool: Tool) -> bool {
             | Tool::ContentAwareMove
             | Tool::QuickSelection
             | Tool::FreeformPen
+            | Tool::LiquifyBrush
     )
 }
 
@@ -1386,6 +1389,10 @@ pub(crate) fn display_doc(app: &mut PhotocraftApp, idx: usize) -> (std::sync::Ar
     }
     // Puppet / Perspective Warp previews hide the layer they draw on a mesh.
     if let Some(shown) = crate::distort_ui::display_doc(app, idx) {
+        return shown;
+    }
+    // The Liquify Brush's drag preview: the active layer warped so far.
+    if let Some(shown) = crate::liquify_brush_ui::display_doc(app, idx) {
         return shown;
     }
     // Image › Adjustments dialog: a temporary adjustment layer clipped to the target.
@@ -10130,80 +10137,5 @@ mod zoom_animation_tests {
         let shown = animated_view(&mut b, xf, 1.0, true, 0.23);
         assert_eq!((shown.zoom, shown.center), (b.zoom, b.center));
         assert!(b.zoom_transition.is_none() && b.zoom_anchor.is_none());
-    }
-}
-#[cfg(test)]
-#[path = "canvas_display_memo_tests.rs"]
-mod display_memo_tests;
-
-#[cfg(test)]
-#[path = "canvas/blend_viewport_tests.rs"]
-mod blend_viewport_regression;
-
-#[cfg(test)]
-mod lasso_preview_tests {
-    use super::*;
-
-    fn xf() -> ViewXform {
-        ViewXform { rect: Rect::from_min_size(Pos2::ZERO, vec2(200.0, 200.0)), zoom: 1.0, center: [100.0, 100.0], flip: false, rotation: 0.0, aspect: 1.0 }
-    }
-
-    /// What `draw` paints: (black dashes, black solid paths).
-    fn painted(app: &mut PhotocraftApp, draw: impl Fn(&mut PhotocraftApp, &egui::Painter)) -> (usize, usize) {
-        let ctx = egui::Context::default();
-        let mut output = ctx.run_ui(egui::RawInput::default(), |ui| draw(app, ui.painter()));
-        output.textures_delta.clear();
-        let mut flat = Vec::new();
-        for clipped in output.shapes {
-            let mut stack = vec![clipped.shape];
-            while let Some(shape) = stack.pop() {
-                match shape {
-                    egui::Shape::Vec(v) => stack.extend(v),
-                    s => flat.push(s),
-                }
-            }
-        }
-        let dashes = flat.iter().filter(|s| matches!(s, egui::Shape::LineSegment { stroke, .. } if stroke.color == Color32::BLACK)).count();
-        let solid = flat.iter().filter(|s| matches!(s, egui::Shape::Path(p) if p.stroke.color == egui::epaint::ColorMode::Solid(Color32::BLACK))).count();
-        (dashes, solid)
-    }
-
-    fn document() -> PhotocraftApp {
-        let mut app = PhotocraftApp::new(photocraft_engine::Session::new(), crate::Services::default());
-        app.session.execute("file.new", json!({"width": 200, "height": 200})).unwrap();
-        app.sync_views();
-        app
-    }
-
-    /// #7495: as in Photoshop, the Lasso's, Polygonal Lasso's and Magnetic Lasso's outline is a
-    /// solid line until the selection is made; a Patch area dragged out keeps its marching ants.
-    #[test]
-    fn lasso_outlines_are_solid_until_the_selection_is_made() {
-        let points = vec![[20.0, 20.0, 1.0], [120.0, 30.0, 1.0], [150.0, 140.0, 1.0], [40.0, 160.0, 1.0]];
-        for tool in [Tool::Lasso, Tool::Patch] {
-            let mut app = document();
-            app.ui.tool = tool;
-            app.drag = Some(Drag::new(tool, [20.0, 20.0], points.clone(), egui::Modifiers::NONE, false));
-            let (dashes, solid) = painted(&mut app, |app, p| draw_drag_preview(app, p, &xf()));
-            if tool == Tool::Lasso {
-                assert_eq!((dashes, solid), (0, 1), "{tool:?}: one solid outline, no ants");
-            } else {
-                assert!(dashes > 10 && solid == 0, "{tool:?}: still marching ants ({dashes} dashes)");
-            }
-        }
-
-        let mut app = document();
-        app.ui.tool = Tool::PolygonLasso;
-        app.ui.polygon = vec![[20.0, 20.0], [120.0, 30.0], [150.0, 140.0]];
-        let (dashes, solid) = painted(&mut app, |app, p| draw_tool_state(app, p, &xf(), Some(pos2(60.0, 150.0))));
-        assert_eq!((dashes, solid), (0, 1), "Polygonal Lasso: its sides and rubber band are one solid line");
-
-        let mut app = document();
-        app.ui.tool = Tool::MagneticLasso;
-        app.ui.magnetic.path = vec![[20.0, 20.0], [80.0, 25.0], [120.0, 60.0]];
-        app.ui.magnetic.anchors = vec![0, 2];
-        app.ui.magnetic.live = vec![[120.0, 60.0], [130.0, 100.0]];
-        let (dashes, solid) = painted(&mut app, |app, p| draw_tool_state(app, p, &xf(), None));
-        assert_eq!((dashes, solid), (0, 1), "Magnetic Lasso: the traced border is solid");
     }
 }

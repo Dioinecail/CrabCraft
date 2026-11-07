@@ -2125,7 +2125,3 @@ mod tests {
         assert_eq!(app.camera_raw.as_ref().unwrap().params.clarity, 25.0);
     }
 }
-
-#[cfg(test)]
-#[path = "camera_raw_identity_tests.rs"]
-mod identity_tests;

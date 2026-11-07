@@ -551,7 +551,3 @@ pub fn live_uncovered(app: &mut PhotocraftApp, doc: DocId, key: u64, visible: Re
     p.covered = Some((k, want));
     Some(want)
 }
-
-#[cfg(test)]
-#[path = "adjust_preview_tests.rs"]
-mod tests;

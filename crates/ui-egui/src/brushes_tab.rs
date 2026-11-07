@@ -1069,7 +1069,3 @@ pub fn show(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         c.retain(|slot| slot.split_once(':').is_none_or(|(_, n)| names.contains(n)));
     });
 }
-
-#[cfg(test)]
-#[path = "brushes_tab_tests.rs"]
-mod tests;

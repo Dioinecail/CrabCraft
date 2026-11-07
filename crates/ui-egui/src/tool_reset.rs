@@ -204,6 +204,7 @@ pub fn option_keys(tool: Tool) -> &'static [&'static str] {
         Tool::PatternStamp => reset!(pattern_stamp_aligned, pattern_stamp_impressionist, pattern_stamp_scale, pattern_stamp_angle),
         Tool::Blur | Tool::Sharpen => reset!(strength, protect_detail),
         Tool::Smudge => reset!(strength, finger_painting),
+        Tool::LiquifyBrush => reset!(liquify_tool, liquify_size, liquify_density, liquify_pressure, liquify_rate),
         Tool::Dodge | Tool::Burn => reset!(tone_range, exposure, protect_tones),
         Tool::Sponge => reset!(sponge_mode, vibrance),
         Tool::Pen => reset!(vector_mode, pen_auto_add_delete),

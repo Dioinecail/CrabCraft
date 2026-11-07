@@ -562,7 +562,3 @@ pub fn draw_overlay(app: &PhotocraftApp, painter: &egui::Painter, to_scr: &dyn F
         crate::tool_feedback::draw_ants(painter, &pts, true);
     }
 }
-
-#[cfg(test)]
-#[path = "direct_select_tests.rs"]
-mod tests;

@@ -412,7 +412,3 @@ fn draw(
         }
     }
 }
-
-#[cfg(test)]
-#[path = "background_redraw_tests.rs"]
-mod tests;

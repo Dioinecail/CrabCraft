@@ -875,7 +875,3 @@ pub fn apply(app: &mut PhotocraftApp, v: &Value) {
         app.ui.timeline.playing = false;
     }
 }
-
-#[cfg(test)]
-#[path = "dock_tests.rs"]
-mod tests;

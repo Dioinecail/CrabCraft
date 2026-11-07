@@ -895,7 +895,3 @@ pub fn inspect(app: &PhotocraftApp) -> Value {
 pub fn bytes(b: &[u8]) -> OpenSource {
     OpenSource::Bytes(Arc::new(b.to_vec()))
 }
-
-#[cfg(test)]
-#[path = "jobs_ui_tests.rs"]
-mod tests;

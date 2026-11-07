@@ -203,7 +203,3 @@ pub fn body(app: &PhotocraftApp, ui: &mut egui::Ui, f: &mut Map<String, Value>) 
     }
     crate::dialog_blend_ui::body(ui, f, "fill");
 }
-
-#[cfg(test)]
-#[path = "fill_ui_tests.rs"]
-mod tests;

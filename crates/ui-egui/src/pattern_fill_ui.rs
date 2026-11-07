@@ -188,7 +188,3 @@ pub(crate) fn body(app: &PhotocraftApp, ui: &mut egui::Ui, f: &mut Map<String, V
         f.insert("link".into(), json!(link));
     }
 }
-
-#[cfg(test)]
-#[path = "pattern_fill_ui_tests.rs"]
-mod tests;

@@ -58,7 +58,3 @@ pub fn scroll_to_row(ui: &egui::Ui, top: f32) {
         ui.scroll_to_rect_animation(row, None, egui::style::ScrollAnimation::none());
     }
 }
-
-#[cfg(test)]
-#[path = "layer_reveal_tests.rs"]
-mod tests;

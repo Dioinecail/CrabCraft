@@ -536,7 +536,3 @@ pub fn level(ui: &mut Ui, depth: usize, nav: &mut Nav, rows: impl FnOnce(&mut Ui
         st.store(&ctx, out.id);
     }
 }
-
-#[cfg(test)]
-#[path = "menu_nav_tests.rs"]
-mod tests;

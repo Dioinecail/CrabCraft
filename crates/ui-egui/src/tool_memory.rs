@@ -236,6 +236,12 @@ pub(crate) fn sanitize(o: &mut ToolOptions) {
     fit(&mut o.magnetic_frequency, 0.0, 100.0, d.magnetic_frequency);
     fit(&mut o.red_eye_pupil_size, 1.0, 100.0, d.red_eye_pupil_size);
     fit(&mut o.red_eye_darken, 0.0, 100.0, d.red_eye_darken);
+    // The Liquify Brush's size is a stroke's brush diameter (the field accepts 1..15000 px),
+    // the rest percentages.
+    fit(&mut o.liquify_size, 1.0, 15000.0, d.liquify_size);
+    fit(&mut o.liquify_density, 0.0, 100.0, d.liquify_density);
+    fit(&mut o.liquify_pressure, 0.0, 100.0, d.liquify_pressure);
+    fit(&mut o.liquify_rate, 0.0, 100.0, d.liquify_rate);
     o.polygon_sides = o.polygon_sides.clamp(3, 100);
     if o.crop_overlay_orientation > 3 {
         o.crop_overlay_orientation = d.crop_overlay_orientation;

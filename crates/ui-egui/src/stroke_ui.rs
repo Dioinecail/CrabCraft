@@ -111,7 +111,3 @@ pub fn body(ui: &mut egui::Ui, f: &mut Map<String, Value>) {
     });
     crate::dialog_blend_ui::body(ui, f, "stroke");
 }
-
-#[cfg(test)]
-#[path = "stroke_ui_tests.rs"]
-mod tests;

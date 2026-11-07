@@ -651,23 +651,27 @@ fn catmull_rom(t: f64) -> [f64; 4] {
     [-0.5 * t3 + t2 - 0.5 * t, 1.5 * t3 - 2.5 * t2 + 1.0, -1.5 * t3 + 2.0 * t2 + 0.5 * t, 0.5 * t3 - 0.5 * t2]
 }
 
-/// Resamples `src` through the field: inside `field.bounds` each pixel shows the source at
-/// `p + d(p)` (bicubic field, bicubic premultiplied source, edge pixels repeat past the field
-/// bounds); everything outside the bounds is kept. Same format as `src`.
-pub fn apply_liquify(src: &Surface, field: &LiquifyField) -> Surface {
+/// Computes the resampled content of every field tile intersecting `region`, for tiles whose
+/// field is not zero there. Each tile's values come from `src` and the field alone (never from
+/// `out`, and with no across-tile state), so re-computing part of an image later writes exactly
+/// the same pixels as a full re-apply over it: that's what makes the incremental brush preview
+/// and its final commit agree.
+fn resample_tiles(src: &Surface, field: &LiquifyField, region: Rect) -> Vec<(Rect, Vec<f32>)> {
     let fmt = src.format();
     let n = fmt.channels();
     let alpha = fmt.alpha;
     let b = field.bounds;
-    let mut out = src.clone();
     if field.is_identity() || b.is_empty() {
-        return out;
+        return Vec::new();
     }
     // A 1D Catmull-Rom stencil's absolute weights sum to at most 5/4, so the 2D
     // interpolated displacement can reach 25/16 of the largest nodal displacement.
     let maxd = ((f64::from(field.max_displacement()) * (25.0 / 16.0)).ceil() as i32).saturating_add(3);
     let has_freeze = field.freeze.iter().any(|&f| f > 0.0);
-    let tiles: Vec<Rect> = b.tiles().map(|t| t.rect().intersect(&b)).filter(|r| !r.is_empty() && field.touches(*r)).collect();
+    let tiles: Vec<Rect> = b.tiles()
+        .map(|t| t.rect().intersect(&b))
+        .filter(|r| !r.is_empty() && !r.intersect(&region).is_empty() && field.touches(*r))
+        .collect();
     let work = |t: &Rect| -> Option<(Rect, Vec<f32>)> {
         let w = t.width() as usize;
         let h = t.height() as usize;
@@ -772,13 +776,32 @@ pub fn apply_liquify(src: &Surface, field: &LiquifyField) -> Surface {
     };
     #[cfg(target_arch = "wasm32")]
     let done: Vec<(Rect, Vec<f32>)> = tiles.iter().filter_map(work).collect();
-    for (r, v) in done {
-        out.write_region(r, &v);
-    }
-    if alpha {
+    done
+}
+
+/// Resamples `src` through the field: inside `field.bounds` each pixel shows the source at
+/// `p + d(p)` (bicubic field, bicubic premultiplied source, edge pixels repeat past the field
+/// bounds); everything outside the bounds is kept. Same format as `src`.
+pub fn apply_liquify(src: &Surface, field: &LiquifyField) -> Surface {
+    let mut out = src.clone();
+    write_liquify_tiles(src, field, &mut out, field.bounds);
+    if src.format().alpha {
         out.prune();
     }
     out
+}
+
+/// Resamples the part of `out` inside `region` from `src` through `field`, leaving the rest of
+/// `out` alone ([`apply_liquify`] without the clone). See [`resample_tiles`] for why re-writing
+/// a region over an earlier one is safe.
+pub fn apply_liquify_region(src: &Surface, field: &LiquifyField, out: &mut Surface, region: Rect) {
+    write_liquify_tiles(src, field, out, region);
+}
+
+fn write_liquify_tiles(src: &Surface, field: &LiquifyField, out: &mut Surface, region: Rect) {
+    for (r, v) in resample_tiles(src, field, region) {
+        out.write_region(r, &v);
+    }
 }
 
 /// A downsampled, premultiplied RGBA copy of a layer for the interactive preview.
@@ -1480,6 +1503,33 @@ mod tests {
         let r8 = apply_liquify(&sample(SampleType::U8), &a);
         let r32 = apply_liquify(&sample(SampleType::F32), &a);
         assert!(worst(&r8, &r32, bounds()) < 2.0 / 255.0 + 1e-4);
+    }
+
+    /// The Liquify Brush preview re-renders only the touched tiles and keeps the rest of the
+    /// surface, so every region write must land exactly where a full re-apply puts it, bit for
+    /// bit — including tiles a later, overlapping dab re-renders.
+    #[test]
+    fn region_apply_writes_exactly_the_full_reapplys_pixels() {
+        for src in [sample(SampleType::U8), sample(SampleType::F32)] {
+            let s = LiquifyStroke::new(LiquifyTool::ForwardWarp, 40.0);
+            let mut field = LiquifyField::new(bounds(), 2.0);
+            let mut out = src.clone();
+            let mut prev = [40.0, 32.0, 1.0];
+            field.stroke_begin(&s, prev);
+            apply_liquify_region(&src, &field, &mut out, field.bounds);
+            for p in [[46.0, 33.0, 1.0], [50.0, 34.0, 0.8], [55.0, 36.0, 1.0]] {
+                let dirty = field.stroke_segment(&s, prev, p);
+                apply_liquify_region(&src, &field, &mut out, dirty);
+                assert_eq!(apply_liquify(&src, &field), out, "after the dab at {p:?}");
+                prev = p;
+            }
+            // An empty region (nothing moved this time) leaves `out` at the last state.
+            let mut sm = LiquifyStroke::new(LiquifyTool::Smooth, 60.0);
+            sm.points = vec![vec![10.0, 10.0, 1.0]];
+            let dirty = field.apply_stroke(&sm);
+            apply_liquify_region(&src, &field, &mut out, dirty);
+            assert_eq!(apply_liquify(&src, &field), out);
+        }
     }
 
     #[test]

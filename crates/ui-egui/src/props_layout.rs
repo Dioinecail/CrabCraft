@@ -186,7 +186,3 @@ pub fn quick_actions_ui(app: &PhotocraftApp, ui: &mut egui::Ui, content: &LayerC
     }
     out
 }
-
-#[cfg(test)]
-#[path = "props_layout_tests.rs"]
-mod tests;

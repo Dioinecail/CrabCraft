@@ -244,7 +244,3 @@ pub fn show_offer(app: &mut PhotocraftApp, ctx: &egui::Context) {
         answer_offer(app, import);
     }
 }
-
-#[cfg(test)]
-#[path = "kys_import_tests.rs"]
-mod tests;

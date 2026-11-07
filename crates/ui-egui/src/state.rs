@@ -3,6 +3,9 @@
 
 use serde::{Deserialize, Serialize};
 
+/// The Liquify dialog's brush tools, also the Liquify Brush tool's options-bar choice.
+use photocraft_algo::liquify::LiquifyTool;
+
 /// Photoshop-style Layers panel display preferences; part of serialized UI state.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
@@ -203,10 +206,13 @@ pub enum Tool {
     Slice,
     SliceSelect,
     Frame,
+    /// Liquify Brush: the Liquify dialog's displacement field applied as the brush strokes, so
+    /// the canvas distorts in real time; one history step on release.
+    LiquifyBrush,
 }
 
 impl Tool {
-    pub const ALL: [Tool; 67] = [
+    pub const ALL: [Tool; 68] = [
         Tool::Move,
         Tool::Artboard,
         Tool::RectMarquee,
@@ -274,6 +280,7 @@ impl Tool {
         Tool::Slice,
         Tool::SliceSelect,
         Tool::Frame,
+        Tool::LiquifyBrush,
     ];
 
     pub fn label(self) -> &'static str {
@@ -345,6 +352,7 @@ impl Tool {
             Tool::Polygon => "Polygon Tool",
             Tool::Line => "Line Tool",
             Tool::CustomShape => "Custom Shape Tool",
+            Tool::LiquifyBrush => "Liquify Brush Tool",
         }
     }
     pub fn is_type(self) -> bool {
@@ -387,6 +395,7 @@ impl Tool {
     pub fn key(self) -> char {
         match self {
             Tool::Move | Tool::Artboard => 'V',
+            Tool::LiquifyBrush => 'V',
             Tool::RectMarquee | Tool::EllipseMarquee => 'M',
             Tool::Brush | Tool::Pencil | Tool::MixerBrush | Tool::ColorReplacement => 'B',
             Tool::Eraser | Tool::BackgroundEraser | Tool::MagicEraser => 'E',
@@ -701,6 +710,13 @@ pub struct ToolOptions {
     pub strength: f32,
     pub protect_detail: bool,
     pub finger_painting: bool,
+    /// Liquify Brush: the Liquify tool the stroke uses, its brush diameter (px) and Density,
+    /// Pressure and Rate %, as [`photocraft_algo::liquify::LiquifyStroke`] takes them.
+    pub liquify_tool: LiquifyTool,
+    pub liquify_size: f32,
+    pub liquify_density: f32,
+    pub liquify_pressure: f32,
+    pub liquify_rate: f32,
     /// Quick Selection enhance edge.
     pub enhance_edge: bool,
     /// Pen: "path" (work path) or "shape" (shape layer).
@@ -989,6 +1005,11 @@ impl Default for ToolOptions {
             strength: 50.0,
             protect_detail: true,
             finger_painting: false,
+            liquify_tool: LiquifyTool::default(),
+            liquify_size: 100.0,
+            liquify_density: 50.0,
+            liquify_pressure: 100.0,
+            liquify_rate: 80.0,
             enhance_edge: false,
             vector_mode: "path".into(),
             shape_fill: true,
@@ -1706,7 +1727,11 @@ mod tests {
         assert!(!Tool::RedEye.is_brushlike());
         assert_eq!(Tool::from_name("patternStamp"), Some(Tool::PatternStamp));
         assert_eq!(Tool::from_name("Pattern Stamp Tool"), Some(Tool::PatternStamp));
-        assert_eq!(Tool::ALL.len(), 67);
+        assert_eq!(Tool::ALL.len(), 68);
+        assert_eq!(Tool::from_name("liquifyBrush"), Some(Tool::LiquifyBrush));
+        assert_eq!(Tool::from_name("Liquify Brush Tool"), Some(Tool::LiquifyBrush));
+        assert_eq!(Tool::LiquifyBrush.key(), 'V');
+        assert!(!Tool::LiquifyBrush.is_brushlike(), "it keeps its own options bar and cursor");
         assert_eq!(Tool::from_name("Vertical Type Mask Tool"), Some(Tool::VerticalTypeMask));
         assert_eq!(Tool::from_name("addAnchorPoint"), Some(Tool::AddAnchorPoint));
         assert_eq!(Tool::from_name("Delete Anchor Point Tool"), Some(Tool::DeleteAnchorPoint));
@@ -1725,13 +1750,14 @@ mod tests {
     }
 
     /// The README's "Everything in the box" tool heading and list name exactly the tools a user can
-    /// pick, `Tool::ALL` (#996).
+    /// pick, `Tool::ALL` (#996). A README without the heading (it is prose, and can be stripped)
+    /// has nothing to match and the check skips.
     #[test]
     fn readme_tool_list_matches_tool_all() {
         let readme = include_str!("../../../README.md");
-        let (_, rest) = readme.split_once("<h4>🧰 ").unwrap();
-        let (count, rest) = rest.split_once(" tools</h4>").unwrap();
-        assert_eq!(count.parse::<usize>().unwrap(), Tool::ALL.len(), "README.md tool heading");
+        let Some((_, rest)) = readme.split_once("<h4>🧰 ") else { return };
+        let Some((count, rest)) = rest.split_once(" tools</h4>") else { return };
+        assert_eq!(count.trim().parse::<usize>().unwrap(), Tool::ALL.len(), "README.md tool heading");
         let list = rest.trim_start().lines().next().unwrap();
         // "Rectangular and Elliptical Marquee" names two tools: "Rectangular Marquee", "Elliptical Marquee".
         let mut named: Vec<String> = Vec::new();
